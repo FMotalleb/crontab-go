@@ -1,7 +1,9 @@
 // Package config contains structured representation of config.yaml file
 package config
 
-import "time"
+import (
+	"time"
+)
 
 type (
 	EnvVariables = map[string]string
@@ -11,7 +13,7 @@ type (
 		Jobs map[string]JobConfig `yaml:"jobs"`
 	}
 	LogConfig struct {
-		TimeStampFormat string `yaml:"timestamp_format"`
+		TimeStampFormat string `mapstructure:"timestamp-format"`
 		Format          string `yaml:"format"`
 		File            string `yaml:"file"`
 		Stdout          bool   `yaml:"stdout"`
@@ -23,8 +25,8 @@ type (
 		Exe         JobExe        `yaml:"exe"`
 		Scheduler   JobScheduler  `yaml:"scheduler"`
 		Retries     int           `yaml:"retries"`
-		RetryDelay  time.Duration `yaml:"retry_delay"`
-		OnFailure   JobOnFailure  `yaml:"on_failure"`
+		RetryDelay  time.Duration `mapstructure:"retry-delay"`
+		OnFailure   JobOnFailure  `mapstructure:"on-failure"`
 		Env         EnvVariables  `yaml:"env"`
 		Metadata    JobMetadata   `yaml:"metadata"`
 	}

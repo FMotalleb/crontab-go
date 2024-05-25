@@ -2,7 +2,7 @@
 #TODO: prometheus exporter
 
 log:
-  timestamp_format: "2006-01-02T15:04:05.000Z"
+  timestamp-format: "2006-01-02T15:04:05.000Z"
   format: json
   file: ./cron.log
   stdout: true
@@ -17,8 +17,8 @@ jobs:
     scheduler:
       cron: "0 0 2 * * *"
     retries: 3
-    retry_delay: 123s
-    on_failure:
+    retry-delay: 123s
+    on-failure:
       webhooks:
         - address: http://google.com/
           # headers:
