@@ -1,0 +1,52 @@
+#TODO: unix/tcp socket controller
+#TODO: prometheus exporter
+
+log:
+  timestamp_format: "2006-01-02T15:04:05.000Z"
+  format: json
+  file: ./cron.log
+  stdout: true
+  level: debug
+
+jobs:
+  backup-database:
+    description: Backup the production database
+    enabled: true
+    exe:
+      command: /app/backup.sh
+    scheduler:
+      cron: "0 0 2 * * *"
+    retry_delay: 123s
+    retries: 3
+    on_failure:
+      webhooks:
+        - address: http://google.com/
+          headers:
+            test: test1
+          data: { "job": "@job", "status": "failed" }
+    env:
+      DB_HOST: 10.0.0.5
+      DB_USER: myuser
+      DB_PASS: mypassword
+    metadata:
+      owner: john.doe@company.com
+      team: database-team
+
+  # cleanup-logs:
+  #   description: Clean up old log files
+  #   enabled: true
+  #   exe:
+  #     command: /app/cleanup.sh
+  #   scheduler:
+  #     interval: 1h # Run every hour
+  #   retries: 1
+  #   on_failure:
+  #     exit: true
+  #     webhooks:
+  #       - address: http://google.com/
+  #         headers:
+  #           test: test1
+  #         data: { "job": "@job", "status": "failed" }
+  #   metadata:
+  #     owner: jane.smith@company.com
+  #     team: devops-team

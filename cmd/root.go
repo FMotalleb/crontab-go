@@ -7,23 +7,27 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/FMotalleb/crontab-go/config"
 )
 
-var cfgFile string
+var (
+	cfgFile string
+	Config  *config.Config = &config.Config{}
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "crontab-go",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Crontab replacement for containers",
+	Long: `Cronjob-go is a powerful, lightweight, and highly configurable Golang application
+designed to replace the traditional crontab in Docker environments.
+With its seamless integration and easy-to-use YAML configuration,
+Cronjob-go simplifies the process of scheduling and managing recurring tasks
+within your containerized applications.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -42,7 +46,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.crontab-go.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is config.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -55,14 +59,8 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Find home directory.
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".crontab-go" (without extension).
-		viper.AddConfigPath(home)
+		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".crontab-go")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -71,4 +69,5 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+	viper.Unmarshal(Config)
 }

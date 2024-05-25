@@ -16,8 +16,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "github.com/FMotalleb/crontab-go/cmd"
+import (
+	"encoding/json"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/FMotalleb/crontab-go/cmd"
+)
 
 func main() {
 	cmd.Execute()
+	j, _ := json.Marshal(cmd.Config)
+	logrus.Infoln(string(j))
 }
