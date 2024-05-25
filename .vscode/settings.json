@@ -2,19 +2,19 @@
     "[go]": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true,
+            "source.organizeImports": "explicit"
         },
     },
     "[go.mod]": {
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true,
+            "source.organizeImports": "explicit"
         },
     },
     // gopls
     "go.useLanguageServer": true,
     "gopls": {
-        "formatting.local": "github.com/golang-templates/seed",
+        "formatting.local": "github.com/FMotalleb/crontab-go",
         "formatting.gofumpt": true
     },
     // golangci-lint  
