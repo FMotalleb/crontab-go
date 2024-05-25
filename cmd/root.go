@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -69,5 +70,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
-	viper.Unmarshal(Config)
+	if err := viper.Unmarshal(Config); err != nil {
+		log.Fatalln("Cannot unmarshal the config file", err)
+	}
 }

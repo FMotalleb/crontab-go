@@ -16,14 +16,14 @@ jobs:
       command: /app/backup.sh
     scheduler:
       cron: "0 0 2 * * *"
-    retry_delay: 123s
     retries: 3
+    retry_delay: 123s
     on_failure:
       webhooks:
         - address: http://google.com/
-          headers:
-            test: test1
-          data: { "job": "@job", "status": "failed" }
+          # headers:
+          #   test: test1
+      exit: true
     env:
       DB_HOST: 10.0.0.5
       DB_USER: myuser
