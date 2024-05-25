@@ -14,20 +14,7 @@ archives:
   - format_overrides:
       - goos: windows
         format: zip
-dockers:
-  - image_templates:
-    - "ghcr.io/golang-templates/seed:latest"
-    - "ghcr.io/golang-templates/seed:{{ .Major }}"
-    - "ghcr.io/golang-templates/seed:{{ .Major }}.{{ .Minor }}"
-    - "ghcr.io/golang-templates/seed:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-    build_flag_templates:
-    - "--pull"
-    # OCI annotations: https://github.com/opencontainers/image-spec/blob/main/annotations.md
-    - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.name={{.ProjectName}}"
-    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-    - "--label=org.opencontainers.image.version={{.Version}}"
-    - "--label=org.opencontainers.image.source={{.GitURL}}"
+
 release:
   github:
   name_template: "{{.Version}}"

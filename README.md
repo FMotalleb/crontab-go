@@ -1,13 +1,13 @@
 # Go Repository Template
 
 [![Keep a Changelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog-%23E05735)](CHANGELOG.md)
-[![GitHub Release](https://img.shields.io/github/v/release/golang-templates/seed)](https://github.com/golang-templates/seed/releases)
-[![Go Reference](https://pkg.go.dev/badge/github.com/golang-templates/seed.svg)](https://pkg.go.dev/github.com/golang-templates/seed)
-[![go.mod](https://img.shields.io/github/go-mod/go-version/golang-templates/seed)](go.mod)
-[![LICENSE](https://img.shields.io/github/license/golang-templates/seed)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/golang-templates/seed/build.yml?branch=main)](https://github.com/golang-templates/seed/actions?query=workflow%3Abuild+branch%3Amain)
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-templates/seed)](https://goreportcard.com/report/github.com/golang-templates/seed)
-[![Codecov](https://codecov.io/gh/golang-templates/seed/branch/main/graph/badge.svg)](https://codecov.io/gh/golang-templates/seed)
+[![GitHub Release](https://img.shields.io/github/v/release/FMotalleb/crontab-go)](https://github.com/FMotalleb/crontab-go/releases)
+[![Go Reference](https://pkg.go.dev/badge/github.com/FMotalleb/crontab-go.svg)](https://pkg.go.dev/github.com/FMotalleb/crontab-go)
+[![go.mod](https://img.shields.io/github/go-mod/go-version/FMotalleb/crontab-go)](go.mod)
+[![LICENSE](https://img.shields.io/github/license/FMotalleb/crontab-go)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/FMotalleb/crontab-go/build.yml?branch=main)](https://github.com/FMotalleb/crontab-go/actions?query=workflow%3Abuild+branch%3Amain)
+[![Go Report Card](https://goreportcard.com/badge/github.com/FMotalleb/crontab-go)](https://goreportcard.com/report/github.com/FMotalleb/crontab-go)
+[![Codecov](https://codecov.io/gh/FMotalleb/crontab-go/branch/main/graph/badge.svg)](https://codecov.io/gh/FMotalleb/crontab-go)
 
 ⭐ `Star` this repository if you find it valuable and worth maintaining.
 
@@ -44,7 +44,7 @@ It includes:
 1. Sign up on [Codecov](https://codecov.io/) and configure
    [Codecov GitHub Application](https://github.com/apps/codecov).
 1. Click the `Use this template` button (alt. clone or download this repository).
-1. Replace all occurrences of `golang-templates/seed` to `your_org/repo_name` in all files.
+1. Replace all occurrences of `FMotalleb/crontab-go` to `your_org/repo_name` in all files.
 1. Replace all occurrences of `seed` to `repo_name` in [Dockerfile](Dockerfile).
 1. Follow [these](https://docs.codecov.com/docs/adding-the-codecov-token#github-actions)
    instructions to add the `CODECOV_TOKEN` GitHub Actions and Dependabot secret.

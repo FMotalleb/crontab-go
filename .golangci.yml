@@ -5,9 +5,8 @@ linters-settings:
   gocyclo:
     min-complexity: 15
   goimports:
-    local-prefixes: github.com/golang-templates/seed
-  govet:
-    shadow: true
+    local-prefixes: github.com/FMotalleb/crontab-go
+  govet: {}
   misspell:
     locale: US
   nolintlint:
@@ -26,7 +25,7 @@ linters:
     - errcheck
     - exportloopref
     - funlen
-    - gochecknoinits
+    # - gochecknoinits
     - gocritic
     - goconst
     - gocyclo
@@ -53,5 +52,5 @@ linters:
     - whitespace
 
 issues:
-  # enable issues excluded by default 
+  # enable issues excluded by default
   exclude-use-default: false
