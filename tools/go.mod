@@ -1,4 +1,4 @@
-module github.com/golang-templates/seed/build
+module github.com/FMotalleb/crontab-go/build
 
 go 1.22
 
@@ -8,8 +8,8 @@ replace go.opentelemetry.io/otel/exporters/otlp/internal v0.20.1 => go.opentelem
 require (
 	github.com/client9/misspell v0.3.4
 	github.com/golangci/golangci-lint v1.58.2
-	github.com/goreleaser/goreleaser v1.26.2
-	golang.org/x/vuln v1.1.0
+  github.com/goreleaser/goreleaser v1.26.2
+	golang.org/x/vuln v1.1.1
 )
 
 require (
@@ -423,7 +423,7 @@ require (
 	golang.org/x/term v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.21.0 // indirect
+	golang.org/x/tools v0.21.1-0.20240514024235-59d9797072e7 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.172.0 // indirect
 	google.golang.org/genproto v0.0.0-20240311173647-c811ad7063a7 // indirect
