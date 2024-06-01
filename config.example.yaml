@@ -1,29 +1,37 @@
 #TODO: unix/tcp socket controller
 #TODO: prometheus exporter
 
-log:
-  timestamp-format: "2006-01-02T15:04:05.000Z"
-  format: json
-  file: ./cron.log
-  stdout: true
-  level: debug
-
 jobs:
   backup-database:
     description: Backup the production database
     enabled: true
     exe:
       command: /app/backup.sh
+      args: ["--help"]
     scheduler:
       cron: "0 0 2 * * *"
     retries: 3
     retry-delay: 123s
-    on-failure:
-      webhooks:
-        - address: http://google.com/
-          # headers:
-          #   test: test1
-      exit: true
+    hooks:
+      pre-run:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test1
+      done:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test2
+      failed:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test3
+            data:
+              - job: $job
+              - time: $time
+              - command: $exe"
     env:
       DB_HOST: 10.0.0.5
       DB_USER: myuser
@@ -32,21 +40,30 @@ jobs:
       owner: john.doe@company.com
       team: database-team
 
-  # cleanup-logs:
-  #   description: Clean up old log files
-  #   enabled: true
-  #   exe:
-  #     command: /app/cleanup.sh
-  #   scheduler:
-  #     interval: 1h # Run every hour
-  #   retries: 1
-  #   on_failure:
-  #     exit: true
-  #     webhooks:
-  #       - address: http://google.com/
-  #         headers:
-  #           test: test1
-  #         data: { "job": "@job", "status": "failed" }
-  #   metadata:
-  #     owner: jane.smith@company.com
-  #     team: devops-team
+  cleanup-logs:
+    description: Clean up old log files
+    enabled: true
+    exe:
+      command: /app/cleanup.sh
+    scheduler:
+      interval: 1h # Run every hour
+    retries: 1
+    hooks:
+      pre-run:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test1
+      done:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test2
+      failed:
+        webhooks:
+          - address: http://google.com/
+            headers:
+              test: test3
+    metadata:
+      owner: jane.smith@company.com
+      team: devops-team

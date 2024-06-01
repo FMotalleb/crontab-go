@@ -17,15 +17,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
+	cx "github.com/FMotalleb/crontab-go/context"
+	"github.com/FMotalleb/crontab-go/logger"
+)
+
+var (
+	log logrus.Entry
+	ctx cx.Context
 )
 
 func main() {
 	cmd.Execute()
+	ctx = cx.NewContext("core")
+	logger.InitFromConfig()
+	log = *logger.SetupLogger("Crontab-GO")
+
+	ctx = context.WithValue(ctx, "log", log)
+
 	j, _ := json.Marshal(cmd.Config)
 	logrus.Infoln(string(j))
 }
