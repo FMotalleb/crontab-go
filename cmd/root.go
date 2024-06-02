@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -41,6 +42,7 @@ func init() {
 }
 
 func initConfig() {
+	godotenv.Load()
 	viper.BindEnv(
 		"log_timestamp_format",
 		"timestamp_format",
@@ -67,7 +69,6 @@ func initConfig() {
 	} else {
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-
 	}
 
 	viper.AutomaticEnv()
@@ -75,6 +76,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
+
 	if err := viper.Unmarshal(CFG); err != nil {
 		log.Fatalln("Cannot unmarshal the config file", err)
 	}

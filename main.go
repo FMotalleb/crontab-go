@@ -18,6 +18,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -37,6 +39,6 @@ func main() {
 	logger.InitFromConfig()
 	log = *logger.SetupLogger("Crontab-GO")
 
-	j, _ := json.Marshal(cmd.CFG)
-	logrus.Infoln(string(j))
+	j, _ := json.MarshalIndent(cmd.CFG, "", "  ")
+	fmt.Println(strings.Replace(string(j), `\n`, "\n", -1))
 }

@@ -11,11 +11,11 @@ type (
 	JobMetadata  = map[string]interface{}
 
 	Config struct {
-		LogTimestampFormat string                 `mapstructure:"log_timestamp_format"`
-		LogFormat          enums.LoggerFormatType `mapstructure:"log_format"`
-		LogFile            string                 `mapstructure:"log_file"`
-		LogStdout          bool                   `mapstructure:"log_stdout"`
-		LogLevel           string                 `mapstructure:"log_level"`
+		LogTimestampFormat string                 `mapstructure:"LOG_TIMESTAMP_FORMAT"`
+		LogFormat          enums.LoggerFormatType `mapstructure:"LOG_FORMAT"`
+		LogFile            string                 `mapstructure:"LOG_FILE"`
+		LogStdout          bool                   `mapstructure:"LOG_STDOUT"`
+		LogLevel           string                 `mapstructure:"LOG_LEVEL"`
 		Jobs               map[string]JobConfig   `mapstructure:"jobs"`
 	}
 
