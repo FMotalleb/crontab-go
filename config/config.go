@@ -16,10 +16,11 @@ type (
 		LogFile            string                 `mapstructure:"LOG_FILE"`
 		LogStdout          bool                   `mapstructure:"LOG_STDOUT"`
 		LogLevel           string                 `mapstructure:"LOG_LEVEL"`
-		Jobs               map[string]JobConfig   `mapstructure:"jobs"`
+		Jobs               []JobConfig            `mapstructure:"jobs"`
 	}
 
 	JobConfig struct {
+		Name        string        `mapstructure:"name"`
 		Description string        `mapstructure:"description"`
 		Enabled     bool          `mapstructure:"enabled"`
 		Exe         []Task        `mapstructure:"exe"`

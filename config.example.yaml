@@ -2,7 +2,7 @@
 #TODO: prometheus exporter
 
 jobs:
-  backup-database:
+  - name: backup-database
     description: Backup the production database
     enabled: true
     exe:
@@ -40,7 +40,7 @@ jobs:
       owner: john.doe@company.com
       team: database-team
 
-  cleanup-logs:
+  - name: cleanup-logs
     description: Clean up old log files
     enabled: true
     exe:
