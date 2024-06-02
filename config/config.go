@@ -1,36 +1,28 @@
-// Package config contains structured representation of config.mapstructure file
 package config
 
 import (
 	"time"
+
+	"github.com/FMotalleb/crontab-go/enums"
 )
 
 type (
-	// EnvVariables is a map of environment variables that can be used in the configuration.
 	EnvVariables = map[string]string
-	// JobMetadata is a map of metadata that can be associated with a job.
-	JobMetadata = map[string]string
+	JobMetadata  = map[string]interface{}
 
-	// Config is the main configuration struct for the exporter.
 	Config struct {
-		Log  LogConfig            `mapstructure:"log"`
-		Jobs map[string]JobConfig `mapstructure:"jobs"`
+		LogTimestampFormat string                 `mapstructure:"log_timestamp_format"`
+		LogFormat          enums.LoggerFormatType `mapstructure:"log_format"`
+		LogFile            string                 `mapstructure:"log_file"`
+		LogStdout          bool                   `mapstructure:"log_stdout"`
+		LogLevel           string                 `mapstructure:"log_level"`
+		Jobs               map[string]JobConfig   `mapstructure:"jobs"`
 	}
 
-	// LogConfig contains the configuration for the logging system.
-	LogConfig struct {
-		TimeStampFormat string `mapstructure:"timestamp-format"`
-		Format          string `mapstructure:"format"`
-		File            string `mapstructure:"file"`
-		Stdout          bool   `mapstructure:"stdout"`
-		Level           string `mapstructure:"level"`
-	}
-
-	// JobConfig contains the configuration for a single job.
 	JobConfig struct {
 		Description string        `mapstructure:"description"`
 		Enabled     bool          `mapstructure:"enabled"`
-		Exe         JobExe        `mapstructure:"exe"`
+		Exe         []Task        `mapstructure:"exe"`
 		Scheduler   JobScheduler  `mapstructure:"scheduler"`
 		Retries     int           `mapstructure:"retries"`
 		RetryDelay  time.Duration `mapstructure:"retry-delay"`
@@ -40,34 +32,21 @@ type (
 		Metadata    JobMetadata   `mapstructure:"metadata"`
 	}
 
-	// JobExe contains the configuration for the executable that a job runs.
-	JobExe struct {
-		Command string   `mapstructure:"command"`
-		Args    []string `mapstructure:"args"`
-	}
-
-	// JobScheduler contains the configuration for a job's scheduling.
 	JobScheduler struct {
 		Cron     string        `mapstructure:"cron"`
 		Interval time.Duration `mapstructure:"interval"`
 	}
 
-	// JobHooks contains the configuration for a job's hooks.
 	JobHooks struct {
-		PreRun []JobHookItem `mapstructure:"pre-run"`
-		Done   []JobHookItem `mapstructure:"done"`
-		Failed []JobHookItem `mapstructure:"failed"`
+		Done   []Task `mapstructure:"done"`
+		Failed []Task `mapstructure:"failed"`
 	}
 
-	// JobHookItem contains the configuration for a single job hook.
-	JobHookItem struct {
-		// Webhooks is a list of webhook configurations for the hook.
-		Webhooks []WebHook `mapstructure:"webhooks"`
-	}
-
-	// WebHook contains the configuration for a single webhook.
-	WebHook struct {
-		Address string            `mapstructure:"address"`
+	Task struct {
+		Post    string            `mapstructure:"get"`
+		Get     string            `mapstructure:"post"`
+		Command string            `mapstructure:"command"`
+		Args    []string          `mapstructure:"args"`
 		Headers map[string]string `mapstructure:"headers"`
 		Data    map[string]any    `mapstructure:"data"`
 	}

@@ -6,8 +6,8 @@ jobs:
     description: Backup the production database
     enabled: true
     exe:
-      command: /app/backup.sh
-      args: ["--help"]
+      - command: /app/backup.sh
+        args: ["--help"]
     scheduler:
       cron: "0 0 2 * * *"
     retries: 3

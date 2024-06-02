@@ -1,8 +1,8 @@
 package context
 
-type ContextKey = string
+type ContextKey string
 
 var (
-	scope  ContextKey = "scope"
-	logger ContextKey = "logger"
+	scope  ContextKey = ContextKey("scope")
+	logger ContextKey = ContextKey("logger")
 )

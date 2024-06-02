@@ -17,7 +17,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"context"
 	"encoding/json"
 
 	"github.com/sirupsen/logrus"
@@ -38,8 +37,6 @@ func main() {
 	logger.InitFromConfig()
 	log = *logger.SetupLogger("Crontab-GO")
 
-	ctx = context.WithValue(ctx, "log", log)
-
-	j, _ := json.Marshal(cmd.Config)
+	j, _ := json.Marshal(cmd.CFG)
 	logrus.Infoln(string(j))
 }

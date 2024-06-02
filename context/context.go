@@ -1,4 +1,3 @@
-// Package context implements basic functionality of context used in the application
 package context
 
 import "context"

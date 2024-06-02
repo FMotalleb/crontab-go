@@ -7,16 +7,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
+	"github.com/FMotalleb/crontab-go/enums"
 )
 
-type loggerType = string
-
-var (
-	jsonLogger                 = "json"
-	ansiLogger                 = "ansi"
-	plainLogger                = "plain"
-	log         *logrus.Logger = logrus.New()
-)
+var log *logrus.Logger = logrus.New()
 
 // SetupLogger for a section will add the section name to logger's field
 func SetupLogger(section string) *logrus.Entry {
@@ -33,15 +27,24 @@ func SetupLoggerOf(parent logrus.Entry, section string) *logrus.Entry {
 // InitFromConfig parsed using cmd.Execute()
 func InitFromConfig() {
 	log = logrus.New()
-	switch cmd.Config.Log.Format {
-	case jsonLogger:
+	if err := cmd.CFG.LogFormat.Validate(); err != nil {
+		log.Fatal(err)
+	}
+	switch cmd.CFG.LogFormat {
+	case enums.JsonLogger:
 		log.Formatter = &logrus.JSONFormatter{
-			TimestampFormat: cmd.Config.Log.TimeStampFormat,
+			TimestampFormat: cmd.CFG.LogTimestampFormat,
 		}
-	case ansiLogger:
+	case enums.AnsiLogger:
 		log.Formatter = &logrus.TextFormatter{
 			ForceColors:     true,
-			TimestampFormat: cmd.Config.Log.TimeStampFormat,
+			TimestampFormat: cmd.CFG.LogTimestampFormat,
+		}
+	case enums.PlainLogger:
+		log.Formatter = &logrus.TextFormatter{
+			ForceColors:     false,
+			DisableColors:   true,
+			TimestampFormat: cmd.CFG.LogTimestampFormat,
 		}
 	}
 }
