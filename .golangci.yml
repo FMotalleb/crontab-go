@@ -19,7 +19,7 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    - comment
+    # - comment
     - bodyclose
     - dogsled
     - dupl
