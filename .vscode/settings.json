@@ -26,5 +26,33 @@
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
         }
-    }
+    },
+    "cSpell.words": [
+        "bodyclose",
+        "dupl",
+        "errcheck",
+        "exportloopref",
+        "funlen",
+        "gochecknoinits",
+        "goconst",
+        "gocritic",
+        "gocyclo",
+        "gofumpt",
+        "goimports",
+        "goprintffuncname",
+        "gosec",
+        "gosimple",
+        "govet",
+        "ineffassign",
+        "nakedret",
+        "noctx",
+        "nolint",
+        "rowserrcheck",
+        "sqlclosecheck",
+        "staticcheck",
+        "stylecheck",
+        "typecheck",
+        "unconvert",
+        "unparam"
+    ]
 }

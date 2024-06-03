@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -41,27 +40,64 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is config.yaml)")
 }
 
+func warnOnErr(err error, message string) {
+	if err != nil {
+		fmt.Printf(message, err)
+	}
+}
+
+func panicOnErr(err error, message string) {
+	if err != nil {
+		fmt.Printf(message, err)
+		panic(err)
+	}
+}
+
 func initConfig() {
-	godotenv.Load()
-	viper.BindEnv(
-		"log_timestamp_format",
-		"timestamp_format",
+	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
+
+	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05.000Z")
+	warnOnErr(
+		viper.BindEnv(
+			"log_timestamp_format",
+			"timestamp_format",
+		),
+		"Cannot bind log_timestamp_format env variable: %s",
 	)
-	viper.BindEnv(
-		"log_format",
-		"output_format",
+
+	viper.SetDefault("log_format", "ansi")
+	warnOnErr(
+		viper.BindEnv(
+			"log_format",
+			"output_format",
+		),
+		"Cannot bind log_format env variable: %s",
 	)
-	viper.BindEnv(
-		"log_file",
-		"output_file",
+
+	warnOnErr(
+		viper.BindEnv(
+			"log_file",
+			"output_file",
+		),
+		"Cannot bind log_file env variable: %s",
 	)
-	viper.BindEnv(
-		"log_stdout",
-		"print",
+
+	viper.SetDefault("log_stdout", true)
+	warnOnErr(
+		viper.BindEnv(
+			"log_stdout",
+			"print",
+		),
+		"Cannot bind log_stdout env variable: %s",
 	)
-	viper.BindEnv(
-		"log_level",
-		"level",
+
+	viper.SetDefault("log_level", "info")
+	warnOnErr(
+		viper.BindEnv(
+			"log_level",
+			"level",
+		),
+		"Cannot bind log_level env variable: %s",
 	)
 
 	if cfgFile != "" {
@@ -77,7 +113,12 @@ func initConfig() {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
 
-	if err := viper.Unmarshal(CFG); err != nil {
-		log.Fatalln("Cannot unmarshal the config file", err)
-	}
+	panicOnErr(
+		viper.Unmarshal(CFG),
+		"Cannot unmarshal the config file: %s",
+	)
+	panicOnErr(
+		CFG.Initialize(),
+		"Failed to initialize config file: %s",
+	)
 }
