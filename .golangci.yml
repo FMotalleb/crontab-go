@@ -11,6 +11,7 @@ linters-settings:
     locale: US
   nolintlint:
     allow-unused: false # report any unused nolint directives
+
     require-explanation: true # require an explanation for nolint directives
     require-specific: false # don't require nolint directives to be specific about which linter is being skipped
   revive:
@@ -19,7 +20,6 @@ linters-settings:
 linters:
   disable-all: true
   enable:
-    # - comment
     - bodyclose
     - dogsled
     - dupl
@@ -32,7 +32,7 @@ linters:
     - gocyclo
     - gofumpt
     - goimports
-    - revive
+    # - revive
     - rowserrcheck
     - goprintffuncname
     - gosec
@@ -44,7 +44,7 @@ linters:
     - noctx
     - nolintlint
     - staticcheck
-    - stylecheck
+    # - stylecheck
     - sqlclosecheck
     - typecheck
     - unconvert

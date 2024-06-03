@@ -16,7 +16,7 @@ archives:
         format: zip
 
 release:
-  github:
+  github: https://github.com/FMotalleb/crontab-go.git
   name_template: "{{.Version}}"
   prerelease: auto
   mode: append
