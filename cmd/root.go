@@ -118,7 +118,7 @@ func initConfig() {
 		"Cannot unmarshal the config file: %s",
 	)
 	panicOnErr(
-		CFG.Initialize(),
+		CFG.Validate(),
 		"Failed to initialize config file: %s",
 	)
 }
