@@ -7,10 +7,15 @@ jobs:
     enabled: true
     tasks:
       - command: /app/backup.sh
+        retries: 3
+        retry-delay: 123s
+        env:
+          DB_HOST: 10.0.0.5
+          DB_USER: myuser
+          DB_PASS: mypassword
     scheduler:
       cron: "0 0 2 * * *"
-    retries: 3
-    retry-delay: 123s
+
     hooks:
       done:
         - post: http://google.com/
@@ -20,22 +25,13 @@ jobs:
         - post: http://google.com/
           headers:
             test: test2
-    env:
-      DB_HOST: 10.0.0.5
-      DB_USER: myuser
-      DB_PASS: mypassword
-    metadata:
-      owner: john.doe@company.com
-      team: database-team
 
   - name: cleanup-logs
     description: Clean up old log files
     enabled: true
     tasks:
-      command: /app/cleanup.sh
+      - command: /app/cleanup.sh
+        retries: 1
     scheduler:
       interval: 1h # Run every hour
-    retries: 1
-    metadata:
-      owner: jane.smith@company.com
-      team: devops-team
+

@@ -5,10 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/FMotalleb/crontab-go/abstraction"
 )
 
 type Post struct {
@@ -17,6 +16,10 @@ type Post struct {
 	data    *map[string]any
 	logger  *logrus.Entry
 	cancel  context.CancelFunc
+
+	retries    uint
+	retryDelay time.Duration
+	timeout    time.Duration
 }
 
 // Cancel implements abstraction.Executable.
@@ -28,9 +31,9 @@ func (g *Post) Cancel() {
 }
 
 // Execute implements abstraction.Executable.
-func (g *Post) Execute() (e error) {
+func (g *Post) Execute(ctx context.Context) (e error) {
 	g.Cancel()
-	ctx := context.Background()
+
 	ctx, g.cancel = context.WithCancel(ctx)
 	client := &http.Client{}
 	data, e := json.Marshal(g.data)
@@ -50,17 +53,17 @@ func (g *Post) Execute() (e error) {
 	return
 }
 
-func NewPost(address string, headers *map[string]string, data *map[string]any, logger logrus.Entry) abstraction.Executable {
-	return &Post{
-		address,
-		headers,
-		data,
-		logger.WithFields(
-			logrus.Fields{
-				"url":    address,
-				"method": "post",
-			},
-		),
-		nil,
-	}
-}
+// func NewPost(address string, headers *map[string]string, data *map[string]any, logger logrus.Entry) abstraction.Executable {
+// 	return &Post{
+// 		address,
+// 		headers,
+// 		data,
+// 		logger.WithFields(
+// 			logrus.Fields{
+// 				"url":    address,
+// 				"method": "post",
+// 			},
+// 		),
+// 		nil,
+// 	}
+// }

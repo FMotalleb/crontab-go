@@ -3,10 +3,9 @@ package task
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/FMotalleb/crontab-go/abstraction"
 )
 
 type Get struct {
@@ -14,6 +13,10 @@ type Get struct {
 	headers *map[string]string
 	logger  *logrus.Entry
 	cancel  context.CancelFunc
+
+	retries    uint
+	retryDelay time.Duration
+	timeout    time.Duration
 }
 
 // Cancel implements abstraction.Executable.
@@ -25,9 +28,9 @@ func (g *Get) Cancel() {
 }
 
 // Execute implements abstraction.Executable.
-func (g *Get) Execute() (e error) {
+func (g *Get) Execute(ctx context.Context) (e error) {
 	g.Cancel()
-	ctx := context.Background()
+	// ctx := context.Background()
 	ctx, g.cancel = context.WithCancel(ctx)
 	client := &http.Client{}
 
@@ -46,16 +49,16 @@ func (g *Get) Execute() (e error) {
 	return
 }
 
-func NewGet(address string, headers *map[string]string, logger logrus.Entry) abstraction.Executable {
-	return &Get{
-		address,
-		headers,
-		logger.WithFields(
-			logrus.Fields{
-				"url":    address,
-				"method": "get",
-			},
-		),
-		nil,
-	}
-}
+// func NewGet(address string, headers *map[string]string, logger logrus.Entry) abstraction.Executable {
+// 	return &Get{
+// 		address,
+// 		headers,
+// 		logger.WithFields(
+// 			logrus.Fields{
+// 				"url":    address,
+// 				"method": "get",
+// 			},
+// 		),
+// 		nil,
+// 	}
+// }

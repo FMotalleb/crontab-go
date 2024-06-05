@@ -17,19 +17,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"fmt"
-	"os"
+	"context"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
-	cx "github.com/FMotalleb/crontab-go/context"
+	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/task"
+	cx "github.com/FMotalleb/crontab-go/ctxutils"
 	"github.com/FMotalleb/crontab-go/logger"
 )
 
 var (
-	log logrus.Entry
+	log *logrus.Entry
 	ctx cx.Context
 )
 
@@ -37,9 +38,15 @@ func main() {
 	cmd.Execute()
 	ctx = cx.NewContext("core")
 	logger.InitFromConfig()
-	log = *logger.SetupLogger("Crontab-GO")
-	err := task.NewCommand("curl https://google.com", &map[string]string{}, os.TempDir(), log).Execute()
-	fmt.Println(err)
+	log = logger.SetupLogger("Crontab-GO")
+	task.NewCommand(
+		config.Task{
+			Command:          "pwd --df",
+			Retries:          15,
+			WorkingDirectory: "C://windows",
+			RetryDelay:       time.Second * 2,
+		}, log).Execute(context.Background())
+
 	// j, _ := json.MarshalIndent(cmd.CFG, "", "  ")
 	// fmt.Println(strings.Replace(string(j), `\n`, "\n", -1))
 }
