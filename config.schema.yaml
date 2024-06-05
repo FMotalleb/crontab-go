@@ -1,0 +1,130 @@
+jobs:
+  type: array
+  items:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the job
+      description:
+        type: string
+        description: Description of the job
+      enabled:
+        type: boolean
+        description: Whether the job is enabled
+        default: true
+      tasks:
+        type: array
+        items:
+          type: object
+          properties:
+            command:
+              type: string
+              description: Command to execute
+            args:
+              type: array
+              description: Arguments to pass to the command
+              items:
+                type: string
+            post:
+              type: string
+              description: HTTP POST request URL
+            get:
+              type: string
+              description: HTTP GET request URL
+            headers:
+              type: object
+              description: Headers for the HTTP request
+            data:
+              type: string
+              description: Data to send with the request (for POST/PUT)
+            working_directory:
+              type: string
+              description: Working directory for the command
+      scheduler:
+        type: object
+        oneOf:
+          - type: object
+            properties:
+              cron:
+                type: string
+                description: Cron expression for scheduling
+          - type: object
+            properties:
+              interval:
+                type: string
+                description: Interval for scheduling
+      retries:
+        type: integer
+        description: Number of retries on failure
+        default: 0
+      retry-delay:
+        type: string
+        description: Delay between retries (in seconds)
+      hooks:
+        type: object
+        properties:
+          done:
+            type: array
+            description: Hooks to run after successful job completion
+            items:
+              type: object
+              properties:
+                command:
+                  type: string
+                  description: Command to execute
+                args:
+                  type: array
+                  description: Arguments to pass to the command
+                  items:
+                    type: string
+                post:
+                  type: string
+                  description: HTTP POST request URL
+                get:
+                  type: string
+                  description: HTTP GET request URL
+                headers:
+                  type: object
+                  description: Headers for the HTTP request
+                data:
+                  type: string
+                  description: Data to send with the request (for POST/PUT)
+                working_directory:
+                  type: string
+                  description: Working directory for the command
+          failed:
+            type: array
+            description: Hooks to run after job failure
+            items:
+              type: object
+              properties:
+                command:
+                  type: string
+                  description: Command to execute
+                args:
+                  type: array
+                  description: Arguments to pass to the command
+                  items:
+                    type: string
+                post:
+                  type: string
+                  description: HTTP POST request URL
+                get:
+                  type: string
+                  description: HTTP GET request URL
+                headers:
+                  type: object
+                  description: Headers for the HTTP request
+                data:
+                  type: string
+                  description: Data to send with the request (for POST/PUT)
+                working_directory:
+                  type: string
+                  description: Working directory for the command
+      env:
+        type: object
+        description: Environment variables for the job
+      metadata:
+        type: object
+        description: Metadata for the job

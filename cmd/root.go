@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -100,6 +101,26 @@ func initConfig() {
 		"Cannot bind log_level env variable: %s",
 	)
 
+	if runtime.GOOS == "windows" {
+		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
+		viper.SetDefault("shell_args", "/c")
+	} else {
+		viper.SetDefault("shell", "/bin/sh")
+		viper.SetDefault("shell_args", "-c")
+	}
+	warnOnErr(
+		viper.BindEnv(
+			"shell",
+		),
+		"Cannot bind shell env variable: %s",
+	)
+	warnOnErr(
+		viper.BindEnv(
+			"shell_args",
+		),
+		"Cannot bind shell_args env variable: %s",
+	)
+
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -109,10 +130,10 @@ func initConfig() {
 
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
-	}
-
+	panicOnErr(
+		viper.ReadInConfig(),
+		"Cannot read the config file: %s",
+	)
 	panicOnErr(
 		viper.Unmarshal(CFG),
 		"Cannot unmarshal the config file: %s",

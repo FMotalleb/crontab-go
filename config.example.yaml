@@ -5,33 +5,21 @@ jobs:
   - name: backup-database
     description: Backup the production database
     enabled: true
-    exe:
+    tasks:
       - command: /app/backup.sh
-        args: ["--help"]
     scheduler:
       cron: "0 0 2 * * *"
     retries: 3
     retry-delay: 123s
     hooks:
-      pre-run:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test1
       done:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test2
+        - post: http://google.com/
+          headers:
+            test: test2
       failed:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test3
-            data:
-              - job: $job
-              - time: $time
-              - command: $exe"
+        - post: http://google.com/
+          headers:
+            test: test2
     env:
       DB_HOST: 10.0.0.5
       DB_USER: myuser
@@ -43,27 +31,11 @@ jobs:
   - name: cleanup-logs
     description: Clean up old log files
     enabled: true
-    exe:
+    tasks:
       command: /app/cleanup.sh
     scheduler:
       interval: 1h # Run every hour
     retries: 1
-    hooks:
-      pre-run:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test1
-      done:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test2
-      failed:
-        webhooks:
-          - address: http://google.com/
-            headers:
-              test: test3
     metadata:
       owner: jane.smith@company.com
       team: devops-team

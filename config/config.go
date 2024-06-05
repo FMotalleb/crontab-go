@@ -16,6 +16,8 @@ type (
 		LogFile            string                 `mapstructure:"log_file" json:"log_file,omitempty"`
 		LogStdout          bool                   `mapstructure:"log_stdout" json:"log_stdout"`
 		LogLevel           enums.LogLevel         `mapstructure:"log_level" json:"log_level"`
+		Shell              string                 `mapstructure:"shell" json:"shell"`
+		ShellArgs          []string               `mapstructure:"shell_args" json:"shell_args"`
 		Jobs               []JobConfig            `mapstructure:"jobs" json:"jobs"`
 	}
 
