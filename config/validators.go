@@ -28,21 +28,7 @@ func (c *JobConfig) Validate() error {
 	if c.Enabled == false {
 		return nil
 	}
-	if c.Timeout < 0 {
-		return fmt.Errorf(
-			"timeout for jobs cannot be negative received `%s` for `%s`",
-			c.Timeout,
-			c.Name,
-		)
-	}
 
-	if c.RetryDelay < 0 {
-		return fmt.Errorf(
-			"retry delay for jobs cannot be negative received `%s` for `%s`",
-			c.RetryDelay,
-			c.Name,
-		)
-	}
 	for _, s := range c.Schedulers {
 		if err := s.Validate(); err != nil {
 			return err
@@ -86,16 +72,28 @@ func (c *Task) Validate() error {
 			c.Post,
 		)
 	}
-	if (c.Get != "" || c.Post != "") && c.Args != nil {
-		return fmt.Errorf("get or post requests cannot have args field, violating uri: `%s%s`", c.Get, c.Post)
-	}
+
 	if c.Command != "" && (c.Data != nil || c.Headers != nil) {
 		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", c.Command)
 	}
 	if c.Get != "" && c.Data != nil {
 		return fmt.Errorf("get request cannot have data field, violating get uri: `%s`", c.Get)
 	}
+	if c.Timeout < 0 {
+		return fmt.Errorf(
+			"timeout for jobs cannot be negative received `%s` for `%v`",
+			c.Timeout,
+			c,
+		)
+	}
 
+	if c.RetryDelay < 0 {
+		return fmt.Errorf(
+			"retry delay for jobs cannot be negative received `%s` for `%v`",
+			c.RetryDelay,
+			c,
+		)
+	}
 	return nil
 }
 

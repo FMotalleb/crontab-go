@@ -27,12 +27,7 @@ type (
 		Enabled     bool           `mapstructure:"enabled" json:"enabled,omitempty"`
 		Tasks       []Task         `mapstructure:"tasks" json:"tasks,omitempty"`
 		Schedulers  []JobScheduler `mapstructure:"schedulers" json:"schedulers"`
-		Retries     uint           `mapstructure:"retries" json:"retries,omitempty"`
-		RetryDelay  time.Duration  `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
-		Timeout     time.Duration  `mapstructure:"timeout" json:"timeout,omitempty"`
 		Hooks       JobHooks       `mapstructure:"hooks" json:"hooks,omitempty"`
-		Env         EnvVariables   `mapstructure:"env" json:"env,omitempty"`
-		Metadata    JobMetadata    `mapstructure:"metadata" json:"metadata,omitempty"`
 	}
 
 	JobScheduler struct {
@@ -50,9 +45,13 @@ type (
 		Post             string            `mapstructure:"get" json:"post,omitempty"`
 		Get              string            `mapstructure:"post" json:"get,omitempty"`
 		Command          string            `mapstructure:"command" json:"command,omitempty"`
-		Args             []string          `mapstructure:"args" json:"args,omitempty"`
 		WorkingDirectory string            `mapstructure:"working_directory" json:"working_directory,omitempty"`
 		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
 		Data             map[string]any    `mapstructure:"data" json:"data,omitempty"`
+
+		Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
+		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
+		Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
+		Env        EnvVariables  `mapstructure:"env" json:"env,omitempty"`
 	}
 )
