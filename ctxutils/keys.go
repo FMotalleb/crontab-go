@@ -7,4 +7,5 @@ var (
 	LoggerKey     ContextKey = ContextKey("logger")
 	RetryCountKey ContextKey = ContextKey("retry-count")
 	JobKey        ContextKey = ContextKey("job")
+	TaskKey       ContextKey = ContextKey("task")
 )
