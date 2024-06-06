@@ -26,9 +26,10 @@ func (w *writer) Write(b []byte) (n int, e error) {
 
 	if w.file != nil {
 		wf, er := w.file.Write(b)
-		if wf != n {
+		if wf != n && n != 0 {
 			return n, fmt.Errorf("wrote two different amount of log into stdout(%d) and file(%d)", written, wf)
 		}
+		n = wf
 		if er != nil {
 			err = er
 		}
