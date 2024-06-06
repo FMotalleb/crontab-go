@@ -37,26 +37,28 @@ Cronjob-go is a powerful, lightweight, and highly configurable Golang applicatio
 
 ## Configuration
 
-> All env variables and configuration samples can be found in `.env.example` or `config.example.yaml` files
+This section outlines the configuration options available for the application.
 
-### Logging
+**Environment Variables:**
 
-- **Time Format**: Uses golang's datetime format defaults to `2006-01-02T15:04:05.000Z` can be changed using `LOG_TIMESTAMP_FORMAT` env var
-- **Log Format**: By default uses ansi format (colorful) can be set to (`ansi`(colorful),`plain`(no-colors) and `json`) using `LOG_FORMAT` env var
-- **Log File**: Built-in support for saving logs into a file using `LOG_FILE` env var
-- **StdOut**: Can be disabled using `LOG_STDOUT=false` env var
-- **Log Level**: Defaults to `info` but can be set from most verbose to least being(`trace`,`debug`,`info`,`warn`,`fatal` and `panic`) using `LOG_LEVEL` env var
+- All environment variables and configuration samples are provided in `.env.example` and `config.example.yaml` files.
 
-### Shell
+**Logging:**
 
-In order to not making the wheel again we use your own shell to run the commands
+- **Time Format:** The default timestamp format is `2006-01-02T15:04:05.000Z` (Golang's datetime format). You can customize this format using the `LOG_TIMESTAMP_FORMAT` environment variable.
+- **Log Format:** The default log format is `ansi` (colorful). You can choose from `ansi` (colorful), `plain` (no colors), and `json` using the `LOG_FORMAT` environment variable.
+- **Log File:** Logs can be saved to a file by setting the `LOG_FILE` environment variable.
+- **StdOut:** Outputting logs to standard output can be disabled by setting `LOG_STDOUT=false`.
+- **Log Level:** The default log level is `info`. You can adjust the level from most verbose to least verbose: `trace`, `debug`, `info`, `warn`, `fatal`, `panic` using the `LOG_LEVEL` environment variable.
 
-**Shell**: You can set shell (defaults to `sh` for linux and `cmd` for windows) using `SHELL` env var (can be changed for each process explicitly)
-**Shell Args**: Defaults to `-c` for `sh(linux)` and `/c` for `cmd(windows)` can be changed using `SHELL_ARGS` env var
+**Shell:**
 
-### Config.yaml
+- **Shell:** The application leverages your system's shell to execute commands. The default shell is `sh` for Linux and `cmd` for Windows. You can override the default using the `SHELL` environment variable, which can be set individually for each process.
+- **Shell Args:** The default shell arguments are `-c` for `sh` (Linux) and `/c` for `cmd` (Windows). These can be customized using the `SHELL_ARGS` environment variable.
 
-A fully documented config file can be found in [config.example.yaml](config.example.yaml)
+**Configuration File:**
+
+- A fully documented configuration file is available at [config.example.yaml](config.example.yaml).
 
 ## Getting Started
 
