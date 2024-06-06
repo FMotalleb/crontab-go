@@ -78,7 +78,7 @@ func (g *Command) Execute(ctx context.Context) (e error) {
 }
 
 func NewCommand(
-	task config.Task,
+	task *config.Task,
 	logger *logrus.Entry,
 ) abstraction.Executable {
 	log := logger.WithField("command", task.Command)

@@ -15,6 +15,6 @@ func (lf LoggerFormatType) Validate() error {
 	case JsonLogger, AnsiLogger, PlainLogger:
 		return nil
 	default:
-		return fmt.Errorf("Given Logger type: `%s`", lf)
+		return fmt.Errorf("Given Logger format: `%s`", lf)
 	}
 }

@@ -38,14 +38,23 @@ func main() {
 	cmd.Execute()
 	ctx = cx.NewContext("core")
 	logger.InitFromConfig()
+	lvl, _ := cmd.CFG.LogLevel.ToLogrusLevel()
+	logrus.SetLevel(lvl)
 	log = logger.SetupLogger("Crontab-GO")
-	task.NewCommand(
-		config.Task{
-			Command:          "pwd --df",
-			Retries:          15,
-			WorkingDirectory: "C://windows",
-			RetryDelay:       time.Second * 2,
-		}, log).Execute(context.Background())
+	task.NewPost(
+		&config.Task{
+			Post:    "http://127.0.0.1:9085/",
+			Retries: 5,
+			Headers: map[string]string{
+				"echo": "1",
+			},
+			Data: map[string]any{
+				"test": true,
+			},
+			RetryDelay: time.Second * 2,
+		},
+		log,
+	).Execute(context.Background())
 
 	// j, _ := json.MarshalIndent(cmd.CFG, "", "  ")
 	// fmt.Println(strings.Replace(string(j), `\n`, "\n", -1))
