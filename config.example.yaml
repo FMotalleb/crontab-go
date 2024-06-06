@@ -6,9 +6,9 @@ jobs:
     description: Backup the production database
     enabled: true
     tasks:
-      - command: echo 15
+      - command: pwd --greg
         retries: 3
-        retry-delay: 123s
+        retry-delay: 1s
         timeout: 15s
         env:
           DB_HOST: 10.0.0.5
@@ -17,13 +17,9 @@ jobs:
     schedulers:
       - cron: "* * * * * *"
       - interval: 1s
-      - at: 2024/05/15
+      # - at: 2024/05/15
     hooks:
       done:
-        - post: http://google.com/
-          headers:
-            test: test2
+        - command: echo Ok
       failed:
-        - post: http://google.com/
-          headers:
-            test: test2
+        - command: echo Failed

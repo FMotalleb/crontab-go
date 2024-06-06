@@ -42,9 +42,7 @@ func main() {
 	logger.InitFromConfig()
 	log = logger.SetupLogger("Crontab-GO")
 	cronInstance := cron.New(cron.WithSeconds())
-
 	log.Info("Booting up")
-	log.Infoln(cmd.CFG)
 	for _, job := range cmd.CFG.Jobs {
 		if !job.Enabled {
 			log.Warn("job %s is disabled", job.Name)
@@ -87,11 +85,11 @@ func main() {
 		logger.Trace("Signals Built")
 		signal := goutils.Zip(signals...)
 
-		logger.Infof("Zipping Signals")
+		logger.Trace("Zipping Signals")
 		go func() {
 			logger.Debug("Spawned work goroutine")
 			for range signal {
-				logger.Debug("Signal Received")
+				logger.Trace("Signal Received")
 				for _, task := range tasks {
 					ctx := context.Background()
 					err := task.Execute(ctx)
