@@ -42,8 +42,8 @@ type (
 	}
 
 	Task struct {
-		Post             string            `mapstructure:"get" json:"post,omitempty"`
-		Get              string            `mapstructure:"post" json:"get,omitempty"`
+		Post             string            `mapstructure:"post" json:"post,omitempty"`
+		Get              string            `mapstructure:"get" json:"get,omitempty"`
 		Command          string            `mapstructure:"command" json:"command,omitempty"`
 		WorkingDirectory string            `mapstructure:"working_directory" json:"working_directory,omitempty"`
 		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
