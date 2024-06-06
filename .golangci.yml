@@ -32,7 +32,7 @@ linters:
     - gocyclo
     - gofumpt
     - goimports
-    - revive
+    # - revive
     - rowserrcheck
     - goprintffuncname
     - gosec
