@@ -32,7 +32,7 @@ linters:
     - gocyclo
     - gofumpt
     - goimports
-    # - revive
+    - revive
     - rowserrcheck
     - goprintffuncname
     - gosec
@@ -44,12 +44,12 @@ linters:
     - noctx
     - nolintlint
     - staticcheck
-    # - stylecheck
+    - stylecheck
     - sqlclosecheck
     - typecheck
     - unconvert
     - unparam
-    # - unused
+    - unused
     - whitespace
 
 issues:
