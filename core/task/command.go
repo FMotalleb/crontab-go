@@ -23,6 +23,9 @@ type Command struct {
 	log              *logrus.Entry
 	cancel           context.CancelFunc
 
+	shell     string
+	shellArgs []string
+
 	retries    uint
 	retryDelay time.Duration
 	timeout    time.Duration
@@ -37,33 +40,34 @@ func (g *Command) Cancel() {
 }
 
 // Execute implements abstraction.Executable.
-func (g *Command) Execute(ctx context.Context) (e error) {
+func (cmmnd *Command) Execute(ctx context.Context) (e error) {
 	r := getRetry(ctx)
-	log := g.log.WithField("retry", r)
-	if getRetry(ctx) > g.retries {
+	log := cmmnd.log.WithField("retry", r)
+	if getRetry(ctx) > cmmnd.retries {
 		log.Warn("maximum retry reached")
 		return fmt.Errorf("maximum retries reached")
 	}
 	if r != 0 {
-		log.Debugln("waiting", g.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(g.retryDelay)
+		log.Debugln("waiting", cmmnd.retryDelay, "before executing the next iteration after last fail")
+		time.Sleep(cmmnd.retryDelay)
 	}
 	ctx = increaseRetry(ctx)
 	var procCtx context.Context
 	var cancel context.CancelFunc
-	if g.timeout != 0 {
-		procCtx, cancel = context.WithTimeout(ctx, g.timeout)
+	if cmmnd.timeout != 0 {
+		procCtx, cancel = context.WithTimeout(ctx, cmmnd.timeout)
 	} else {
 		procCtx, cancel = context.WithCancel(ctx)
 	}
-	g.cancel = cancel
+	cmmnd.cancel = cancel
+
 	proc := exec.CommandContext(
 		procCtx,
-		cmd.CFG.Shell,
-		append(cmd.CFG.ShellArgs, *&g.exe)...,
+		cmmnd.shell,
+		append(cmmnd.shellArgs, *&cmmnd.exe)...,
 	)
-	proc.Env = *g.envVars
-	proc.Dir = g.workingDirectory
+	proc.Env = *cmmnd.envVars
+	proc.Dir = cmmnd.workingDirectory
 	var res bytes.Buffer
 	proc.Stdout = &res
 	proc.Stderr = &res
@@ -72,7 +76,7 @@ func (g *Command) Execute(ctx context.Context) (e error) {
 	log.Infof("command finished with answer: `%s`", strings.TrimSpace(string(res.Bytes())))
 	if e != nil {
 		log.Warn("failed to execute the command ", e)
-		return g.Execute(ctx)
+		return cmmnd.Execute(ctx)
 	}
 	return
 }
@@ -83,8 +87,17 @@ func NewCommand(
 ) abstraction.Executable {
 	log := logger.WithField("command", task.Command)
 	env := os.Environ()
+
+	shell := cmd.CFG.Shell
+	shellArgs := cmd.CFG.ShellArgs
 	for key, val := range task.Env {
 		env = append(env, fmt.Sprintf("%s=%s", key, val))
+		switch strings.ToLower(key) {
+		case "shell":
+			shell = val
+		case "shell_args":
+			shellArgs = strings.Split(val, ";")
+		}
 	}
 	wd := task.WorkingDirectory
 	if wd == "" {
@@ -101,6 +114,8 @@ func NewCommand(
 		log: log.WithField(
 			"working_directory", wd,
 		),
+		shell:      shell,
+		shellArgs:  shellArgs,
 		retries:    task.Retries,
 		retryDelay: task.RetryDelay,
 		timeout:    task.Timeout,
