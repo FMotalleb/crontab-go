@@ -10,7 +10,7 @@ func NewContext(section string) Context {
 	return Context{
 		context.WithValue(
 			context.Background(),
-			scope,
+			ScopeKey,
 			section,
 		),
 	}

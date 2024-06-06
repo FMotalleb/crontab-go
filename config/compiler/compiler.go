@@ -1,4 +1,4 @@
-package config
+package cfgcompiler
 
 import (
 	"github.com/robfig/cron/v3"

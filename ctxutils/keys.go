@@ -3,7 +3,8 @@ package ctxutils
 type ContextKey string
 
 var (
-	scope      ContextKey = ContextKey("scope")
-	logger     ContextKey = ContextKey("logger")
-	RetryCount ContextKey = ContextKey("retry-count")
+	ScopeKey      ContextKey = ContextKey("scope")
+	LoggerKey     ContextKey = ContextKey("logger")
+	RetryCountKey ContextKey = ContextKey("retry-count")
+	JobKey        ContextKey = ContextKey("job")
 )

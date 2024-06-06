@@ -39,8 +39,10 @@ func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
 func (c *Interval) BuildTickChannel() <-chan any {
 	c.Cancel()
 	c.notifyChan = make(chan any)
+
 	c.ticker = time.NewTicker(c.duration)
 	go func() {
+		c.notifyChan <- false
 		for range c.ticker.C {
 			c.notifyChan <- false
 		}

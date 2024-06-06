@@ -11,7 +11,7 @@ import (
 )
 
 func getRetry(ctx context.Context) uint {
-	if result, ok := ctx.Value(ctxutils.RetryCount).(uint); ok {
+	if result, ok := ctx.Value(ctxutils.RetryCountKey).(uint); ok {
 		return result
 	}
 	return 0
@@ -20,7 +20,7 @@ func getRetry(ctx context.Context) uint {
 func increaseRetry(ctx context.Context) context.Context {
 	current := getRetry(ctx)
 
-	return context.WithValue(ctx, ctxutils.RetryCount, current+1)
+	return context.WithValue(ctx, ctxutils.RetryCountKey, current+1)
 }
 
 func logResponse(r *http.Response) logrus.LogFunction {

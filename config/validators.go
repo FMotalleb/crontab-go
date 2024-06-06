@@ -8,7 +8,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-var cronParser = cron.NewParser(cron.SecondOptional)
+var cronParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
 
 func (cfg *Config) Validate() error {
 	if err := cfg.LogFormat.Validate(); err != nil {
@@ -111,7 +111,7 @@ func (s *JobScheduler) Validate() error {
 		}
 	} else if s.Interval < 0 {
 		return fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
-	} else if _, err := cronParser.Parse(s.Cron); err != nil {
+	} else if _, err := cronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		return err
 	}
 	schedules := []bool{
