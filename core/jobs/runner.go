@@ -13,7 +13,7 @@ import (
 
 func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 	for _, job := range cmd.CFG.Jobs {
-		if !job.Enabled {
+		if job.Disabled {
 			log.Warnf("job %s is disabled", job.Name)
 			continue
 		}

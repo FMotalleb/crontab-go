@@ -24,7 +24,7 @@ type (
 	JobConfig struct {
 		Name        string         `mapstructure:"name" json:"name,omitempty"`
 		Description string         `mapstructure:"description" json:"description,omitempty"`
-		Enabled     bool           `mapstructure:"enabled" json:"enabled,omitempty"`
+		Disabled    bool           `mapstructure:"disabled" json:"disabled,omitempty"`
 		Tasks       []Task         `mapstructure:"tasks" json:"tasks,omitempty"`
 		Schedulers  []JobScheduler `mapstructure:"schedulers" json:"schedulers"`
 		Hooks       JobHooks       `mapstructure:"hooks" json:"hooks,omitempty"`

@@ -26,7 +26,7 @@ func (cfg *Config) Validate() error {
 }
 
 func (c *JobConfig) Validate() error {
-	if c.Enabled == false {
+	if c.Disabled == true {
 		return nil
 	}
 

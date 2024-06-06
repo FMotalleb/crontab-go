@@ -35,6 +35,29 @@ Cronjob-go is a powerful, lightweight, and highly configurable Golang applicatio
 - **Periodic Maintenance Tasks**: Execute maintenance tasks, such as database optimizations, cache clearance, or system updates, on a scheduled basis.
 - **Data Processing and Reporting**: Automate the processing and generation of reports, analytics, or other data-driven tasks.
 
-## Getting Started**
+## Configuration
+
+> All env variables and configuration samples can be found in `.env.example` or `config.example.yaml` files
+
+### Logging
+
+- **Time Format**: Uses golang's datetime format defaults to `2006-01-02T15:04:05.000Z` can be changed using `LOG_TIMESTAMP_FORMAT` env var
+- **Log Format**: By default uses ansi format (colorful) can be set to (`ansi`(colorful),`plain`(no-colors) and `json`) using `LOG_FORMAT` env var
+- **Log File**: Built-in support for saving logs into a file using `LOG_FILE` env var
+- **StdOut**: Can be disabled using `LOG_STDOUT=false` env var
+- **Log Level**: Defaults to `info` but can be set from most verbose to least being(`trace`,`debug`,`info`,`warn`,`fatal` and `panic`) using `LOG_LEVEL` env var
+
+### Shell
+
+In order to not making the wheel again we use your own shell to run the commands
+
+**Shell**: You can set shell (defaults to `sh` for linux and `cmd` for windows) using `SHELL` env var (can be changed for each process explicitly)
+**Shell Args**: Defaults to `-c` for `sh(linux)` and `/c` for `cmd(windows)` can be changed using `SHELL_ARGS` env var
+
+### Config.yaml
+
+A fully documented config file can be found in [config.example.yaml](config.example.yaml)
+
+## Getting Started
 
 To get started with Cronjob-go, simply download the binary for your platform and configure your scheduled tasks using the provided YAML format. The application's documentation includes detailed instructions on installation, configuration, and usage, making it easy to integrate into your existing Docker-based infrastructure.
