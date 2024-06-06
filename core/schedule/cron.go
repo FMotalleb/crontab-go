@@ -13,7 +13,7 @@ type Cron struct {
 	entry        *cron.EntryID
 }
 
-func NewCron(schedule string, c *cron.Cron, logger logrus.Entry) Cron {
+func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
 	return Cron{
 		cronSchedule: schedule,
 		cron:         c,

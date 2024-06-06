@@ -20,7 +20,7 @@ type At struct {
 	entry      *cron.EntryID
 }
 
-func NewAt(schedule time.Time, c *cron.Cron, logger logrus.Entry) At {
+func NewAt(schedule time.Time, c *cron.Cron, logger *logrus.Entry) At {
 	return At{
 		time: schedule,
 		cron: c,

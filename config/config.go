@@ -47,7 +47,7 @@ type (
 		Command          string            `mapstructure:"command" json:"command,omitempty"`
 		WorkingDirectory string            `mapstructure:"working_directory" json:"working_directory,omitempty"`
 		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
-		Data             map[string]any    `mapstructure:"data" json:"data,omitempty"`
+		Data             any               `mapstructure:"data" json:"data,omitempty"`
 
 		Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
 		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`

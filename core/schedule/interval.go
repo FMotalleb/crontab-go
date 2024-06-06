@@ -22,7 +22,7 @@ type Interval struct {
 	notifyChan chan any
 }
 
-func NewInterval(schedule time.Duration, logger logrus.Entry) Interval {
+func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
 	return Interval{
 		duration: schedule,
 		logger: logger.

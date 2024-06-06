@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,11 +53,11 @@ func (c *JobConfig) Validate() error {
 	return nil
 }
 
-func (c *Task) Validate() error {
+func (t *Task) Validate() error {
 	actions := []bool{
-		c.Get != "",
-		c.Command != "",
-		c.Post != "",
+		t.Get != "",
+		t.Command != "",
+		t.Post != "",
 	}
 	activeActions := 0
 	for _, t := range actions {
@@ -67,31 +68,37 @@ func (c *Task) Validate() error {
 	if activeActions != 1 {
 		return fmt.Errorf(
 			"a single task should have one of (get,post,command) fields, received:(command: `%s`, get: `%s`, post: `%s`)",
-			c.Command,
-			c.Get,
-			c.Post,
+			t.Command,
+			t.Get,
+			t.Post,
 		)
 	}
 
-	if c.Command != "" && (c.Data != nil || c.Headers != nil) {
-		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", c.Command)
+	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
+		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
 	}
-	if c.Get != "" && c.Data != nil {
-		return fmt.Errorf("get request cannot have data field, violating get uri: `%s`", c.Get)
+	if t.Get != "" && t.Data != nil {
+		return fmt.Errorf("get request cannot have data field, violating get uri: `%s`", t.Get)
 	}
-	if c.Timeout < 0 {
+	if t.Timeout < 0 {
 		return fmt.Errorf(
 			"timeout for jobs cannot be negative received `%s` for `%v`",
-			c.Timeout,
-			c,
+			t.Timeout,
+			t,
 		)
 	}
+	if t.Data != nil {
+		_, err := json.Marshal(t.Data)
+		if err != nil {
+			return fmt.Errorf("cannot marshal the given data: %sr", err)
+		}
+	}
 
-	if c.RetryDelay < 0 {
+	if t.RetryDelay < 0 {
 		return fmt.Errorf(
 			"retry delay for jobs cannot be negative received `%s` for `%v`",
-			c.RetryDelay,
-			c,
+			t.RetryDelay,
+			t,
 		)
 	}
 	return nil
