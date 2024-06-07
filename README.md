@@ -5,7 +5,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/FMotalleb/crontab-go.svg)](https://pkg.go.dev/github.com/FMotalleb/crontab-go)
 [![go.mod](https://img.shields.io/github/go-mod/go-version/FMotalleb/crontab-go)](go.mod)
 [![LICENSE](https://img.shields.io/github/license/FMotalleb/crontab-go)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/FMotalleb/crontab-go/build.yml?branch=main)](https://github.com/FMotalleb/crontab-go/actions?query=workflow%3Abuild+branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/FMotalleb/crontab-go)](https://goreportcard.com/report/github.com/FMotalleb/crontab-go)
 [![Codecov](https://codecov.io/gh/FMotalleb/crontab-go/branch/main/graph/badge.svg)](https://codecov.io/gh/FMotalleb/crontab-go)
 
