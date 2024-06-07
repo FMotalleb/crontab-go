@@ -96,7 +96,14 @@
       "properties": {
         "cron": {
           "type": "string",
-          "description": "A string that represents the cron expression that defines the scheduling frequency."
+          "description": "A string that represents the cron expression that defines the scheduling frequency.",
+          "examples": [
+            "* * * * *",
+            "* * * * * *",
+            "@hourly",
+            "@every 5s",
+            "@yearly"
+          ]
         },
         "interval": {
           "type": "string",
