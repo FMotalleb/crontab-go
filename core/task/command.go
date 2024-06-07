@@ -23,6 +23,9 @@ type Command struct {
 	log              *logrus.Entry
 	cancel           context.CancelFunc
 
+	uid uint
+	gid uint
+
 	shell     string
 	shellArgs []string
 
