@@ -53,6 +53,7 @@ func InitFromConfig() {
 	case enums.AnsiLogger:
 		log.Formatter = &logrus.TextFormatter{
 			ForceColors:     true,
+			FullTimestamp:   true,
 			TimestampFormat: cmd.CFG.LogTimestampFormat,
 		}
 	case enums.PlainLogger:

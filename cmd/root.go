@@ -57,7 +57,7 @@ func panicOnErr(err error, message string) {
 func initConfig() {
 	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
 
-	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05.000Z")
+	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05Z07:00")
 	warnOnErr(
 		viper.BindEnv(
 			"log_timestamp_format",
