@@ -8,7 +8,7 @@ jobs:
     # Description is reserved for the future
     description: Sample of a single job
     # Jobs can be disabled explicitly instead of commenting/removing the job
-    disabled: true
+    # disabled: true
     tasks:
       # This line specifies the actual command to be executed.
       - command: echo 15
@@ -46,11 +46,11 @@ jobs:
       # However, you can combine multiple cron expressions and intervals within the same scheduler.
 
       # The cron scheduler allows you to specify schedules down to the second level of precision using cron expressions.
-      - cron: "1 * * * * *"
+      - cron: "@every 5s"
       # Intervals can be defined using human-readable formats.
       # For example, '10h' represents 10 hours, '10m' represents 10 minutes, and '10m15s' represents every 10 minutes and 15 seconds.
       # You can use units of hours (h), minutes (m), seconds (s), milliseconds (ms), and nanoseconds (ns) to define your intervals.
-      - interval: 10m10s
+      # - interval: 10m10s
     hooks:
       # Hooks are essentially tasks like those used in jobs, but they do not support nested hooks.
       # Additionally, errors or completion status of hooks are not directly managed by the system.

@@ -5,6 +5,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var CronParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+
 type Cron struct {
 	cronSchedule string
 	logger       *logrus.Entry
@@ -27,23 +29,26 @@ func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
 	}
 }
 
-// buildTickChannel implements abstraction.Scheduler.
+// BuildTickChannel implements abstraction.Scheduler.
 func (c *Cron) BuildTickChannel() <-chan any {
 	c.Cancel()
 	c.notifyChan = make(chan any)
-	entry, err := c.cron.AddFunc(c.cronSchedule, func() {
-		c.logger.Debugln("cron tick received")
-		c.notifyChan <- false
-	})
+	schedule, err := CronParser.Parse(c.cronSchedule)
 	if err != nil {
 		c.logger.Warnln("cannot initialize cron: ", err)
 	} else {
+		entry := c.cron.Schedule(schedule, c)
 		c.entry = &entry
 	}
 	return c.notifyChan
 }
 
-// cancel implements abstraction.Scheduler.
+func (c *Cron) Run() {
+	c.logger.Debugln("cron tick received")
+	c.notifyChan <- false
+}
+
+// Cancel implements abstraction.Scheduler.
 func (c *Cron) Cancel() {
 	if c.entry != nil {
 		c.logger.Debugln("scheduler cancel signal received for an active instance")
