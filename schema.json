@@ -9,7 +9,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Job"
-          }
+          },
+          "description": "An array of Job objects that define the tasks to be executed."
         }
       },
       "required": [
@@ -22,28 +23,34 @@
       "additionalProperties": false,
       "properties": {
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the name of the job."
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "An optional string that provides a description of the job."
         },
         "disabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "An optional boolean that indicates whether the job is disabled or not."
         },
         "tasks": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Task"
-          }
+          },
+          "description": "An array of Task objects that define the tasks to be executed as part of the job."
         },
         "schedulers": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Scheduler"
-          }
+          },
+          "description": "An array of Scheduler objects that define the scheduling configuration for the job."
         },
         "hooks": {
-          "$ref": "#/definitions/Hooks"
+          "$ref": "#/definitions/Hooks",
+          "description": "An optional Hooks object that defines the hooks to be executed before or after the job."
         }
       },
       "required": [
@@ -66,13 +73,15 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Task"
-          }
+          },
+          "description": "An array of Task objects that define the tasks to be executed when the job is completed successfully."
         },
         "failed": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Task"
-          }
+          },
+          "description": "An array of Task objects that define the tasks to be executed when the job fails."
         }
       },
       "required": [
@@ -86,10 +95,12 @@
       "additionalProperties": false,
       "properties": {
         "cron": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the cron expression that defines the scheduling frequency."
         },
         "interval": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the interval at which the job should be executed."
         }
       },
       "required": [],
@@ -100,22 +111,32 @@
       "additionalProperties": false,
       "properties": {
         "command": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the command to be executed."
         },
         "retries": {
-          "type": "integer"
+          "type": "integer",
+          "description": "An integer that represents the number of times the task should be retried in case of failure.",
+          "validate": {
+            "minimum": 1
+          }
         },
         "retry-delay": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the delay between retries.",
+          "example": "1s 10m15s"
         },
         "timeout": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the timeout for the task."
         },
         "working_directory": {
-          "type": "string"
+          "type": "string",
+          "description": "A string that represents the working directory for the task."
         },
         "env": {
-          "$ref": "#/definitions/Env"
+          "$ref": "#/definitions/Env",
+          "description": "An Env object that defines the environment variables for the task."
         },
         "get": {
           "type": "string",
@@ -123,13 +144,15 @@
           "qt-uri-protocols": [
             "https",
             "http"
-          ]
+          ],
+          "description": "A string that represents the URL to be fetched using the GET method."
         },
         "headers": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Header"
-          }
+          },
+          "description": "An array of Header objects that define the headers to be sent with the request."
         },
         "post": {
           "type": "string",
@@ -137,10 +160,12 @@
           "qt-uri-protocols": [
             "https",
             "http"
-          ]
+          ],
+          "description": "A string that represents the URL to be sent using the POST method."
         },
         "data": {
-          "$ref": "#/definitions/Data"
+          "$ref": "#/definitions/Data",
+          "description": "A Data object that defines the data to be sent with the request."
         }
       },
       "required": [],

@@ -60,6 +60,11 @@ This section outlines the configuration options available for the application.
 
 - A fully documented configuration file is available at [config.example.yaml](config.example.yaml).
 - You can select config file using `--config (-c)` flag. `crontab-go -c config.example.yaml`
+- You can also use [schema.json](/raw/main/schema.json) as schema of config file.
+
+> By adding this line in the `config.yaml` file you can enable the schema.
+>
+> `# yaml-language-server: $schema=https://github.com/FMotalleb/crontab-go/raw/main/schema.json`
 
 ## Getting Started
 
@@ -68,13 +73,14 @@ To get started with Cronjob-go, simply download the binary for your platform and
 ## Thanks To
 
 This project was possible thanks to
-* [Logrus](https://github.com/sirupsen/logrus)
-  * Logrus is a structured logger for Go (golang), completely API compatible with the standard library logger.
-* [Cobra](https://github.com/spf13/cobra)
-  * Cobra is a library for creating powerful modern CLI applications.
-* [Viper](https://github.com/spf13/viper)
-  * Go configuration with fangs!
-* [Cron](https://github.com/robfig/cron)
-  * Cron backend!
-* [GoDotenv](https://github.com/joho/godotenv)
-  * A Go (golang) port of the Ruby dotenv project (which loads env vars from a .env file).
+
+- [Logrus](https://github.com/sirupsen/logrus)
+  - Logrus is a structured logger for Go (golang), completely API compatible with the standard library logger.
+- [Cobra](https://github.com/spf13/cobra)
+  - Cobra is a library for creating powerful modern CLI applications.
+- [Viper](https://github.com/spf13/viper)
+  - Go configuration with fangs!
+- [Cron](https://github.com/robfig/cron)
+  - Cron backend!
+- [GoDotenv](https://github.com/joho/godotenv)
+  - A Go (golang) port of the Ruby dotenv project (which loads env vars from a .env file).
