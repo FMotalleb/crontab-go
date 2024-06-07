@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
@@ -103,17 +102,12 @@ func (t *Task) Validate() error {
 }
 
 func (s *JobScheduler) Validate() error {
-	if s.At != nil {
-		if s.At.Before(time.Now()) {
-			fmt.Println("you've set the time in the scheduler that is before now, received:", s.At, "Given time will be ignored")
-		}
-	} else if s.Interval < 0 {
+	if s.Interval < 0 {
 		return fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		return err
 	}
 	schedules := []bool{
-		s.At != nil,
 		s.Interval != 0,
 		s.Cron != "",
 	}
@@ -125,10 +119,9 @@ func (s *JobScheduler) Validate() error {
 	}
 	if activeSchedules != 1 {
 		return fmt.Errorf(
-			"a single scheduler must have one of (at,interval,cron) field, received:(cron: `%s`, interval: `%s`, at: `%s`)",
+			"a single scheduler must have one of (at,interval,cron) field, received:(cron: `%s`, interval: `%s`)",
 			s.Cron,
 			s.Interval,
-			s.At,
 		)
 	}
 	return nil

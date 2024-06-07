@@ -12,13 +12,6 @@ import (
 
 func CompileScheduler(sh *config.JobScheduler, cr *cron.Cron, logger *logrus.Entry) abstraction.Scheduler {
 	switch {
-	case sh.At != nil:
-		scheduler := schedule.NewAt(
-			*sh.At,
-			cr,
-			logger,
-		)
-		return &scheduler
 	case sh.Cron != "":
 		scheduler := schedule.NewCron(
 			sh.Cron,

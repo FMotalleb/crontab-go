@@ -33,7 +33,6 @@ type (
 	JobScheduler struct {
 		Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 		Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
-		At       *time.Time    `mapstructure:"at" json:"at,omitempty"`
 	}
 
 	JobHooks struct {
