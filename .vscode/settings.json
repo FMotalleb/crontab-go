@@ -55,6 +55,7 @@
         "unconvert",
         "unparam"
     ],
+    "json.schemaDownload.enable": true,
     "yaml.schemas": {
         "./schema.json": [
             "config.example.yaml",
