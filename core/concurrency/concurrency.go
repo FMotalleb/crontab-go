@@ -13,7 +13,7 @@ func NewConcurrentPool(capacity int) *ConcurrentPool {
 	return &ConcurrentPool{
 		available:  capacity,
 		used:       0,
-		changeChan: make(chan interface{}),
+		changeChan: make(chan interface{}, 1),
 	}
 }
 
@@ -32,18 +32,10 @@ func (p *ConcurrentPool) Lock() {
 
 // Unlock releases a lock, making a slot available for other goroutines.
 func (p *ConcurrentPool) Unlock() {
-	p.freeSlot()
+	p.used--
+	p.changeChan <- false
 }
 
 func (p *ConcurrentPool) reserverSlot() {
 	p.used++
-}
-
-func (p *ConcurrentPool) freeSlot() {
-	p.used--
-	p.signal()
-}
-
-func (p *ConcurrentPool) signal() {
-	p.changeChan <- false
 }
