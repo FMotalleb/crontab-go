@@ -2,12 +2,14 @@ package jobs
 
 import (
 	"context"
+	"sync"
 
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/core/concurrency"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
@@ -17,12 +19,18 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 			log.Warnf("job %s is disabled", job.Name)
 			continue
 		}
+		// Setting default value of concurrency
+		if job.Concurrency == 0 {
+			job.Concurrency = 1
+		}
 
 		c := context.Background()
 		c = context.WithValue(c, ctxutils.JobKey, job)
 
-		logger := initLogger(c, log, job)
+		var lock sync.Locker = concurrency.NewConcurrentPool(int(job.Concurrency))
 
+		logger := initLogger(c, log, job)
+		logger = logger.WithField("concurrency", job.Concurrency)
 		if err := job.Validate(); err != nil {
 			log.Panicf("failed to validate job (%s): %v", job.Name, err)
 		}
@@ -32,7 +40,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		tasks, doneHooks, failHooks := initTasks(job, logger)
 		logger.Trace("Tasks initialized")
 
-		go taskHandler(c, logger, signal, tasks, doneHooks, failHooks)
+		go taskHandler(c, logger, signal, tasks, doneHooks, failHooks, lock)
 		logger.Trace("EventLoop initialized")
 	}
 	log.Debugln("Jobs Are Ready")

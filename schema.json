@@ -51,6 +51,13 @@
         "hooks": {
           "$ref": "#/definitions/Hooks",
           "description": "An optional Hooks object that defines the hooks to be executed before or after the job."
+        },
+        "concurrency": {
+          "type": "integer",
+          "validate": {
+            "minimum": 1
+          },
+          "description": "Amount of concurrent tasks that will be executed at the same time. defaults to 1"
         }
       },
       "required": [
