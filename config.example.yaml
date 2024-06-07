@@ -27,20 +27,20 @@ jobs:
         env:
           DB_HOST: 10.0.0.5
 
-      # A simple get request
-      - get: https://example.com/get
-        # headers of request `map[string]string`
-        headers:
-          - "Accepts": "Application/Json"
+      # # A simple get request
+      # - get: https://example.com/get
+      #   # headers of request `map[string]string`
+      #   headers:
+      #     - "Accepts": "Application/Json"
 
-      # A simple post request example
-      - post: https://example.com/post
-        # headers of request `map[string]string`
-        headers:
-          - "Accepts": "Application/Json"
-        # Body of post request (can be a json object)
-        data:
-          key: value
+      # # A simple post request example
+      # - post: https://example.com/post
+      #   # headers of request `map[string]string`
+      #   headers:
+      #     - "Accepts": "Application/Json"
+      #   # Body of post request (can be a json object)
+      #   data:
+      #     key: value
     schedulers:
       - on_init: true
       # Schedulers can be defined using either a cron expression or an interval, but not both simultaneously.
