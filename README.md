@@ -59,7 +59,22 @@ This section outlines the configuration options available for the application.
 **Configuration File:**
 
 - A fully documented configuration file is available at [config.example.yaml](config.example.yaml).
+- You can select config file using `--config (-c)` flag. `crontab-go -c config.example.yaml`
 
 ## Getting Started
 
 To get started with Cronjob-go, simply download the binary for your platform and configure your scheduled tasks using the provided YAML format. The application's documentation includes detailed instructions on installation, configuration, and usage, making it easy to integrate into your existing Docker-based infrastructure.
+
+## Thanks To
+
+This project was possible thanks to
+* [Logrus](https://github.com/sirupsen/logrus)
+  * Logrus is a structured logger for Go (golang), completely API compatible with the standard library logger.
+* [Cobra](https://github.com/spf13/cobra)
+  * Cobra is a library for creating powerful modern CLI applications.
+* [Viper](https://github.com/spf13/viper)
+  * Go configuration with fangs!
+* [Cron](https://github.com/robfig/cron)
+  * Cron backend!
+* [GoDotenv](https://github.com/joho/godotenv)
+  * A Go (golang) port of the Ruby dotenv project (which loads env vars from a .env file).
