@@ -27,7 +27,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		c := context.Background()
 		c = context.WithValue(c, ctxutils.JobKey, job)
 
-		var lock sync.Locker = concurrency.NewConcurrentPool(int(job.Concurrency))
+		var lock sync.Locker = concurrency.NewConcurrentPool(job.Concurrency)
 
 		logger := initLogger(c, log, job)
 		logger = logger.WithField("concurrency", job.Concurrency)
