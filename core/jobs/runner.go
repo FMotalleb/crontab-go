@@ -27,18 +27,24 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 			log.Panicf("failed to validate job (%s): %v", job.Name, err)
 		}
 
-		schedulers := initSchedulers(job, cronInstance, logger)
-		logger.Trace("Schedulers initialized")
+		signal := buildSignal(job, cronInstance, logger)
 
 		tasks, doneHooks, failHooks := initTasks(job, logger)
 		logger.Trace("Tasks initialized")
-
-		signal := initEventSignal(schedulers, logger)
 
 		go taskHandler(c, logger, signal, tasks, doneHooks, failHooks)
 		logger.Trace("EventLoop initialized")
 	}
 	log.Debugln("Jobs Are Ready")
+}
+
+func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) <-chan any {
+	schedulers := initSchedulers(job, cronInstance, logger)
+	logger.Trace("Schedulers initialized")
+
+	signal := initEventSignal(schedulers, logger)
+
+	return signal
 }
 
 func initLogger(c context.Context, log *logrus.Entry, job config.JobConfig) *logrus.Entry {

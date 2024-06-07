@@ -33,6 +33,7 @@ type (
 	JobScheduler struct {
 		Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 		Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
+		OnInit   bool          `mapstructure:"on_init" json:"on_init,omitempty"`
 	}
 
 	JobHooks struct {

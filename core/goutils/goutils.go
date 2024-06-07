@@ -1,6 +1,6 @@
 package goutils
 
-func Zip[T interface{}](channels ...<-chan T) <-chan T {
+func ZipChannels[T interface{}](channels ...<-chan T) <-chan T {
 	output := make(chan T)
 	for _, ch := range channels {
 		go func() {

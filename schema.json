@@ -107,7 +107,17 @@
         },
         "interval": {
           "type": "string",
-          "description": "A string that represents the interval at which the job should be executed."
+          "description": "A string that represents the interval at which the job should be executed.",
+          "examples": [
+            "1s",
+            "10m",
+            "1h",
+            "5h30m15s"
+          ]
+        },
+        "on_init": {
+          "type": "boolean",
+          "description": "Indicates that the job should trigger its tasks once initialized."
         }
       },
       "required": [],

@@ -42,6 +42,7 @@ jobs:
         data:
           key: value
     schedulers:
+      - on_init: true
       # Schedulers can be defined using either a cron expression or an interval, but not both simultaneously.
       # However, you can combine multiple cron expressions and intervals within the same scheduler.
 

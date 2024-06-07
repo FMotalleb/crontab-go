@@ -4,16 +4,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-
-	"github.com/FMotalleb/crontab-go/abstraction"
 )
-
-func test() {
-	sh := &Interval{}
-	tester(sh)
-}
-
-func tester(sh abstraction.Scheduler) {}
 
 type Interval struct {
 	duration   time.Duration
@@ -35,14 +26,14 @@ func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
 	}
 }
 
-// buildTickChannel implements abstraction.Scheduler.
+// BuildTickChannel implements abstraction.Scheduler.
 func (c *Interval) BuildTickChannel() <-chan any {
 	c.Cancel()
 	c.notifyChan = make(chan any)
 
 	c.ticker = time.NewTicker(c.duration)
 	go func() {
-		c.notifyChan <- false
+		// c.notifyChan <- false
 		for range c.ticker.C {
 			c.notifyChan <- false
 		}

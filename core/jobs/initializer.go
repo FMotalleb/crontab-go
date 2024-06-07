@@ -16,7 +16,7 @@ func initEventSignal(schedulers []abstraction.Scheduler, logger *logrus.Entry) <
 		signals = append(signals, sh.BuildTickChannel())
 	}
 	logger.Trace("Signals Built")
-	signal := goutils.Zip(signals...)
+	signal := goutils.ZipChannels(signals...)
 	return signal
 }
 

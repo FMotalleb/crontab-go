@@ -110,6 +110,7 @@ func (s *JobScheduler) Validate() error {
 	schedules := []bool{
 		s.Interval != 0,
 		s.Cron != "",
+		s.OnInit == true,
 	}
 	activeSchedules := 0
 	for _, t := range schedules {
@@ -119,7 +120,8 @@ func (s *JobScheduler) Validate() error {
 	}
 	if activeSchedules != 1 {
 		return fmt.Errorf(
-			"a single scheduler must have one of (at,interval,cron) field, received:(cron: `%s`, interval: `%s`)",
+			"a single scheduler must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
+			s.OnInit,
 			s.Cron,
 			s.Interval,
 		)

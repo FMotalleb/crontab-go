@@ -25,6 +25,10 @@ func CompileScheduler(sh *config.JobScheduler, cr *cron.Cron, logger *logrus.Ent
 			logger,
 		)
 		return &scheduler
+
+	case sh.OnInit:
+		scheduler := schedule.Init{}
+		return &scheduler
 	}
 
 	return nil
