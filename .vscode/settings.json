@@ -56,10 +56,9 @@
         "unparam"
     ],
     "yaml.schemas": {
-        "./config.schema.yaml": [
+        "./schema.json": [
             "config.example.yaml",
             "config.yaml"
         ],
-        "file:///c%3A/Users/Motalleb/Documents/GitHub/crontab-go/config.schema.yaml": "file:///c%3A/Users/Motalleb/Documents/GitHub/crontab-go/config.example.yaml"
     }
 }

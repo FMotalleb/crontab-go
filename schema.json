@@ -1,0 +1,168 @@
+{
+  "$ref": "#/definitions/scheduler-conf",
+  "definitions": {
+    "scheduler-conf": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Job"
+          }
+        }
+      },
+      "required": [
+        "jobs"
+      ],
+      "title": "scheduler-conf"
+    },
+    "Job": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "schedulers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Scheduler"
+          }
+        },
+        "hooks": {
+          "$ref": "#/definitions/Hooks"
+        }
+      },
+      "required": [
+        "name",
+        "schedulers",
+        "tasks"
+      ],
+      "optional": [
+        "description",
+        "disabled",
+        "hooks"
+      ],
+      "title": "Job"
+    },
+    "Hooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "done": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "failed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        }
+      },
+      "required": [
+        "done",
+        "failed"
+      ],
+      "title": "Hooks"
+    },
+    "Scheduler": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cron": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "Scheduler"
+    },
+    "Task": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "retries": {
+          "type": "integer"
+        },
+        "retry-delay": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "string"
+        },
+        "working_directory": {
+          "type": "string"
+        },
+        "env": {
+          "$ref": "#/definitions/Env"
+        },
+        "get": {
+          "type": "string",
+          "format": "uri",
+          "qt-uri-protocols": [
+            "https",
+            "http"
+          ]
+        },
+        "headers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Header"
+          }
+        },
+        "post": {
+          "type": "string",
+          "format": "uri",
+          "qt-uri-protocols": [
+            "https",
+            "http"
+          ]
+        },
+        "data": {
+          "$ref": "#/definitions/Data"
+        }
+      },
+      "required": [],
+      "title": "Task"
+    },
+    "Data": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [],
+      "title": "Data"
+    },
+    "Env": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {},
+      "title": "Env"
+    },
+    "Header": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {},
+      "title": "Header"
+    }
+  }
+}
