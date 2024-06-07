@@ -37,7 +37,6 @@ func (p *ConcurrentPool) Unlock() {
 
 func (p *ConcurrentPool) reserverSlot() {
 	p.used++
-	p.signal()
 }
 
 func (p *ConcurrentPool) freeSlot() {
