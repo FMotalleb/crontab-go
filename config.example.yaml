@@ -46,7 +46,7 @@ jobs:
       # However, you can combine multiple cron expressions and intervals within the same scheduler.
 
       # The cron scheduler allows you to specify schedules down to the second level of precision using cron expressions.
-      - cron: "@every 5s"
+      - cron: "* * * * * *"
       # Intervals can be defined using human-readable formats.
       # For example, '10h' represents 10 hours, '10m' represents 10 minutes, and '10m15s' represents every 10 minutes and 15 seconds.
       # You can use units of hours (h), minutes (m), seconds (s), milliseconds (ms), and nanoseconds (ns) to define your intervals.
