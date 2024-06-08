@@ -48,29 +48,35 @@ func SetUser(log *logrus.Entry, proc *exec.Cmd, usr string, grp string) {
 		gid, _ = lookupGID(grp, log)
 	}
 
-	setUID(log, proc, uint32(uid), uint32(gid))
+	setUID(log, proc, uid, gid)
 }
 
-func lookupGID(grp string, log *logrus.Entry) (gid int, err error) {
+func lookupGID(grp string, log *logrus.Entry) (gid uint32, err error) {
 	g, err := osUser.LookupGroup(grp)
 	if err != nil {
 		log.Panicf("cannot find group with name %s in the os: %s, you've changed os users during application runtime", grp, err)
 	}
-	gid, err = strconv.Atoi(g.Gid)
-	return
+	gidU, err := strconv.ParseUint(g.Gid, 10, 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint32(gidU), nil
 }
 
-func lookupUIDAndGID(usr string, log *logrus.Entry) (uid int, gid int, err error) {
+func lookupUIDAndGID(usr string, log *logrus.Entry) (uid uint32, gid uint32, err error) {
 	u, err := osUser.Lookup(usr)
 	if err != nil {
 		log.Panicf("cannot find user with name %s in the os: %s, you've changed os users during application runtime", usr, err)
 	}
-	uid, err = strconv.Atoi(u.Uid)
+	uidU, err := strconv.ParseUint(u.Uid, 10, 32)
 	if err != nil {
-		return
+		return 0, 0, err
 	}
-	gid, err = strconv.Atoi(u.Gid)
-	return
+	gidU, err := strconv.ParseUint(u.Gid, 10, 32)
+	if err != nil {
+		return 0, 0, err
+	}
+	return uint32(uidU), uint32(gidU), nil
 }
 
 func setUID(
