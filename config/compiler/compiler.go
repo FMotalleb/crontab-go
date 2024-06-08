@@ -35,13 +35,28 @@ func CompileScheduler(sh *config.JobScheduler, cr *cron.Cron, logger *logrus.Ent
 }
 
 func CompileTask(sh *config.Task, logger *logrus.Entry) abstraction.Executable {
+	var t abstraction.Executable
 	switch {
 	case sh.Command != "":
-		return task.NewCommand(sh, logger)
+		t = task.NewCommand(sh, logger)
 	case sh.Get != "":
-		return task.NewGet(sh, logger)
+		t = task.NewGet(sh, logger)
 	case sh.Post != "":
-		return task.NewPost(sh, logger)
+		t = task.NewPost(sh, logger)
+	default:
+		logger.Fatalln("cannot handle given task config", sh)
 	}
-	return nil
+
+	onDone := []abstraction.Executable{}
+	for _, d := range sh.OnDone {
+		onDone = append(onDone, CompileTask(&d, logger))
+	}
+	t.SetDoneHooks(onDone)
+	onFail := []abstraction.Executable{}
+	for _, d := range sh.OnFail {
+		onFail = append(onFail, CompileTask(&d, logger))
+	}
+	t.SetFailHooks(onFail)
+
+	return t
 }

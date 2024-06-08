@@ -24,45 +24,59 @@ type Post struct {
 	retries    uint
 	retryDelay time.Duration
 	timeout    time.Duration
+
+	doneHooks []abstraction.Executable
+	failHooks []abstraction.Executable
+}
+
+// SetDoneHooks implements abstraction.Executable.
+func (p *Post) SetDoneHooks(done []abstraction.Executable) {
+	p.doneHooks = done
+}
+
+// SetFailHooks implements abstraction.Executable.
+func (p *Post) SetFailHooks(fail []abstraction.Executable) {
+	p.failHooks = fail
 }
 
 // Cancel implements abstraction.Executable.
-func (g *Post) Cancel() {
-	if g.cancel != nil {
-		g.log.Debugln("canceling get request")
-		g.cancel()
+func (p *Post) Cancel() {
+	if p.cancel != nil {
+		p.log.Debugln("canceling get request")
+		p.cancel()
 	}
 }
 
 // Execute implements abstraction.Executable.
-func (g *Post) Execute(ctx context.Context) (e error) {
+func (p *Post) Execute(ctx context.Context) (e error) {
 	r := getRetry(ctx)
-	log := g.log.WithField("retry", r)
-	if getRetry(ctx) > g.retries {
+	log := p.log.WithField("retry", r)
+	if getRetry(ctx) > p.retries {
 		log.Warn("maximum retry reached")
+		runTasks(p.failHooks)
 		return fmt.Errorf("maximum retries reached")
 	}
 	if r != 0 {
-		log.Debugln("waiting", g.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(g.retryDelay)
+		log.Debugln("waiting", p.retryDelay, "before executing the next iteration after last fail")
+		time.Sleep(p.retryDelay)
 	}
 	ctx = increaseRetry(ctx)
 	// ctx := context.Background()
 	var localCtx context.Context
-	if g.timeout != 0 {
-		localCtx, g.cancel = context.WithTimeout(ctx, g.timeout)
+	if p.timeout != 0 {
+		localCtx, p.cancel = context.WithTimeout(ctx, p.timeout)
 	} else {
-		localCtx, g.cancel = context.WithCancel(ctx)
+		localCtx, p.cancel = context.WithCancel(ctx)
 	}
 	client := &http.Client{}
-	data, _ := json.Marshal(g.data)
+	data, _ := json.Marshal(p.data)
 
-	req, e := http.NewRequestWithContext(localCtx, "POST", g.address, bytes.NewReader(data))
+	req, e := http.NewRequestWithContext(localCtx, "POST", p.address, bytes.NewReader(data))
 	log.Debugln("sending get http request")
 	if e != nil {
 		return
 	}
-	for key, val := range *g.headers {
+	for key, val := range *p.headers {
 		req.Header.Add(key, val)
 	}
 
@@ -82,8 +96,10 @@ func (g *Post) Execute(ctx context.Context) (e error) {
 
 	if e != nil || res.StatusCode >= 400 {
 		log.Warnln("request failed")
-		return g.Execute(ctx)
+		return p.Execute(ctx)
 	}
+
+	runTasks(p.doneHooks)
 	return
 }
 

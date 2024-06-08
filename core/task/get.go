@@ -21,6 +21,19 @@ type Get struct {
 	retries    uint
 	retryDelay time.Duration
 	timeout    time.Duration
+
+	doneHooks []abstraction.Executable
+	failHooks []abstraction.Executable
+}
+
+// SetDoneHooks implements abstraction.Executable.
+func (g *Get) SetDoneHooks(done []abstraction.Executable) {
+	g.doneHooks = done
+}
+
+// SetFailHooks implements abstraction.Executable.
+func (g *Get) SetFailHooks(fail []abstraction.Executable) {
+	g.failHooks = fail
 }
 
 // Cancel implements abstraction.Executable.
@@ -37,6 +50,7 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	log := g.log.WithField("retry", r)
 	if getRetry(ctx) > g.retries {
 		log.Warn("maximum retry reached")
+		runTasks(g.failHooks)
 		return fmt.Errorf("maximum retries reached")
 	}
 	if r != 0 {
@@ -80,6 +94,7 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 		log.Warnln("request failed")
 		return g.Execute(ctx)
 	}
+	runTasks(g.doneHooks)
 	return
 }
 

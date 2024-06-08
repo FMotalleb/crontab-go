@@ -103,6 +103,16 @@ func (t *Task) Validate(log *logrus.Entry) error {
 			t,
 		)
 	}
+	for _, task := range t.OnDone {
+		if err := task.Validate(log); err != nil {
+			return err
+		}
+	}
+	for _, task := range t.OnFail {
+		if err := task.Validate(log); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

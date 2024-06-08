@@ -52,6 +52,9 @@ func SetUser(log *logrus.Entry, proc *exec.Cmd, usr string, grp string) {
 }
 
 func lookupGID(grp string, log *logrus.Entry) (gid uint32, err error) {
+	if grp == "" {
+		return 0, nil
+	}
 	g, err := osUser.LookupGroup(grp)
 	if err != nil {
 		log.Panicf("cannot find group with name %s in the os: %s, you've changed os users during application runtime", grp, err)
@@ -64,6 +67,9 @@ func lookupGID(grp string, log *logrus.Entry) (gid uint32, err error) {
 }
 
 func lookupUIDAndGID(usr string, log *logrus.Entry) (uid uint32, gid uint32, err error) {
+	if usr == "" {
+		return 0, 0, nil
+	}
 	u, err := osUser.Lookup(usr)
 	if err != nil {
 		log.Panicf("cannot find user with name %s in the os: %s, you've changed os users during application runtime", usr, err)

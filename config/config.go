@@ -57,5 +57,8 @@ type (
 		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
 		Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 		Env        EnvVariables  `mapstructure:"env" json:"env,omitempty"`
+
+		OnDone []Task `mapstructure:"on-done" json:"on_done,omitempty"`
+		OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`
 	}
 )

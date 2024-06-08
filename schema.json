@@ -187,6 +187,20 @@
           ],
           "description": "A string that represents the URL to be sent using the POST method."
         },
+        "on-done": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "description": "List of optional hooks"
+        },
+        "on-fail": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Task"
+          },
+          "description": "Username that this command must run as. (root privilege needed)"
+        },
         "data": {
           "$ref": "#/definitions/Data",
           "description": "A Data object that defines the data to be sent with the request."

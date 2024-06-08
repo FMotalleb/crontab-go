@@ -33,6 +33,19 @@ type Command struct {
 	retries    uint
 	retryDelay time.Duration
 	timeout    time.Duration
+
+	doneHooks []abstraction.Executable
+	failHooks []abstraction.Executable
+}
+
+// SetDoneHooks implements abstraction.Executable.
+func (c *Command) SetDoneHooks(done []abstraction.Executable) {
+	c.doneHooks = done
+}
+
+// SetFailHooks implements abstraction.Executable.
+func (c *Command) SetFailHooks(fail []abstraction.Executable) {
+	c.failHooks = fail
 }
 
 // Cancel implements abstraction.Executable.
@@ -49,6 +62,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 	log := c.log.WithField("retry", r)
 	if getRetry(ctx) > c.retries {
 		log.Warn("maximum retry reached")
+		runTasks(c.failHooks)
 		return fmt.Errorf("maximum retries reached")
 	}
 	if r != 0 {
@@ -83,6 +97,8 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		log.Warn("failed to execute the command ", e)
 		return c.Execute(ctx)
 	}
+
+	runTasks(c.doneHooks)
 	return
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
@@ -48,4 +49,10 @@ func (r *ResponseWriter) Write(p []byte) (n int, err error) {
 
 func (r *ResponseWriter) String() string {
 	return string(r.buffer)
+}
+
+func runTasks(exec []abstraction.Executable) {
+	for _, t := range exec {
+		_ = t.Execute(context.Background())
+	}
 }
