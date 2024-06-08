@@ -10,10 +10,10 @@ import (
 )
 
 func Validate(log *logrus.Entry, usr string, grp string) error {
-	log.Fatal("windows os does not have capability to set user dus validation will pass but will not work")
+	log.Warn("windows os does not have capability to set user dus validation will pass but will not work")
 	return nil
 }
 
 func SetUser(log *logrus.Entry, _ *exec.Cmd, _ string, _ string) {
-	log.Fatal("cannot set user in windows platform")
+	log.Warn("cannot set user in windows platform")
 }

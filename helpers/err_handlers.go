@@ -12,7 +12,7 @@ func PanicOnErr(log *logrus.Entry, err error, message string) {
 
 func FatalOnErr(log *logrus.Entry, err error, message string) {
 	if err != nil {
-		log.Panicf(message, err)
+		log.Fatalf(message, err)
 	}
 }
 
