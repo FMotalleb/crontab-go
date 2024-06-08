@@ -14,6 +14,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
+	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 )
 
 type Command struct {
@@ -23,8 +24,8 @@ type Command struct {
 	log              *logrus.Entry
 	cancel           context.CancelFunc
 
-	uid uint
-	gid uint
+	user  string
+	group string
 
 	shell     string
 	shellArgs []string
@@ -69,6 +70,7 @@ func (cmmnd *Command) Execute(ctx context.Context) (e error) {
 		cmmnd.shell,
 		append(cmmnd.shellArgs, *&cmmnd.exe)...,
 	)
+	credential.SetUser(log, proc, cmmnd.user, cmmnd.group)
 	proc.Env = *cmmnd.envVars
 	proc.Dir = cmmnd.workingDirectory
 	var res bytes.Buffer
@@ -122,5 +124,7 @@ func NewCommand(
 		retries:    task.Retries,
 		retryDelay: task.RetryDelay,
 		timeout:    task.Timeout,
+		user:       task.UserName,
+		group:      task.GroupName,
 	}
 }

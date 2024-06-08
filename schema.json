@@ -150,6 +150,14 @@
           "type": "string",
           "description": "A string that represents the working directory for the task."
         },
+        "user": {
+          "type": "string",
+          "description": "Username that this command must run as. (root privilege needed)"
+        },
+        "group": {
+          "type": "string",
+          "description": "Groupname that this command must run as. (root privilege needed)"
+        },
         "env": {
           "$ref": "#/definitions/Env",
           "description": "An Env object that defines the environment variables for the task."

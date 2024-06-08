@@ -1,8 +1,9 @@
 package abstraction
 
+import "github.com/sirupsen/logrus"
+
 type (
-	ValidatableStr string
-	Validatable    interface {
-		Validate() error
+	Validatable interface {
+		Validate(log *logrus.Entry) error
 	}
 )

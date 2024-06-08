@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/sirupsen/logrus"
+
+	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
-func (cfg *Config) Validate() error {
+func (cfg *Config) Validate(log *logrus.Entry) error {
 	if err := cfg.LogFormat.Validate(); err != nil {
 		return err
 	}
@@ -15,42 +18,42 @@ func (cfg *Config) Validate() error {
 		return err
 	}
 	for _, job := range cfg.Jobs {
-		if err := job.Validate(); err != nil {
+		if err := job.Validate(log); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (c *JobConfig) Validate() error {
+func (c *JobConfig) Validate(log *logrus.Entry) error {
 	if c.Disabled == true {
 		return nil
 	}
 
 	for _, s := range c.Schedulers {
-		if err := s.Validate(); err != nil {
+		if err := s.Validate(log); err != nil {
 			return err
 		}
 	}
 	for _, t := range c.Tasks {
-		if err := t.Validate(); err != nil {
+		if err := t.Validate(log); err != nil {
 			return err
 		}
 	}
 	for _, t := range c.Hooks.Done {
-		if err := t.Validate(); err != nil {
+		if err := t.Validate(log); err != nil {
 			return err
 		}
 	}
 	for _, t := range c.Hooks.Failed {
-		if err := t.Validate(); err != nil {
+		if err := t.Validate(log); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (t *Task) Validate() error {
+func (t *Task) Validate(log *logrus.Entry) error {
 	actions := []bool{
 		t.Get != "",
 		t.Command != "",
@@ -70,7 +73,9 @@ func (t *Task) Validate() error {
 			t.Post,
 		)
 	}
-
+	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
+		return err
+	}
 	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
 		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
 	}
@@ -101,7 +106,7 @@ func (t *Task) Validate() error {
 	return nil
 }
 
-func (s *JobScheduler) Validate() error {
+func (s *JobScheduler) Validate(log *logrus.Entry) error {
 	if s.Interval < 0 {
 		return fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {

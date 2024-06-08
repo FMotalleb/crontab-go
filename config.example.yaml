@@ -11,7 +11,7 @@ jobs:
     # disabled: true
     tasks:
       # This line specifies the actual command to be executed.
-      - command: echo 15
+      - command: echo $(whoami)
         # This setting determines the number of times the task will be retried if it fails
         # A failure is defined by either a non-zero exit code for commands or a status code of 400 or higher for HTTP requests.
         retries: 3
@@ -20,12 +20,13 @@ jobs:
         # This sets a maximum time limit for the task to complete.
         # If the task exceeds 15 seconds, it will be considered failed and stopped (command) or canceled (http requests)
         timeout: 15s
-        # This defines the working directory for the command.
-        working-dir: C://
+        user: root
+        # # This defines the working directory for the command.
+        # working-dir: C://
         # This section allows you to set environment variables that will be available to the command during execution.
         # `SHELL` and `SHELL_ARGS` can be used to change this commands shell environment
-        env:
-          DB_HOST: 10.0.0.5
+        # env:
+        #   DB_HOST: 10.0.0.5
 
       # # A simple get request
       # - get: https://example.com/get
