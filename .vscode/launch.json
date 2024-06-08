@@ -13,7 +13,7 @@
             "env": {},
             "args": [
                 "-c",
-                "config.example.yaml"
+                "config.local.yaml"
             ]
         }
     ]

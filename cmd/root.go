@@ -37,6 +37,7 @@ func Execute() {
 }
 
 func init() {
+	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is config.yaml)")
@@ -56,8 +57,6 @@ func panicOnErr(err error, message string) {
 }
 
 func initConfig() {
-	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
-
 	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05Z07:00")
 	warnOnErr(
 		viper.BindEnv(

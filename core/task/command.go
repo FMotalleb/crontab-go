@@ -92,10 +92,13 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 	proc.Stderr = &res
 	proc.Start()
 	e = proc.Wait()
-	log.Infof("command finished with answer: `%s`", strings.TrimSpace(string(res.Bytes())))
+
 	if e != nil {
+		log.Warnf("command failed with answer: %s", strings.TrimSpace(string(res.Bytes())))
 		log.Warn("failed to execute the command ", e)
 		return c.Execute(ctx)
+	} else {
+		log.Infof("command finished with answer: %s", strings.TrimSpace(string(res.Bytes())))
 	}
 
 	runTasks(c.doneHooks)
@@ -132,8 +135,13 @@ func NewCommand(
 		exe:              task.Command,
 		envVars:          &env,
 		workingDirectory: wd,
-		log: log.WithField(
-			"working_directory", wd,
+		log: log.WithFields(
+			logrus.Fields{
+				"working_directory": wd,
+				"shell":             shell,
+				"shell_args":        shellArgs,
+				"command":           task.Command,
+			},
 		),
 		shell:      shell,
 		shellArgs:  shellArgs,

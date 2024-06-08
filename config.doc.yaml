@@ -22,10 +22,12 @@ jobs:
         timeout: 15s
         user: root
         # # This defines the working directory for the command.
-        # working-dir: C://
+        working-dir: /home/user
         # This section allows you to set environment variables that will be available to the command during execution.
         # `SHELL` and `SHELL_ARGS` can be used to change this commands shell environment
-        # env:
+        env:
+          SHELL: /usr/bin/bash
+          SHELL_ARGS: -c
         #   DB_HOST: 10.0.0.5
 
       # # A simple get request

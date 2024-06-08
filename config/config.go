@@ -7,9 +7,6 @@ import (
 )
 
 type (
-	EnvVariables = map[string]string
-	JobMetadata  = map[string]interface{}
-
 	Config struct {
 		LogTimestampFormat string                 `mapstructure:"log_timestamp_format" json:"log_timestamp_format"`
 		LogFormat          enums.LoggerFormatType `mapstructure:"log_format" json:"log_format"`
@@ -53,10 +50,10 @@ type (
 		UserName  string `mapstructure:"user" json:"user,omitempty"`
 		GroupName string `mapstructure:"group" json:"group,omitempty"`
 
-		Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
-		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
-		Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
-		Env        EnvVariables  `mapstructure:"env" json:"env,omitempty"`
+		Retries    uint              `mapstructure:"retries" json:"retries,omitempty"`
+		RetryDelay time.Duration     `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
+		Timeout    time.Duration     `mapstructure:"timeout" json:"timeout,omitempty"`
+		Env        map[string]string `mapstructure:"env" json:"env,omitempty"`
 
 		OnDone []Task `mapstructure:"on-done" json:"on_done,omitempty"`
 		OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`

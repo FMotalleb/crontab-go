@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=schema.json
+#TODO: unix/tcp socket controller
+#TODO: prometheus exporter
+
+jobs:
+  - name: Test Job
+    tasks:
+      - command: ip a
+        env:
+          SHELL: C:\WINDOWS\System32\OpenSSH\ssh.exe
+          SHELL_ARGS: "-i;C:/Users/Motalleb/.xpipe/storage/data/id_rsa_old;root@shadyakhpart.com;-p;9011"
+    schedulers:
+      - on-init: true
+      - interval: 10m10s
