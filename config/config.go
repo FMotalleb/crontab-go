@@ -50,6 +50,9 @@ type (
 		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
 		Data             any               `mapstructure:"data" json:"data,omitempty"`
 
+		UserName  string `mapstructure:"user" json:"user,omitempty"`
+		GroupName string `mapstructure:"group" json:"group,omitempty"`
+
 		Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
 		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
 		Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`

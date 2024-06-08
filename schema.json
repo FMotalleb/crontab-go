@@ -65,11 +65,6 @@
         "schedulers",
         "tasks"
       ],
-      "optional": [
-        "description",
-        "disabled",
-        "hooks"
-      ],
       "title": "Job"
     },
     "Hooks": {
@@ -91,10 +86,6 @@
           "description": "An array of Task objects that define the tasks to be executed when the job fails."
         }
       },
-      "required": [
-        "done",
-        "failed"
-      ],
       "title": "Hooks"
     },
     "Scheduler": {
@@ -158,6 +149,14 @@
         "working-dir": {
           "type": "string",
           "description": "A string that represents the working directory for the task."
+        },
+        "user": {
+          "type": "string",
+          "description": "Username that this command must run as. (root privilege needed)"
+        },
+        "group": {
+          "type": "string",
+          "description": "Groupname that this command must run as. (root privilege needed)"
         },
         "env": {
           "$ref": "#/definitions/Env",

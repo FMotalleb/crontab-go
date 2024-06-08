@@ -31,7 +31,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 
 		logger := initLogger(c, log, job)
 		logger = logger.WithField("concurrency", job.Concurrency)
-		if err := job.Validate(); err != nil {
+		if err := job.Validate(log); err != nil {
 			log.Panicf("failed to validate job (%s): %v", job.Name, err)
 		}
 

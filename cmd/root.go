@@ -6,6 +6,7 @@ import (
 	"runtime"
 
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -139,7 +140,7 @@ func initConfig() {
 		"Cannot unmarshal the config file: %s",
 	)
 	panicOnErr(
-		CFG.Validate(),
+		CFG.Validate(logrus.WithField("section", "config.validation")),
 		"Failed to initialize config file: %s",
 	)
 }

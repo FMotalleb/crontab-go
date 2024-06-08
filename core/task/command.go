@@ -14,6 +14,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
+	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 )
 
 type Command struct {
@@ -22,6 +23,9 @@ type Command struct {
 	workingDirectory string
 	log              *logrus.Entry
 	cancel           context.CancelFunc
+
+	user  string
+	group string
 
 	shell     string
 	shellArgs []string
@@ -32,42 +36,43 @@ type Command struct {
 }
 
 // Cancel implements abstraction.Executable.
-func (g *Command) Cancel() {
-	if g.cancel != nil {
-		g.log.Debugln("canceling executable")
-		g.cancel()
+func (c *Command) Cancel() {
+	if c.cancel != nil {
+		c.log.Debugln("canceling executable")
+		c.cancel()
 	}
 }
 
 // Execute implements abstraction.Executable.
-func (cmmnd *Command) Execute(ctx context.Context) (e error) {
+func (c *Command) Execute(ctx context.Context) (e error) {
 	r := getRetry(ctx)
-	log := cmmnd.log.WithField("retry", r)
-	if getRetry(ctx) > cmmnd.retries {
+	log := c.log.WithField("retry", r)
+	if getRetry(ctx) > c.retries {
 		log.Warn("maximum retry reached")
 		return fmt.Errorf("maximum retries reached")
 	}
 	if r != 0 {
-		log.Debugln("waiting", cmmnd.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(cmmnd.retryDelay)
+		log.Debugln("waiting", c.retryDelay, "before executing the next iteration after last fail")
+		time.Sleep(c.retryDelay)
 	}
 	ctx = increaseRetry(ctx)
 	var procCtx context.Context
 	var cancel context.CancelFunc
-	if cmmnd.timeout != 0 {
-		procCtx, cancel = context.WithTimeout(ctx, cmmnd.timeout)
+	if c.timeout != 0 {
+		procCtx, cancel = context.WithTimeout(ctx, c.timeout)
 	} else {
 		procCtx, cancel = context.WithCancel(ctx)
 	}
-	cmmnd.cancel = cancel
+	c.cancel = cancel
 
 	proc := exec.CommandContext(
 		procCtx,
-		cmmnd.shell,
-		append(cmmnd.shellArgs, *&cmmnd.exe)...,
+		c.shell,
+		append(c.shellArgs, *&c.exe)...,
 	)
-	proc.Env = *cmmnd.envVars
-	proc.Dir = cmmnd.workingDirectory
+	credential.SetUser(log, proc, c.user, c.group)
+	proc.Env = *c.envVars
+	proc.Dir = c.workingDirectory
 	var res bytes.Buffer
 	proc.Stdout = &res
 	proc.Stderr = &res
@@ -76,7 +81,7 @@ func (cmmnd *Command) Execute(ctx context.Context) (e error) {
 	log.Infof("command finished with answer: `%s`", strings.TrimSpace(string(res.Bytes())))
 	if e != nil {
 		log.Warn("failed to execute the command ", e)
-		return cmmnd.Execute(ctx)
+		return c.Execute(ctx)
 	}
 	return
 }
@@ -119,5 +124,7 @@ func NewCommand(
 		retries:    task.Retries,
 		retryDelay: task.RetryDelay,
 		timeout:    task.Timeout,
+		user:       task.UserName,
+		group:      task.GroupName,
 	}
 }
