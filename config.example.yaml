@@ -21,7 +21,7 @@ jobs:
         # If the task exceeds 15 seconds, it will be considered failed and stopped (command) or canceled (http requests)
         timeout: 15s
         # This defines the working directory for the command.
-        working_directory: C://
+        working-dir: C://
         # This section allows you to set environment variables that will be available to the command during execution.
         # `SHELL` and `SHELL_ARGS` can be used to change this commands shell environment
         env:
@@ -42,7 +42,7 @@ jobs:
       #   data:
       #     key: value
     schedulers:
-      - on_init: true
+      - on-init: true
       # Schedulers can be defined using either a cron expression or an interval, but not both simultaneously.
       # However, you can combine multiple cron expressions and intervals within the same scheduler.
 

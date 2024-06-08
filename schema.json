@@ -123,7 +123,7 @@
             "5h30m15s"
           ]
         },
-        "on_init": {
+        "on-init": {
           "type": "boolean",
           "description": "Indicates that the job should trigger its tasks once initialized."
         }
@@ -155,7 +155,7 @@
           "type": "string",
           "description": "A string that represents the timeout for the task."
         },
-        "working_directory": {
+        "working-dir": {
           "type": "string",
           "description": "A string that represents the working directory for the task."
         },
