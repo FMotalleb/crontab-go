@@ -34,7 +34,7 @@ type (
 	JobScheduler struct {
 		Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 		Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
-		OnInit   bool          `mapstructure:"on_init" json:"on_init,omitempty"`
+		OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`
 	}
 
 	JobHooks struct {
@@ -46,7 +46,7 @@ type (
 		Post             string            `mapstructure:"post" json:"post,omitempty"`
 		Get              string            `mapstructure:"get" json:"get,omitempty"`
 		Command          string            `mapstructure:"command" json:"command,omitempty"`
-		WorkingDirectory string            `mapstructure:"working_directory" json:"working_directory,omitempty"`
+		WorkingDirectory string            `mapstructure:"working-dir" json:"working_directory,omitempty"`
 		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
 		Data             any               `mapstructure:"data" json:"data,omitempty"`
 
