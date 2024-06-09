@@ -10,7 +10,5 @@ type Executable interface {
 	Execute(context.Context) error
 	SetDoneHooks([]Executable)
 	SetFailHooks([]Executable)
-	DoDoneHooks(ctx context.Context)
-	DoFailHooks(ctx context.Context)
 	Cancel()
 }

@@ -18,10 +18,10 @@ import (
 )
 
 type Command struct {
-	*common.Hooked
-	*common.Cancelable
-	*common.Retry
-	*common.Timeout
+	common.Hooked
+	common.Cancelable
+	common.Retry
+	common.Timeout
 
 	exe              string
 	envVars          *[]string
@@ -45,9 +45,7 @@ func (c *Command) Execute(ctx context.Context) error {
 		return err
 	}
 	ctx = common.IncreaseRetry(ctx)
-	var procCtx context.Context
-	var cancel context.CancelFunc
-	procCtx, cancel = c.ApplyTimeout(ctx)
+	procCtx, cancel := c.ApplyTimeout(ctx)
 	c.SetCancel(cancel)
 
 	proc := exec.CommandContext(
@@ -68,9 +66,13 @@ func (c *Command) Execute(ctx context.Context) error {
 		log.Warnf("command failed with answer: %s", strings.TrimSpace(res.String()))
 		log.Warn("failed to execute the command", err)
 		return c.Execute(ctx)
+	} else {
+		log.Warnf("command finished with answer: %s", strings.TrimSpace(res.String()))
 	}
 
-	c.DoDoneHooks(ctx)
+	if errs := c.DoDoneHooks(ctx); len(errs) != 0 {
+		log.Warn("command finished successfully but its hooks failed")
+	}
 	return nil
 }
 

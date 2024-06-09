@@ -26,7 +26,9 @@ func (r *Retry) WaitForRetry(ctx context.Context) error {
 	if tries > (r.maxRetries + 1) {
 		return fmt.Errorf("max retry of %d exceeded, tries: %d", r.maxRetries, tries)
 	}
-	time.Sleep(time.Duration(tries) * r.retryDelay)
+	if tries != 0 {
+		time.Sleep(time.Duration(tries) * r.retryDelay)
+	}
 	return nil
 }
 

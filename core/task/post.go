@@ -14,10 +14,10 @@ import (
 )
 
 type Post struct {
-	*common.Hooked
-	*common.Cancelable
-	*common.Retry
-	*common.Timeout
+	common.Hooked
+	common.Cancelable
+	common.Retry
+	common.Timeout
 
 	address string
 	headers *map[string]string
@@ -42,15 +42,19 @@ func (p *Post) Execute(ctx context.Context) error {
 	p.SetCancel(cancel)
 
 	client := &http.Client{}
-	data, err := json.Marshal(p.data)
-	if err != nil {
-		log.
-			WithError(err).
-			Warnln("cannot marshal the given body (pre-send)")
-		return p.Execute(ctx)
+	var dataReader *bytes.Reader
+	if p.data != nil {
+		data, err := json.Marshal(p.data)
+		if err != nil {
+			log.
+				WithError(err).
+				Warnln("cannot marshal the given body (pre-send)")
+			return p.Execute(ctx)
+		}
+		dataReader = bytes.NewReader(data)
 	}
 
-	req, err := http.NewRequestWithContext(localCtx, "POST", p.address, bytes.NewReader(data))
+	req, err := http.NewRequestWithContext(localCtx, "POST", p.address, dataReader)
 	log.Debugln("sending get http request")
 	if err != nil {
 		log.

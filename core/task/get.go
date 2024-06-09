@@ -12,10 +12,10 @@ import (
 )
 
 type Get struct {
-	*common.Hooked
-	*common.Cancelable
-	*common.Retry
-	*common.Timeout
+	common.Hooked
+	common.Cancelable
+	common.Retry
+	common.Timeout
 
 	address string
 	headers *map[string]string
