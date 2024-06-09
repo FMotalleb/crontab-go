@@ -2,109 +2,78 @@ package task
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/core/common"
 )
 
 type Get struct {
+	*common.Hooked
+	*common.Cancelable
+	*common.Retry
+	*common.Timeout
+
 	address string
 	headers *map[string]string
 	log     *logrus.Entry
 	cancel  context.CancelFunc
-
-	retries    uint
-	retryDelay time.Duration
-	timeout    time.Duration
-
-	doneHooks []abstraction.Executable
-	failHooks []abstraction.Executable
-}
-
-// SetDoneHooks implements abstraction.Executable.
-func (g *Get) SetDoneHooks(done []abstraction.Executable) {
-	g.doneHooks = done
-}
-
-// SetFailHooks implements abstraction.Executable.
-func (g *Get) SetFailHooks(fail []abstraction.Executable) {
-	g.failHooks = fail
-}
-
-// Cancel implements abstraction.Executable.
-func (g *Get) Cancel() {
-	if g.cancel != nil {
-		g.log.Debugln("canceling get request")
-		g.cancel()
-	}
 }
 
 // Execute implements abstraction.Executable.
-func (g *Get) Execute(ctx context.Context) (e error) {
-	r := getRetry(ctx)
+func (g *Get) Execute(ctx context.Context) error {
+	r := common.GetRetry(ctx)
 	log := g.log.WithField("retry", r)
-	if getRetry(ctx) > g.retries {
-		log.Warn("maximum retry reached")
-		runTasks(g.failHooks)
-		return fmt.Errorf("maximum retries reached")
+	if err := g.WaitForRetry(ctx); err != nil {
+		g.DoFailHooks(ctx)
+		return err
 	}
-	if r != 0 {
-		log.Debugln("waiting", g.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(g.retryDelay)
-	}
-	ctx = increaseRetry(ctx)
-	// ctx := context.Background()
-	var localCtx context.Context
-	if g.timeout != 0 {
-		localCtx, g.cancel = context.WithTimeout(ctx, g.timeout)
-	} else {
-		localCtx, g.cancel = context.WithCancel(ctx)
-	}
-	client := &http.Client{}
+	ctx = common.IncreaseRetry(ctx)
 
-	req, e := http.NewRequestWithContext(localCtx, "GET", g.address, nil)
+	localCtx, cancel := g.ApplyTimeout(ctx)
+	g.SetCancel(cancel)
+
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(localCtx, "GET", g.address, nil)
 	log.Debugln("sending get http request")
-	if e != nil {
-		return
+	if err != nil {
+		log.
+			WithError(err).
+			Warnln("cannot create the request (pre-send)")
+		return g.Execute(ctx)
 	}
 	for key, val := range *g.headers {
 		req.Header.Add(key, val)
 	}
-
-	res, e := client.Do(req)
+	res, err := client.Do(req)
 	if res != nil {
 		log = log.WithField("status", res.StatusCode)
 		log.Infoln("received response with status: ", res.Status)
 		if log.Logger.IsLevelEnabled(logrus.DebugLevel) {
-			logData := logResponse(res)
-			log.Debugln(logData()...)
+			logData := LogHTTPResponse(res)
+			log.Debugln(
+				logData()...,
+			)
 		}
-
 	}
-	if e != nil {
-		log = log.WithError(e)
-	}
+	if err != nil || res.StatusCode >= 400 {
+		log.
+			WithError(err).
+			Warnln("request failed")
 
-	if e != nil || res.StatusCode >= 400 {
-		log.Warnln("request failed")
 		return g.Execute(ctx)
 	}
-	runTasks(g.doneHooks)
-	return
+	g.DoDoneHooks(ctx)
+	return nil
 }
 
 func NewGet(task *config.Task, logger *logrus.Entry) abstraction.Executable {
-	return &Get{
-		address:    task.Get,
-		headers:    &task.Headers,
-		retries:    task.Retries,
-		retryDelay: task.RetryDelay,
-		timeout:    task.Timeout,
+	get := &Get{
+		address: task.Get,
+		headers: &task.Headers,
 		log: logger.WithFields(
 			logrus.Fields{
 				"url":    task.Get,
@@ -112,4 +81,8 @@ func NewGet(task *config.Task, logger *logrus.Entry) abstraction.Executable {
 			},
 		),
 	}
+	get.SetMaxRetry(task.Retries)
+	get.SetRetryDelay(task.RetryDelay)
+	get.SetTimeout(task.Timeout)
+	return get
 }

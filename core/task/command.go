@@ -7,82 +7,53 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/core/common"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 )
 
 type Command struct {
+	*common.Hooked
+	*common.Cancelable
+	*common.Retry
+	*common.Timeout
+
 	exe              string
 	envVars          *[]string
 	workingDirectory string
 	log              *logrus.Entry
-	cancel           context.CancelFunc
 
 	user  string
 	group string
 
 	shell     string
 	shellArgs []string
-
-	retries    uint
-	retryDelay time.Duration
-	timeout    time.Duration
-
-	doneHooks []abstraction.Executable
-	failHooks []abstraction.Executable
-}
-
-// SetDoneHooks implements abstraction.Executable.
-func (c *Command) SetDoneHooks(done []abstraction.Executable) {
-	c.doneHooks = done
-}
-
-// SetFailHooks implements abstraction.Executable.
-func (c *Command) SetFailHooks(fail []abstraction.Executable) {
-	c.failHooks = fail
-}
-
-// Cancel implements abstraction.Executable.
-func (c *Command) Cancel() {
-	if c.cancel != nil {
-		c.log.Debugln("canceling executable")
-		c.cancel()
-	}
 }
 
 // Execute implements abstraction.Executable.
-func (c *Command) Execute(ctx context.Context) (e error) {
-	r := getRetry(ctx)
+func (c *Command) Execute(ctx context.Context) error {
+	r := common.GetRetry(ctx)
 	log := c.log.WithField("retry", r)
-	if getRetry(ctx) > c.retries {
-		log.Warn("maximum retry reached")
-		runTasks(c.failHooks)
-		return fmt.Errorf("maximum retries reached")
+
+	if err := c.WaitForRetry(ctx); err != nil {
+		c.DoFailHooks(ctx)
+		return err
 	}
-	if r != 0 {
-		log.Debugln("waiting", c.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(c.retryDelay)
-	}
-	ctx = increaseRetry(ctx)
+	ctx = common.IncreaseRetry(ctx)
 	var procCtx context.Context
 	var cancel context.CancelFunc
-	if c.timeout != 0 {
-		procCtx, cancel = context.WithTimeout(ctx, c.timeout)
-	} else {
-		procCtx, cancel = context.WithCancel(ctx)
-	}
-	c.cancel = cancel
+	procCtx, cancel = c.ApplyTimeout(ctx)
+	c.SetCancel(cancel)
 
 	proc := exec.CommandContext(
 		procCtx,
 		c.shell,
-		append(c.shellArgs, *&c.exe)...,
+		append(c.shellArgs, c.exe)...,
 	)
 	credential.SetUser(log, proc, c.user, c.group)
 	proc.Env = *c.envVars
@@ -90,19 +61,17 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 	var res bytes.Buffer
 	proc.Stdout = &res
 	proc.Stderr = &res
-	proc.Start()
-	e = proc.Wait()
-
-	if e != nil {
-		log.Warnf("command failed with answer: %s", strings.TrimSpace(string(res.Bytes())))
-		log.Warn("failed to execute the command ", e)
+	if err := proc.Start(); err != nil {
+		log.Warn("failed to start the command ", err)
 		return c.Execute(ctx)
-	} else {
-		log.Infof("command finished with answer: %s", strings.TrimSpace(string(res.Bytes())))
+	} else if err := proc.Wait(); err != nil {
+		log.Warnf("command failed with answer: %s", strings.TrimSpace(res.String()))
+		log.Warn("failed to execute the command", err)
+		return c.Execute(ctx)
 	}
 
-	runTasks(c.doneHooks)
-	return
+	c.DoDoneHooks(ctx)
+	return nil
 }
 
 func NewCommand(
@@ -131,7 +100,7 @@ func NewCommand(
 			logger.Fatalln("cannot get current working directory: ", e)
 		}
 	}
-	return &Command{
+	cmd := &Command{
 		exe:              task.Command,
 		envVars:          &env,
 		workingDirectory: wd,
@@ -143,12 +112,14 @@ func NewCommand(
 				"command":           task.Command,
 			},
 		),
-		shell:      shell,
-		shellArgs:  shellArgs,
-		retries:    task.Retries,
-		retryDelay: task.RetryDelay,
-		timeout:    task.Timeout,
-		user:       task.UserName,
-		group:      task.GroupName,
+		shell:     shell,
+		shellArgs: shellArgs,
+		user:      task.UserName,
+		group:     task.GroupName,
 	}
+	cmd.SetMaxRetry(task.Retries)
+	cmd.SetRetryDelay(task.RetryDelay)
+	cmd.SetTimeout(task.Timeout)
+
+	return cmd
 }

@@ -8,11 +8,13 @@ jobs:
     # Description is reserved for the future
     description: Sample of a single job
     # Jobs can be disabled explicitly instead of commenting/removing the job
-    # disabled: true
+    disabled: true
+    # Concurrency level of this job, indicates how many tasks can run simultaneously
+    concurrency: 5
     tasks:
       # This line specifies the actual command to be executed.
       - command: echo $(whoami)
-        # This setting determines the number of times the task will be retried if it fails
+        # This setting determines the number of times the task will be retried if it fails, defaults to zero
         # A failure is defined by either a non-zero exit code for commands or a status code of 400 or higher for HTTP requests.
         retries: 3
         # This specifies the delay between retries.
@@ -21,8 +23,15 @@ jobs:
         # If the task exceeds 15 seconds, it will be considered failed and stopped (command) or canceled (http requests)
         timeout: 15s
         user: root
-        # # This defines the working directory for the command.
+        # This defines the working directory for the command.
         working-dir: /home/user
+        # This tasks will be executed if current task is done (exit-code: 0, or http response code: <400)
+        on-done:
+          - command: echo ok
+
+        # This tasks will be executed if current task is failed (exit-code: 1, or http response code: >=400)
+        on-fail:
+          - command: echo fail
         # This section allows you to set environment variables that will be available to the command during execution.
         # `SHELL` and `SHELL_ARGS` can be used to change this commands shell environment
         env:
