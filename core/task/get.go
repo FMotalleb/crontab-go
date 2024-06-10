@@ -24,9 +24,20 @@ type Get struct {
 }
 
 // Execute implements abstraction.Executable.
-func (g *Get) Execute(ctx context.Context) error {
+func (g *Get) Execute(ctx context.Context) (e error) {
 	r := common.GetRetry(ctx)
 	log := g.log.WithField("retry", r)
+	defer func() {
+		err := recover()
+		if err != nil {
+			if err, ok := err.(error); ok {
+				log = log.WithError(err)
+				e = err
+			}
+			log.Warnf("recovering command execution from a fatal error: %s", err)
+		}
+	}()
+
 	if err := g.WaitForRetry(ctx); err != nil {
 		g.DoFailHooks(ctx)
 		return err
@@ -53,7 +64,7 @@ func (g *Get) Execute(ctx context.Context) error {
 		log = log.WithField("status", res.StatusCode)
 		log.Infoln("received response with status: ", res.Status)
 		if log.Logger.IsLevelEnabled(logrus.DebugLevel) {
-			logData := LogHTTPResponse(res)
+			logData := logHTTPResponse(res)
 			log.Debugln(
 				logData()...,
 			)

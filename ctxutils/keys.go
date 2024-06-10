@@ -8,4 +8,5 @@ var (
 	RetryCountKey ContextKey = ContextKey("retry-count")
 	JobKey        ContextKey = ContextKey("job")
 	TaskKey       ContextKey = ContextKey("task")
+	FailedRemotes ContextKey = ContextKey("failed-remotes")
 )

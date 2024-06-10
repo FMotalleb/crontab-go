@@ -40,22 +40,30 @@ type (
 	}
 
 	Task struct {
-		Post             string            `mapstructure:"post" json:"post,omitempty"`
-		Get              string            `mapstructure:"get" json:"get,omitempty"`
+		// Http Requests
+		Post    string            `mapstructure:"post" json:"post,omitempty"`
+		Get     string            `mapstructure:"get" json:"get,omitempty"`
+		Headers map[string]string `mapstructure:"headers" json:"headers,omitempty"`
+		Data    any               `mapstructure:"data" json:"data,omitempty"`
+
+		// Command params
 		Command          string            `mapstructure:"command" json:"command,omitempty"`
 		WorkingDirectory string            `mapstructure:"working-dir" json:"working_directory,omitempty"`
-		Headers          map[string]string `mapstructure:"headers" json:"headers,omitempty"`
-		Data             any               `mapstructure:"data" json:"data,omitempty"`
+		UserName         string            `mapstructure:"user" json:"user,omitempty"`
+		GroupName        string            `mapstructure:"group" json:"group,omitempty"`
+		Env              map[string]string `mapstructure:"env" json:"env,omitempty"`
+		Connections      []TaskConnection  `mapstructure:"connections" json:"connections,omitempty"`
 
-		UserName  string `mapstructure:"user" json:"user,omitempty"`
-		GroupName string `mapstructure:"group" json:"group,omitempty"`
+		// Retry & Timeout config
+		Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
+		RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
+		Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 
-		Retries    uint              `mapstructure:"retries" json:"retries,omitempty"`
-		RetryDelay time.Duration     `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
-		Timeout    time.Duration     `mapstructure:"timeout" json:"timeout,omitempty"`
-		Env        map[string]string `mapstructure:"env" json:"env,omitempty"`
-
+		// Hooks
 		OnDone []Task `mapstructure:"on-done" json:"on_done,omitempty"`
 		OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`
+	}
+	TaskConnection struct {
+		Local bool
 	}
 )

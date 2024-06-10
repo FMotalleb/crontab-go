@@ -26,9 +26,19 @@ type Post struct {
 }
 
 // Execute implements abstraction.Executable.
-func (p *Post) Execute(ctx context.Context) error {
+func (p *Post) Execute(ctx context.Context) (e error) {
 	r := common.GetRetry(ctx)
 	log := p.log.WithField("retry", r)
+	defer func() {
+		err := recover()
+		if err != nil {
+			if err, ok := err.(error); ok {
+				log = log.WithError(err)
+				e = err
+			}
+			log.Warnf("recovering command execution from a fatal error: %s", err)
+		}
+	}()
 	err := p.WaitForRetry(ctx)
 	if err != nil {
 		p.DoFailHooks(ctx)
@@ -72,7 +82,7 @@ func (p *Post) Execute(ctx context.Context) error {
 		log = log.WithField("status", res.StatusCode)
 		log.Infoln("received response with status: ", res.Status)
 		if log.Logger.IsLevelEnabled(logrus.DebugLevel) {
-			logData := LogHTTPResponse(res)
+			logData := logHTTPResponse(res)
 			log.Debugln(logData()...)
 		}
 	}
