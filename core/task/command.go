@@ -1,108 +1,99 @@
 package task
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
-	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
-	credential "github.com/FMotalleb/crontab-go/core/os_credential"
+	connection "github.com/FMotalleb/crontab-go/core/cmd_connection"
+	"github.com/FMotalleb/crontab-go/core/common"
 )
 
 type Command struct {
-	exe              string
-	envVars          *[]string
-	workingDirectory string
-	log              *logrus.Entry
-	cancel           context.CancelFunc
+	common.Hooked
+	common.Cancelable
+	common.Retry
+	common.Timeout
 
-	user  string
-	group string
-
-	shell     string
-	shellArgs []string
-
-	retries    uint
-	retryDelay time.Duration
-	timeout    time.Duration
-
-	doneHooks []abstraction.Executable
-	failHooks []abstraction.Executable
-}
-
-// SetDoneHooks implements abstraction.Executable.
-func (c *Command) SetDoneHooks(done []abstraction.Executable) {
-	c.doneHooks = done
-}
-
-// SetFailHooks implements abstraction.Executable.
-func (c *Command) SetFailHooks(fail []abstraction.Executable) {
-	c.failHooks = fail
-}
-
-// Cancel implements abstraction.Executable.
-func (c *Command) Cancel() {
-	if c.cancel != nil {
-		c.log.Debugln("canceling executable")
-		c.cancel()
-	}
+	task *config.Task
+	log  *logrus.Entry
 }
 
 // Execute implements abstraction.Executable.
 func (c *Command) Execute(ctx context.Context) (e error) {
-	r := getRetry(ctx)
+	r := common.GetRetry(ctx)
 	log := c.log.WithField("retry", r)
-	if getRetry(ctx) > c.retries {
-		log.Warn("maximum retry reached")
-		runTasks(c.failHooks)
-		return fmt.Errorf("maximum retries reached")
-	}
-	if r != 0 {
-		log.Debugln("waiting", c.retryDelay, "before executing the next iteration after last fail")
-		time.Sleep(c.retryDelay)
-	}
-	ctx = increaseRetry(ctx)
-	var procCtx context.Context
-	var cancel context.CancelFunc
-	if c.timeout != 0 {
-		procCtx, cancel = context.WithTimeout(ctx, c.timeout)
-	} else {
-		procCtx, cancel = context.WithCancel(ctx)
-	}
-	c.cancel = cancel
+	defer func() {
+		err := recover()
+		if err != nil {
+			if err, ok := err.(error); ok {
+				log = log.WithError(err)
+				e = err
+			}
+			log.Warnf("recovering command execution from a fatal error: %s", err)
+		}
+	}()
 
-	proc := exec.CommandContext(
-		procCtx,
-		c.shell,
-		append(c.shellArgs, *&c.exe)...,
-	)
-	credential.SetUser(log, proc, c.user, c.group)
-	proc.Env = *c.envVars
-	proc.Dir = c.workingDirectory
-	var res bytes.Buffer
-	proc.Stdout = &res
-	proc.Stderr = &res
-	proc.Start()
-	e = proc.Wait()
+	if err := c.WaitForRetry(ctx); err != nil {
+		c.DoFailHooks(ctx)
+		return err
+	}
 
-	if e != nil {
-		log.Warnf("command failed with answer: %s", strings.TrimSpace(string(res.Bytes())))
-		log.Warn("failed to execute the command ", e)
+	ctx = common.IncreaseRetry(ctx)
+	connections := c.task.Connections
+	if fc := getFailedConnections(ctx); len(fc) != 0 {
+		connections = fc
+	}
+	if len(connections) == 0 {
+		connections = []config.TaskConnection{
+			{
+				Local: true,
+			},
+		}
+		log.Debug("no explicit Connection provided using local task connection by default")
+	}
+	for _, conn := range connections {
+		log := log.WithFields(
+			logrus.Fields{
+				"is-local": conn.Local,
+			},
+		)
+		connection := connection.CompileConnection(&conn, log)
+		cmdCtx, cancel := c.ApplyTimeout(ctx)
+		c.SetCancel(cancel)
+
+		if err := connection.Connect(); err != nil {
+			log.Warn("error when tried to connect, exiting current remote", err)
+			ctx = addFailedConnections(ctx, conn)
+			continue
+		}
+		err := connection.Prepare(cmdCtx, c.task)
+		if err != nil {
+			log.Warn("cannot prepare command: ", err)
+			ctx = addFailedConnections(ctx, conn)
+			connection.Disconnect()
+			continue
+		}
+		ans, err := connection.Execute()
+		if err != nil {
+			ctx = addFailedConnections(ctx, conn)
+		}
+		log.Infof("command finished with answer: %s, error: %s", ans, err)
+		if err := connection.Disconnect(); err != nil {
+			log.Warn("error when tried to disconnect", err)
+			ctx = addFailedConnections(ctx, conn)
+			continue
+		}
+	}
+	if fc := getFailedConnections(ctx); len(fc) != 0 {
 		return c.Execute(ctx)
-	} else {
-		log.Infof("command finished with answer: %s", strings.TrimSpace(string(res.Bytes())))
 	}
-
-	runTasks(c.doneHooks)
-	return
+	if errs := c.DoDoneHooks(ctx); len(errs) != 0 {
+		log.Warn("command finished successfully but its hooks failed")
+	}
+	return nil
 }
 
 func NewCommand(
@@ -110,45 +101,15 @@ func NewCommand(
 	logger *logrus.Entry,
 ) abstraction.Executable {
 	log := logger.WithField("command", task.Command)
-	env := os.Environ()
-
-	shell := cmd.CFG.Shell
-	shellArgs := cmd.CFG.ShellArgs
-	for key, val := range task.Env {
-		env = append(env, fmt.Sprintf("%s=%s", key, val))
-		switch strings.ToLower(key) {
-		case "shell":
-			shell = val
-		case "shell_args":
-			shellArgs = strings.Split(val, ";")
-		}
-	}
-	wd := task.WorkingDirectory
-	if wd == "" {
-		var e error
-		wd, e = os.Getwd()
-		if e != nil {
-			logger.Fatalln("cannot get current working directory: ", e)
-		}
-	}
-	return &Command{
-		exe:              task.Command,
-		envVars:          &env,
-		workingDirectory: wd,
-		log: log.WithFields(
-			logrus.Fields{
-				"working_directory": wd,
-				"shell":             shell,
-				"shell_args":        shellArgs,
-				"command":           task.Command,
-			},
+	cmd := &Command{
+		log: log.WithField(
+			"command", task.Command,
 		),
-		shell:      shell,
-		shellArgs:  shellArgs,
-		retries:    task.Retries,
-		retryDelay: task.RetryDelay,
-		timeout:    task.Timeout,
-		user:       task.UserName,
-		group:      task.GroupName,
+		task: task,
 	}
+	cmd.SetMaxRetry(task.Retries)
+	cmd.SetRetryDelay(task.RetryDelay)
+	cmd.SetTimeout(task.Timeout)
+
+	return cmd
 }
