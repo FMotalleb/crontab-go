@@ -215,6 +215,27 @@
       "required": [],
       "title": "Data"
     },
+    "TaskConnection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local": {
+          "type": "boolean",
+          "title": "Local environment"
+        },
+        "docker": {
+          "type": "string",
+          "title": "docker connection string"
+        },
+        "container": {
+          "type": "string",
+          "title": "container name/id matcher",
+          "description": "Should match only one container, if matches two or more container the command will fail"
+        }
+      },
+      "required": [],
+      "title": "Data"
+    },
     "Env": {
       "type": "object",
       "additionalProperties": true,
