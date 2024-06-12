@@ -6,13 +6,15 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 )
 
-type DockerConnection struct {
+type DockerAttachConnection struct {
 	conn        *config.TaskConnection
 	log         *logrus.Entry
 	cli         *client.Client
@@ -20,20 +22,23 @@ type DockerConnection struct {
 	containerID string
 }
 
-func NewDockerConnection(log *logrus.Entry, conn *config.TaskConnection) *DockerConnection {
-	return &DockerConnection{
+func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
+	return &DockerAttachConnection{
 		conn: conn,
-		log: log.WithField(
-			"connection", "docker",
+		log: log.WithFields(
+			logrus.Fields{
+				"connection":  "docker",
+				"docker-mode": "attach",
+			},
 		),
 	}
 }
 
-func (d *DockerConnection) Prepare(ctx context.Context, task *config.Task) error {
+func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
 	shell, shellArgs, env := reshapeEnviron(task, d.log)
+
 	// Specify the container ID or name
 	d.containerID = d.conn.ContainerName
-
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
@@ -52,11 +57,10 @@ func (d *DockerConnection) Prepare(ctx context.Context, task *config.Task) error
 		User:         task.UserName,
 		Cmd:          cmd,
 	}
-
 	return nil
 }
 
-func (d *DockerConnection) Connect() error {
+func (d *DockerAttachConnection) Connect() error {
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(d.conn.DockerConnection),
 	)
@@ -67,13 +71,16 @@ func (d *DockerConnection) Connect() error {
 	return nil
 }
 
-func (d *DockerConnection) Execute() ([]byte, error) {
+func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	// Create the exec instance
 	exec, err := d.cli.ContainerExecCreate(context.Background(), d.containerID, *d.execCFG)
 	if err != nil {
 		return nil, err
 	}
 
+	d.cli.ContainerStart(d.log.Context, "alp",
+		container.StartOptions{},
+	)
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerExecAttach(context.Background(), exec.ID, types.ExecStartCheck{})
 	if err != nil {
@@ -90,6 +97,6 @@ func (d *DockerConnection) Execute() ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-func (d *DockerConnection) Disconnect() error {
+func (d *DockerAttachConnection) Disconnect() error {
 	return d.cli.Close()
 }

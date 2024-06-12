@@ -8,9 +8,12 @@ jobs:
       - command: php -v
         retry-delay: 5s
         connections:
-          - container: alp
+          - image: docker-mysql-database-phpmyadmin
+            volumes:
+              - "/home/motalleb/Downloads:/var/local/test"
         env:
           SHELL: /bin/bash
+
     schedulers:
       - on-init: true
       - interval: 10m10s

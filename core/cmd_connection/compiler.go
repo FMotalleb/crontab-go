@@ -15,8 +15,10 @@ func CompileConnection(conn *config.TaskConnection, logger *logrus.Entry) abstra
 	switch {
 	case conn.Local:
 		return NewLocalCMDConn(logger)
-	case conn.ContainerName != "":
-		return NewDockerConnection(logger, conn)
+	case conn.ContainerName != "" && conn.ImageName == "":
+		return NewDockerAttachConnection(logger, conn)
+	case conn.ImageName != "":
+		return NewDockerCreateConnection(logger, conn)
 	}
 
 	log.Fatalln("cannot compile given taskConnection", conn)

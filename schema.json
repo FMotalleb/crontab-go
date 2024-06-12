@@ -238,6 +238,24 @@
           "type": "string",
           "title": "container name/id matcher",
           "description": "Should match only one container, if matches two or more container the command will fail"
+        },
+        "image": {
+          "type": "string",
+          "title": "Image name/id"
+        },
+        "volumes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Volumes"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Networks"
         }
       },
       "required": [],
