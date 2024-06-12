@@ -23,6 +23,7 @@ type DockerCreateConnection struct {
 	containerConfig *container.Config
 	hostConfig      *container.HostConfig
 	networkConfig   *network.NetworkingConfig
+	ctx             context.Context
 }
 
 func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
@@ -39,7 +40,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
 	shell, shellArgs, env := reshapeEnviron(task, d.log)
-
+	d.ctx = ctx
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
@@ -92,7 +93,7 @@ func (d *DockerCreateConnection) Connect() error {
 }
 
 func (d *DockerCreateConnection) Execute() ([]byte, error) {
-	ctx := context.Background()
+	ctx := d.ctx
 	// Create the exec instance
 	exec, err := d.cli.ContainerCreate(
 		ctx,
@@ -114,7 +115,6 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	err = d.cli.ContainerStart(d.log.Context, exec.ID,
 		container.StartOptions{},
 	)
-
 	d.log.Debugf("container started: %v", exec)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	d.log.Debugf("container ready to attach: %v", exec)
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerLogs(
-		context.Background(),
+		ctx,
 		exec.ID,
 		container.LogsOptions{
 			ShowStdout: true,

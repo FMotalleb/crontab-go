@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 
@@ -20,6 +19,7 @@ type DockerAttachConnection struct {
 	cli         *client.Client
 	execCFG     *types.ExecConfig
 	containerID string
+	ctx         context.Context
 }
 
 func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
@@ -36,7 +36,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 
 func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
 	shell, shellArgs, env := reshapeEnviron(task, d.log)
-
+	d.ctx = ctx
 	// Specify the container ID or name
 	d.containerID = d.conn.ContainerName
 	if d.conn.DockerConnection == "" {
@@ -73,16 +73,13 @@ func (d *DockerAttachConnection) Connect() error {
 
 func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	// Create the exec instance
-	exec, err := d.cli.ContainerExecCreate(context.Background(), d.containerID, *d.execCFG)
+	exec, err := d.cli.ContainerExecCreate(d.ctx, d.containerID, *d.execCFG)
 	if err != nil {
 		return nil, err
 	}
 
-	d.cli.ContainerStart(d.log.Context, "alp",
-		container.StartOptions{},
-	)
 	// Attach to the exec instance
-	resp, err := d.cli.ContainerExecAttach(context.Background(), exec.ID, types.ExecStartCheck{})
+	resp, err := d.cli.ContainerExecAttach(d.ctx, exec.ID, types.ExecStartCheck{})
 	if err != nil {
 		return nil, err
 	}
