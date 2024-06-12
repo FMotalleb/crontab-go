@@ -6,6 +6,8 @@
   * Execute the command inside a running container (using attach)
   * Create new container (using given image name) and then run the command inside it
 
+* Command execution credentials (unix only)
+
 ## v0.1
 
 * Initial release
