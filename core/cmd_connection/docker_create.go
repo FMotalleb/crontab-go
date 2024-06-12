@@ -15,6 +15,7 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 )
 
+// DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
 type DockerCreateConnection struct {
 	conn            *config.TaskConnection
 	log             *logrus.Entry
@@ -26,6 +27,12 @@ type DockerCreateConnection struct {
 	ctx             context.Context
 }
 
+// NewDockerCreateConnection initializes a new DockerCreateConnection instance.
+// Parameters:
+// - log: A logrus.Entry instance for logging.
+// - conn: A TaskConnection instance containing the connection configuration.
+// Returns:
+// - A new instance of DockerCreateConnection.
 func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
 	return &DockerCreateConnection{
 		conn: conn,
@@ -38,6 +45,12 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 	}
 }
 
+// Prepare sets up the Docker container configuration based on the provided task.
+// Parameters:
+// - ctx: A context.Context instance for managing the lifecycle of the container.
+// - task: A Task instance containing the task configuration.
+// Returns:
+// - An error if the preparation fails, otherwise nil.
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
 	shell, shellArgs, env := reshapeEnviron(task, d.log)
 	d.ctx = ctx
@@ -81,6 +94,9 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 	return nil
 }
 
+// Connect establishes a connection to the Docker daemon.
+// Returns:
+// - An error if the connection fails, otherwise nil.
 func (d *DockerCreateConnection) Connect() error {
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(d.conn.DockerConnection),
@@ -92,6 +108,10 @@ func (d *DockerCreateConnection) Connect() error {
 	return nil
 }
 
+// Execute creates, starts, and logs the output of the Docker container.
+// Returns:
+// - A byte slice containing the command output.
+// - An error if the execution fails, otherwise nil.
 func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	ctx := d.ctx
 	// Create the exec instance
@@ -152,6 +172,9 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
+// Disconnect closes the connection to the Docker daemon.
+// Returns:
+// - An error if the disconnection fails, otherwise nil.
 func (d *DockerCreateConnection) Disconnect() error {
 	return d.cli.Close()
 }

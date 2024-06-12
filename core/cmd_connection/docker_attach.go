@@ -22,6 +22,13 @@ type DockerAttachConnection struct {
 	ctx         context.Context
 }
 
+// NewDockerAttachConnection creates a new DockerAttachConnection instance.
+// It initializes the connection configuration and logging fields.
+// Parameters:
+// - log: A logrus.Entry instance for logging purposes.
+// - conn: A TaskConnection instance containing the connection configuration.
+// Returns:
+// - A new instance of DockerAttachConnection implementing the CmdConnection interface.
 func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
 	return &DockerAttachConnection{
 		conn: conn,
@@ -34,6 +41,13 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 	}
 }
 
+// Prepare sets up the DockerAttachConnection for executing a task.
+// It reshapes the environment variables, sets the context, and creates an exec configuration.
+// Parameters:
+// - ctx: A context.Context instance for managing the request lifetime.
+// - task: A Task instance containing the task configuration.
+// Returns:
+// - An error if the preparation fails, otherwise nil.
 func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
 	shell, shellArgs, env := reshapeEnviron(task, d.log)
 	d.ctx = ctx
@@ -60,6 +74,10 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 	return nil
 }
 
+// Connect establishes a connection to the Docker daemon.
+// It initializes the Docker client with the specified connection settings.
+// Returns:
+// - An error if the connection fails, otherwise nil.
 func (d *DockerAttachConnection) Connect() error {
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(d.conn.DockerConnection),
@@ -71,6 +89,11 @@ func (d *DockerAttachConnection) Connect() error {
 	return nil
 }
 
+// Execute runs the command in the Docker container and captures the output.
+// It creates an exec instance, attaches to it, and reads the command output.
+// Returns:
+// - A byte slice containing the command output.
+// - An error if the execution fails, otherwise nil.
 func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	// Create the exec instance
 	exec, err := d.cli.ContainerExecCreate(d.ctx, d.containerID, *d.execCFG)
@@ -94,6 +117,9 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
+// Disconnect closes the connection to the Docker daemon.
+// Returns:
+// - An error if the disconnection fails, otherwise nil.
 func (d *DockerAttachConnection) Disconnect() error {
 	return d.cli.Close()
 }

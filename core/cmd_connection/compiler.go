@@ -2,14 +2,15 @@
 package connection
 
 import (
-	"log"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 )
 
+// CompileConnection compiles the task connection based on the provided configuration and logger.
+// It returns an abstraction.CmdConnection interface based on the type of connection specified in the configuration.
+// If the connection type is not recognized or invalid, it logs a fatal error and returns nil.
 func CompileConnection(conn *config.TaskConnection, logger *logrus.Entry) abstraction.CmdConnection {
 	logger.Warn(conn)
 	switch {
@@ -21,6 +22,6 @@ func CompileConnection(conn *config.TaskConnection, logger *logrus.Entry) abstra
 		return NewDockerCreateConnection(logger, conn)
 	}
 
-	log.Fatalln("cannot compile given taskConnection", conn)
+	logger.WithField("taskConnection", conn).Error("cannot compile given taskConnection")
 	return nil
 }
