@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2
+
+* Docker integration
+  * Execute the command inside a running container (using attach)
+  * Create new container (using given image name) and then run the command inside it
+
 ## v0.1
 
 * Initial release
