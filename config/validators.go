@@ -74,7 +74,7 @@ func (t *Task) Validate(log *logrus.Entry) error {
 		)
 	}
 	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
-		return err
+		log.WithError(err).Warn("Be careful when using credentials, in local mode you cant use credentials unless running as root")
 	}
 	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
 		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)

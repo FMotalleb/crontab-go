@@ -204,6 +204,13 @@
         "data": {
           "$ref": "#/definitions/Data",
           "description": "A Data object that defines the data to be sent with the request."
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskConnection"
+          },
+          "description": "Connection config."
         }
       },
       "required": [],
