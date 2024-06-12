@@ -64,16 +64,16 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		cmdCtx, cancel := c.ApplyTimeout(ctx)
 		c.SetCancel(cancel)
 
-		if err := connection.Connect(); err != nil {
-			log.Warn("error when tried to connect, exiting current remote", err)
-			ctx = addFailedConnections(ctx, conn)
-			continue
-		}
-		err := connection.Prepare(cmdCtx, c.task)
-		if err != nil {
+		if err := connection.Prepare(cmdCtx, c.task); err != nil {
 			log.Warn("cannot prepare command: ", err)
 			ctx = addFailedConnections(ctx, conn)
 			connection.Disconnect()
+			continue
+		}
+		
+		if err := connection.Connect(); err != nil {
+			log.Warn("error when tried to connect, exiting current remote", err)
+			ctx = addFailedConnections(ctx, conn)
 			continue
 		}
 		ans, err := connection.Execute()

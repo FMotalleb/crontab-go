@@ -5,9 +5,15 @@
 jobs:
   - name: Test Job
     tasks:
-      - command: ip a -pt
-        retries: 5
+      - command: php -v
         retry-delay: 5s
+        connections:
+          - image: docker-mysql-database-phpmyadmin
+            volumes:
+              - "/home/motalleb/Downloads:/var/local/test"
+        env:
+          SHELL: /bin/bash
+
     schedulers:
       - on-init: true
       - interval: 10m10s

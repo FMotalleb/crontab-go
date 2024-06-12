@@ -64,6 +64,11 @@ type (
 		OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`
 	}
 	TaskConnection struct {
-		Local bool
+		Local            bool     `mapstructure:"local" json:"local,omitempty"`
+		DockerConnection string   `mapstructure:"docker" json:"docker,omitempty"`
+		ContainerName    string   `mapstructure:"container" json:"container,omitempty"`
+		ImageName        string   `mapstructure:"image" json:"image,omitempty"`
+		Volumes          []string `mapstructure:"volumes" json:"volumes,omitempty"`
+		Networks         []string `mapstructure:"networks" json:"networks,omitempty"`
 	}
 )

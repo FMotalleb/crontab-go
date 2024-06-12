@@ -204,6 +204,13 @@
         "data": {
           "$ref": "#/definitions/Data",
           "description": "A Data object that defines the data to be sent with the request."
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TaskConnection"
+          },
+          "description": "Connection config."
         }
       },
       "required": [],
@@ -212,6 +219,45 @@
     "Data": {
       "type": "object",
       "additionalProperties": true,
+      "required": [],
+      "title": "Data"
+    },
+    "TaskConnection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local": {
+          "type": "boolean",
+          "title": "Local environment"
+        },
+        "docker": {
+          "type": "string",
+          "title": "docker connection string"
+        },
+        "container": {
+          "type": "string",
+          "title": "container name/id matcher",
+          "description": "Should match only one container, if matches two or more container the command will fail"
+        },
+        "image": {
+          "type": "string",
+          "title": "Image name/id"
+        },
+        "volumes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Volumes"
+        },
+        "networks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Networks"
+        }
+      },
       "required": [],
       "title": "Data"
     },
