@@ -11,50 +11,97 @@ import (
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
+// Validate checks the validity of the Config struct.
+// It ensures that the log format and log level are valid, and all jobs within the config are also valid.
+// If any validation fails, it returns an error with the specific validation error.
+// Otherwise, it returns nil.
 func (cfg *Config) Validate(log *logrus.Entry) error {
+	// Validate log format
 	if err := cfg.LogFormat.Validate(); err != nil {
 		return err
 	}
+
+	// Validate log level
 	if err := cfg.LogLevel.Validate(); err != nil {
 		return err
 	}
+
+	// Validate each job in the config
 	for _, job := range cfg.Jobs {
 		if err := job.Validate(log); err != nil {
 			return err
 		}
 	}
+
+	// All validations passed
 	return nil
 }
 
+// Validate checks the validity of a JobConfig.
+// It ensures that the job is not disabled and all its schedulers, tasks, done hooks, and failed hooks are valid.
+// If any validation fails, it returns an error with the specific validation error.
+// Otherwise, it returns nil.
 func (c *JobConfig) Validate(log *logrus.Entry) error {
-	if c.Disabled == true {
+	// Log the start of validation
+	log.Tracef("Validating JobConfig: %s", c.Name)
+
+	// Check if the job is disabled
+	if c.Disabled {
+		// Log the disabled job
+		log.Debugf("JobConfig %s is disabled", c.Name)
 		return nil
 	}
 
+	// Validate each scheduler
 	for _, s := range c.Schedulers {
 		if err := s.Validate(log); err != nil {
+			// Log the validation error
+			log.Errorf("Validation error in scheduler for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
+
+	// Validate each task
 	for _, t := range c.Tasks {
 		if err := t.Validate(log); err != nil {
+			// Log the validation error
+			log.Errorf("Validation error in task for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
+
+	// Validate each done hook
 	for _, t := range c.Hooks.Done {
 		if err := t.Validate(log); err != nil {
+			// Log the validation error
+			log.Errorf("Validation error in done hook for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
+
+	// Validate each failed hook
 	for _, t := range c.Hooks.Failed {
 		if err := t.Validate(log); err != nil {
+			// Log the validation error
+			log.Errorf("Validation error in failed hook for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
+
+	// Log the successful validation
+	log.Tracef("Validation successful for JobConfig: %s", c.Name)
 	return nil
 }
 
+// Validate checks the validity of a Task.
+// It ensures that the task has exactly one of the Get, Post, or Command fields, and validates other fields based on the specified action.
+// If any validation fails, it returns an error with the specific validation error.
+// Otherwise, it returns nil.
 func (t *Task) Validate(log *logrus.Entry) error {
+	// Log the start of validation
+	log.Tracef("Validating Task: %+v", t)
+
+	// Check the number of action fields
 	actions := []bool{
 		t.Get != "",
 		t.Command != "",
@@ -67,59 +114,92 @@ func (t *Task) Validate(log *logrus.Entry) error {
 		}
 	}
 	if activeActions != 1 {
-		return fmt.Errorf(
-			"a single task should have one of (get,post,command) fields, received:(command: `%s`, get: `%s`, post: `%s`)",
+		err := fmt.Errorf(
+			"a single task should have one of (Get, Post, Command) fields, received:(Command: `%s`, Get: `%s`, Post: `%s`)",
 			t.Command,
 			t.Get,
 			t.Post,
 		)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
 	}
+
+	// Validate credentials
 	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
-		log.WithError(err).Warn("Be careful when using credentials, in local mode you cant use credentials unless running as root")
+		log.WithError(err).Warn("Be careful when using credentials, in local mode you can't use credentials unless running as root")
+		// return err
 	}
+
+	// Validate command-specific fields
 	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
-		return fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
+		err := fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
 	}
+
+	// Validate GET-specific fields
 	if t.Get != "" && t.Data != nil {
-		return fmt.Errorf("get request cannot have data field, violating get uri: `%s`", t.Get)
+		err := fmt.Errorf("GET request cannot have data field, violating GET URI: `%s`", t.Get)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
 	}
+
+	// Validate timeout
 	if t.Timeout < 0 {
-		return fmt.Errorf(
-			"timeout for jobs cannot be negative received `%s` for `%v`",
+		err := fmt.Errorf(
+			"timeout for tasks cannot be negative received `%d` for %+v",
 			t.Timeout,
 			t,
 		)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
 	}
+
+	// Validate data
 	if t.Data != nil {
 		_, err := json.Marshal(t.Data)
 		if err != nil {
-			return fmt.Errorf("cannot marshal the given data: %sr", err)
+			log.WithError(err).Warn("Validation failed for Task")
+			return err
 		}
 	}
 
+	// Validate retry delay
 	if t.RetryDelay < 0 {
-		return fmt.Errorf(
-			"retry delay for jobs cannot be negative received `%s` for `%v`",
+		err := fmt.Errorf(
+			"retry delay for tasks cannot be negative received `%d` for %+v",
 			t.RetryDelay,
 			t,
 		)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
 	}
+
+	// Validate hooks
 	for _, task := range append(t.OnDone, t.OnFail...) {
 		if err := task.Validate(log); err != nil {
-			return errors.Join(errors.New("hook: failed to validate"), err)
+			joinedErr := errors.Join(errors.New("hook: failed to validate"), err)
+			log.WithError(joinedErr).Warn("Validation failed for Task")
+			return joinedErr
 		}
 	}
+
+	// Log the successful validation
+	log.Tracef("Validation successful for Task: %+v", t)
 	return nil
 }
 
 // Validate checks the validity of a JobScheduler configuration.
 // It ensures that the scheduler has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
 // It returns an error if the validation fails, otherwise, it returns nil.
-func (s *JobScheduler) Validate(log *logrus.Entry) (_ error) {
+func (s *JobScheduler) Validate(log *logrus.Entry) error {
 	// Check if the interval is a negative value
 	if s.Interval < 0 {
-		return fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
+		err := fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
+		log.WithError(err).Warn("Validation failed for JobScheduler")
+		return err
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
+		log.WithError(err).Warn("Validation failed for JobScheduler")
 		return err
 	}
 
@@ -136,12 +216,17 @@ func (s *JobScheduler) Validate(log *logrus.Entry) (_ error) {
 		}
 	}
 	if activeSchedules != 1 {
-		return fmt.Errorf(
+		err := fmt.Errorf(
 			"a single scheduler must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
 		)
+		log.WithError(err).Warn("Validation failed for JobScheduler")
+		return err
 	}
-	return
+
+	// Log the successful validation
+	log.Tracef("Validation successful for JobScheduler: %+v", s)
+	return nil
 }

@@ -34,7 +34,7 @@ func NewLocalCMDConn(log *logrus.Entry) abstraction.CmdConnection {
 // It sets up the command with the provided context, task, and environment.
 // It returns an error if the preparation fails.
 func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task, l.log)
+	shell, shellArgs, env := reshapeEnviron(task.Env, l.log)
 	workingDir := task.WorkingDirectory
 	if workingDir == "" {
 		var e error

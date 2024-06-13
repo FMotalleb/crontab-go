@@ -52,7 +52,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task, d.log)
+	shell, shellArgs, env := reshapeEnviron(task.Env, d.log)
 	d.ctx = ctx
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")

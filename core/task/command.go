@@ -70,7 +70,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 			connection.Disconnect()
 			continue
 		}
-		
+
 		if err := connection.Connect(); err != nil {
 			log.Warn("error when tried to connect, exiting current remote", err)
 			ctx = addFailedConnections(ctx, conn)

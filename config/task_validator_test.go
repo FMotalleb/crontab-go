@@ -19,7 +19,7 @@ func TestTaskValidate_NegativeTimeout(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "timeout for jobs cannot be negative")
+	assert.Contains(t, err.Error(), "timeout for tasks cannot be negative")
 }
 
 func TestTaskValidate_NegativeRetryDelay(t *testing.T) {
@@ -31,7 +31,7 @@ func TestTaskValidate_NegativeRetryDelay(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "retry delay for jobs cannot be negative")
+	assert.Contains(t, err.Error(), "retry delay for tasks cannot be negative")
 }
 
 func TestTaskValidate_NegativeTimeoutAndRetryDelay(t *testing.T) {
@@ -44,7 +44,7 @@ func TestTaskValidate_NegativeTimeoutAndRetryDelay(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "timeout for jobs cannot be negative")
+	assert.Contains(t, err.Error(), "timeout for tasks cannot be negative")
 	// assert.Contains(t, err.Error(), "retry delay for jobs cannot be negative")
 }
 
@@ -114,7 +114,7 @@ func TestTaskValidate_CredentialLog(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.NoError(t, err)
-	assert.Contains(t, buffer.String(), "Be careful when using credentials, in local mode you cant use credentials unless running as root")
+	assert.Contains(t, buffer.String(), "Be careful when using credentials, in local mode you can't use credentials unless running as root")
 }
 
 func TestTaskValidate_InvalidTaskWithData(t *testing.T) {
@@ -165,7 +165,7 @@ func TestTaskValidate_InvalidGetWithData(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "get request cannot have data field, violating get uri")
+	assert.Contains(t, err.Error(), "GET request cannot have data field, violating GET URI")
 }
 
 func TestTaskValidate_ValidCommandWithErrorHook(t *testing.T) {
