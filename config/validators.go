@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -103,25 +104,26 @@ func (t *Task) Validate(log *logrus.Entry) error {
 			t,
 		)
 	}
-	for _, task := range t.OnDone {
+	for _, task := range append(t.OnDone, t.OnFail...) {
 		if err := task.Validate(log); err != nil {
-			return err
-		}
-	}
-	for _, task := range t.OnFail {
-		if err := task.Validate(log); err != nil {
-			return err
+			return errors.Join(errors.New("hook: failed to validate"), err)
 		}
 	}
 	return nil
 }
 
-func (s *JobScheduler) Validate(log *logrus.Entry) error {
+// Validate checks the validity of a JobScheduler configuration.
+// It ensures that the scheduler has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
+// It returns an error if the validation fails, otherwise, it returns nil.
+func (s *JobScheduler) Validate(log *logrus.Entry) (_ error) {
+	// Check if the interval is a negative value
 	if s.Interval < 0 {
 		return fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		return err
 	}
+
+	// Check the active schedules to ensure only one of on_init, interval, or cron is set
 	schedules := []bool{
 		s.Interval != 0,
 		s.Cron != "",
@@ -141,5 +143,5 @@ func (s *JobScheduler) Validate(log *logrus.Entry) error {
 			s.Interval,
 		)
 	}
-	return nil
+	return
 }
