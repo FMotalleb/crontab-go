@@ -18,7 +18,10 @@ func CompileTask(t *config.Task, logger *logrus.Entry) abstraction.Executable {
 	case t.Post != "":
 		exe = task.NewPost(t, logger)
 	default:
-		logger.Fatalln("cannot handle given task config", t)
+		logger.Panic("cannot handle given task config", t)
+	}
+	if exe == nil {
+		logger.Panic("did not received any executable action from given task", t)
 	}
 
 	onDone := []abstraction.Executable{}
