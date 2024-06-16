@@ -28,7 +28,8 @@ func reshapeEnviron(taskEnvironments map[string]string, log *logrus.Entry) (stri
 	log.Trace("Initial environment variables: ", env)
 	for key, val := range taskEnvironments {
 		env = append(env, fmt.Sprintf("%s=%s", key, val))
-		log.Debugf("Adding environment variable: %s=%s", key, val)
+		oldValue := os.Getenv(key)
+		log.Debugf("Adding environment variable: %s=%s, before this change was: `%s`", key, val, oldValue)
 		switch strings.ToLower(key) {
 		case "shell":
 			log.Info("you've used `SHELL` env variable in command environments, overriding the global shell with:", val)

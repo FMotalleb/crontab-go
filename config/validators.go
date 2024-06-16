@@ -38,7 +38,7 @@ func (cfg *Config) Validate(log *logrus.Entry) error {
 }
 
 // Validate checks the validity of a JobConfig.
-// It ensures that the job is not disabled and all its eventss, tasks, done hooks, and failed hooks are valid.
+// It ensures that the job is not disabled and all its events, tasks, done hooks, and failed hooks are valid.
 // If any validation fails, it returns an error with the specific validation error.
 // Otherwise, it returns nil.
 func (c *JobConfig) Validate(log *logrus.Entry) error {

@@ -9,6 +9,7 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 	connection "github.com/FMotalleb/crontab-go/core/cmd_connection"
 	"github.com/FMotalleb/crontab-go/core/common"
+	"github.com/FMotalleb/crontab-go/helpers"
 )
 
 type Command struct {
@@ -67,7 +68,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		if err := connection.Prepare(cmdCtx, c.task); err != nil {
 			log.Warn("cannot prepare command: ", err)
 			ctx = addFailedConnections(ctx, conn)
-			connection.Disconnect()
+			helpers.WarnOnErr(log, connection.Disconnect(), "Cannot disconnect the command's connection: %s")
 			continue
 		}
 
