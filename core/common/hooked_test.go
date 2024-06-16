@@ -22,8 +22,6 @@ func (m *mockExecutable) Execute(ctx context.Context) error {
 	return m.err
 }
 
-var exe abstraction.Executable = &mockExecutable{}
-
 func TestSetDoneHooks(t *testing.T) {
 	h := &Hooked{}
 	hooks := []abstraction.Executable{}
