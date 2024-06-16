@@ -13,7 +13,6 @@ jobs:
               - "/home/motalleb/Downloads:/var/local/test"
         env:
           SHELL: /bin/bash
-
-    schedulers:
+    events:
       - on-init: true
       - interval: 10m10s

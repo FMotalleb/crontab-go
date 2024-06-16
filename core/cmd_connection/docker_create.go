@@ -13,6 +13,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/helpers"
 )
 
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
@@ -52,7 +53,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task, d.log)
+	shell, shellArgs, env := reshapeEnviron(task.Env, d.log)
 	d.ctx = ctx
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
@@ -127,10 +128,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer d.cli.ContainerRemove(ctx, exec.ID,
-		container.RemoveOptions{
-			Force: true,
-		},
+	defer helpers.WarnOnErr(
+		d.log,
+		d.cli.ContainerRemove(ctx, exec.ID,
+			container.RemoveOptions{
+				Force: true,
+			},
+		),
+		"Cannot remove the container: %s",
 	)
 	err = d.cli.ContainerStart(d.log.Context, exec.ID,
 		container.StartOptions{},
@@ -161,7 +166,11 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Close()
+	defer helpers.WarnOnErr(
+		d.log,
+		resp.Close(),
+		"cannot close the container's logs: %s",
+	)
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output

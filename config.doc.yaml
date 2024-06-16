@@ -53,12 +53,12 @@ jobs:
       #   # Body of post request (can be a json object)
       #   data:
       #     key: value
-    schedulers:
+    events:
       - on-init: true
-      # Schedulers can be defined using either a cron expression or an interval, but not both simultaneously.
-      # However, you can combine multiple cron expressions and intervals within the same scheduler.
+      # events can be defined using either a cron expression or an interval, but not both simultaneously.
+      # However, you can combine multiple cron expressions and intervals within the same events list.
 
-      # The cron scheduler allows you to specify schedules down to the second level of precision using cron expressions.
+      # The cron event allows you to specify schedules down to the second level of precision using cron expressions.
       - cron: "@yearly"
       # Intervals can be defined using human-readable formats.
       # For example, '10h' represents 10 hours, '10m' represents 10 minutes, and '10m15s' represents every 10 minutes and 15 seconds.

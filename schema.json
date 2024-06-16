@@ -41,12 +41,12 @@
           },
           "description": "An array of Task objects that define the tasks to be executed as part of the job."
         },
-        "schedulers": {
+        "events": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Scheduler"
+            "$ref": "#/definitions/Event"
           },
-          "description": "An array of Scheduler objects that define the scheduling configuration for the job."
+          "description": "An array of Event objects that define the scheduling configuration for the job."
         },
         "hooks": {
           "$ref": "#/definitions/Hooks",
@@ -62,7 +62,7 @@
       },
       "required": [
         "name",
-        "schedulers",
+        "events",
         "tasks"
       ],
       "title": "Job"
@@ -88,7 +88,7 @@
       },
       "title": "Hooks"
     },
-    "Scheduler": {
+    "Event": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -120,7 +120,7 @@
         }
       },
       "required": [],
-      "title": "Scheduler"
+      "title": "Event"
     },
     "Task": {
       "type": "object",

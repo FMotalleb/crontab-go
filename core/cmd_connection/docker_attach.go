@@ -49,7 +49,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task, d.log)
+	shell, shellArgs, env := reshapeEnviron(task.Env, d.log)
 	d.ctx = ctx
 	// Specify the container ID or name
 	d.containerID = d.conn.ContainerName

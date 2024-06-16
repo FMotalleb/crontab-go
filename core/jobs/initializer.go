@@ -10,9 +10,9 @@ import (
 	"github.com/FMotalleb/crontab-go/core/goutils"
 )
 
-func initEventSignal(schedulers []abstraction.Scheduler, logger *logrus.Entry) <-chan any {
-	signals := make([]<-chan any, 0, len(schedulers))
-	for _, sh := range schedulers {
+func initEventSignal(events []abstraction.Event, logger *logrus.Entry) <-chan any {
+	signals := make([]<-chan any, 0, len(events))
+	for _, sh := range events {
 		signals = append(signals, sh.BuildTickChannel())
 	}
 	logger.Trace("Signals Built")
@@ -39,10 +39,10 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 	return tasks, doneHooks, failHooks
 }
 
-func initSchedulers(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) []abstraction.Scheduler {
-	schedulers := make([]abstraction.Scheduler, 0, len(job.Schedulers))
-	for _, sh := range job.Schedulers {
-		schedulers = append(schedulers, cfgcompiler.CompileScheduler(&sh, cronInstance, logger))
+func initEvents(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) []abstraction.Event {
+	events := make([]abstraction.Event, 0, len(job.Events))
+	for _, sh := range job.Events {
+		events = append(events, cfgcompiler.CompileEvent(&sh, cronInstance, logger))
 	}
-	return schedulers
+	return events
 }
