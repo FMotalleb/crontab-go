@@ -32,10 +32,6 @@ func getFailedConnections(ctx context.Context) []config.TaskConnection {
 	return []config.TaskConnection{}
 }
 
-func flushFailedConnections(ctx context.Context) context.Context {
-	return context.WithValue(ctx, ctxutils.FailedRemotes, []config.TaskConnection{})
-}
-
 func addFailedConnections(ctx context.Context, con config.TaskConnection) context.Context {
 	current := getFailedConnections(ctx)
 	return context.WithValue(ctx, ctxutils.FailedRemotes, append(current, con))
