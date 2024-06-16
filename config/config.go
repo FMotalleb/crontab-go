@@ -20,17 +20,17 @@ type Config struct {
 
 // JobConfig represents the configuration for a specific job.
 type JobConfig struct {
-	Name        string      `mapstructure:"name" json:"name,omitempty"`
-	Description string      `mapstructure:"description" json:"description,omitempty"`
-	Disabled    bool        `mapstructure:"disabled" json:"disabled,omitempty"`
-	Concurrency uint        `mapstructure:"concurrency" json:"concurrency,omitempty"`
-	Tasks       []Task      `mapstructure:"tasks" json:"tasks,omitempty"`
-	Eventss     []JobEvents `mapstructure:"eventss" json:"eventss"`
-	Hooks       JobHooks    `mapstructure:"hooks" json:"hooks,omitempty"`
+	Name        string     `mapstructure:"name" json:"name,omitempty"`
+	Description string     `mapstructure:"description" json:"description,omitempty"`
+	Disabled    bool       `mapstructure:"disabled" json:"disabled,omitempty"`
+	Concurrency uint       `mapstructure:"concurrency" json:"concurrency,omitempty"`
+	Tasks       []Task     `mapstructure:"tasks" json:"tasks,omitempty"`
+	Events      []JobEvent `mapstructure:"events" json:"events"`
+	Hooks       JobHooks   `mapstructure:"hooks" json:"hooks,omitempty"`
 }
 
-// JobEvents represents the scheduling configuration for a job.
-type JobEvents struct {
+// JobEvent represents the scheduling configuration for a job.
+type JobEvent struct {
 	Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
 	OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`

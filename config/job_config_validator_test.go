@@ -19,16 +19,16 @@ func TestJobConfig_Validate_Disabled(t *testing.T) {
 	assert.NoError(t, err, "Expected no error when job is disabled")
 }
 
-func TestJobConfig_Validate_Eventss(t *testing.T) {
+func TestJobConfig_Validate_Events(t *testing.T) {
 	log := logrus.NewEntry(logrus.New())
 	jobConfig := &config.JobConfig{
-		Eventss: []config.JobEvents{
+		Events: []config.JobEvent{
 			{Interval: -1}, // Invalid interval
 		},
 	}
 
 	err := jobConfig.Validate(log)
-	assert.Error(t, err, "Expected error due to invalid events interval")
+	assert.Error(t, err, "Expected error due to invalid event interval")
 }
 
 func TestJobConfig_Validate_Tasks(t *testing.T) {

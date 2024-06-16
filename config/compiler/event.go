@@ -9,7 +9,7 @@ import (
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
-func CompileEvents(sh *config.JobEvents, cr *cron.Cron, logger *logrus.Entry) abstraction.Events {
+func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abstraction.Event {
 	switch {
 	case sh.Cron != "":
 		events := schedule.NewCron(

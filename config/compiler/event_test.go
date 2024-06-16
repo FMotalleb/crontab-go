@@ -12,70 +12,70 @@ import (
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
-// TestCompileEvents_IntervalZero tests that CompileEvents returns nil when Interval is zero
-func TestCompileEvents_IntervalZero(t *testing.T) {
-	sh := &config.JobEvents{Interval: 0}
+// TestCompileEvent_IntervalZero tests that CompileEvents returns nil when Interval is zero
+func TestCompileEvent_IntervalZero(t *testing.T) {
+	sh := &config.JobEvent{Interval: 0}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	events := cfgcompiler.CompileEvents(sh, cr, logger)
-	assert.Equal(t, events, nil)
+	event := cfgcompiler.CompileEvent(sh, cr, logger)
+	assert.Equal(t, event, nil)
 }
 
-func TestCompileEvents_IntervalNonZero(t *testing.T) {
-	sh := &config.JobEvents{Interval: 15}
+func TestCompileEvent_IntervalNonZero(t *testing.T) {
+	sh := &config.JobEvent{Interval: 15}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	sch := cfgcompiler.CompileEvents(sh, cr, logger)
+	sch := cfgcompiler.CompileEvent(sh, cr, logger)
 	_, ok := sch.(*schedule.Interval)
 	assert.Equal(t, ok, true)
 }
 
-// TestCompileEvents_IntervalZeroWithCronSet tests CompileEvents with Interval zero but Cron expression set
-func TestCompileEvents_IntervalZeroWithCronSet(t *testing.T) {
-	sh := &config.JobEvents{Cron: "0 * * * *", Interval: 0}
+// TestCompileEvent_IntervalZeroWithCronSet tests CompileEvents with Interval zero but Cron expression set
+func TestCompileEvent_IntervalZeroWithCronSet(t *testing.T) {
+	sh := &config.JobEvent{Cron: "0 * * * *", Interval: 0}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	events := cfgcompiler.CompileEvents(sh, cr, logger)
-	if _, ok := events.(*schedule.Cron); !ok {
-		t.Errorf("Expected Cron events, got %T", events)
+	event := cfgcompiler.CompileEvent(sh, cr, logger)
+	if _, ok := event.(*schedule.Cron); !ok {
+		t.Errorf("Expected Cron events, got %T", event)
 	}
 }
 
-// TestCompileEvents_IntervalZeroWithOnInitSet tests CompileEvents with Interval zero and OnInit set
-func TestCompileEvents_IntervalZeroWithOnInitSet(t *testing.T) {
-	sh := &config.JobEvents{OnInit: true, Interval: 0}
+// TestCompileEvent_IntervalZeroWithOnInitSet tests CompileEvents with Interval zero and OnInit set
+func TestCompileEvent_IntervalZeroWithOnInitSet(t *testing.T) {
+	sh := &config.JobEvent{OnInit: true, Interval: 0}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	events := cfgcompiler.CompileEvents(sh, cr, logger)
-	if _, ok := events.(*schedule.Init); !ok {
-		t.Errorf("Expected Init events, got %T", events)
+	event := cfgcompiler.CompileEvent(sh, cr, logger)
+	if _, ok := event.(*schedule.Init); !ok {
+		t.Errorf("Expected Init events, got %T", event)
 	}
 }
 
-// TestCompileEvents_IntervalZeroWithAllFieldsEmpty tests CompileEvents with Interval zero and all other fields empty
-func TestCompileEvents_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
-	sh := &config.JobEvents{Interval: 0}
+// TestCompileEvent_IntervalZeroWithAllFieldsEmpty tests CompileEvents with Interval zero and all other fields empty
+func TestCompileEvent_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
+	sh := &config.JobEvent{Interval: 0}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	events := cfgcompiler.CompileEvents(sh, cr, logger)
-	if events != nil {
-		t.Errorf("Expected nil, got %v", events)
+	event := cfgcompiler.CompileEvent(sh, cr, logger)
+	if event != nil {
+		t.Errorf("Expected nil, got %v", event)
 	}
 }
 
-// TestCompileEvents_IntervalZeroWithCronAndOnInitSet tests CompileEvents with Interval zero, Cron expression, and OnInit set
-func TestCompileEvents_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
-	sh := &config.JobEvents{Cron: "0 * * * *", OnInit: true, Interval: 0}
+// TestCompileEvent_IntervalZeroWithCronAndOnInitSet tests CompileEvent with Interval zero, Cron expression, and OnInit set
+func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
+	sh := &config.JobEvent{Cron: "0 * * * *", OnInit: true, Interval: 0}
 	cr := cron.New()
 	logger := logrus.NewEntry(logrus.StandardLogger())
 
-	events := cfgcompiler.CompileEvents(sh, cr, logger)
-	if _, ok := events.(*schedule.Cron); !ok {
-		t.Errorf("Expected Cron events, got %T", events)
+	event := cfgcompiler.CompileEvent(sh, cr, logger)
+	if _, ok := event.(*schedule.Cron); !ok {
+		t.Errorf("Expected Cron event, got %T", event)
 	}
 }

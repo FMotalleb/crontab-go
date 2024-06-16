@@ -53,10 +53,10 @@ func (c *JobConfig) Validate(log *logrus.Entry) error {
 	}
 
 	// Validate each events
-	for _, s := range c.Eventss {
+	for _, s := range c.Events {
 		if err := s.Validate(log); err != nil {
 			// Log the validation error
-			log.Errorf("Validation error in events for JobConfig %s: %v", c.Name, err)
+			log.Errorf("Validation error in event for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
@@ -189,17 +189,17 @@ func (t *Task) Validate(log *logrus.Entry) error {
 	return nil
 }
 
-// Validate checks the validity of a JobEvents configuration.
-// It ensures that the events has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
+// Validate checks the validity of a JobEvent configuration.
+// It ensures that the event has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
 // It returns an error if the validation fails, otherwise, it returns nil.
-func (s *JobEvents) Validate(log *logrus.Entry) error {
+func (s *JobEvent) Validate(log *logrus.Entry) error {
 	// Check if the interval is a negative value
 	if s.Interval < 0 {
 		err := fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
-		log.WithError(err).Warn("Validation failed for JobEvents")
+		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
-		log.WithError(err).Warn("Validation failed for JobEvents")
+		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
 	}
 
@@ -217,16 +217,16 @@ func (s *JobEvents) Validate(log *logrus.Entry) error {
 	}
 	if activeSchedules != 1 {
 		err := fmt.Errorf(
-			"a single events must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
+			"a single event must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
 		)
-		log.WithError(err).Warn("Validation failed for JobEvents")
+		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
 	}
 
 	// Log the successful validation
-	log.Tracef("Validation successful for JobEvents: %+v", s)
+	log.Tracef("Validation successful for JobEvent: %+v", s)
 	return nil
 }
