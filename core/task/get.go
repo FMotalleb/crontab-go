@@ -20,7 +20,6 @@ type Get struct {
 	address string
 	headers *map[string]string
 	log     *logrus.Entry
-	cancel  context.CancelFunc
 }
 
 // Execute implements abstraction.Executable.
