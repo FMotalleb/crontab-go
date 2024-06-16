@@ -1,3 +1,4 @@
+// Package cfgcompiler provides mapper functions for the config structs
 package cfgcompiler
 
 import (
@@ -6,27 +7,27 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	"github.com/FMotalleb/crontab-go/core/schedule"
+	"github.com/FMotalleb/crontab-go/core/event"
 )
 
 func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abstraction.Event {
 	switch {
 	case sh.Cron != "":
-		events := schedule.NewCron(
+		events := event.NewCron(
 			sh.Cron,
 			cr,
 			logger,
 		)
 		return &events
 	case sh.Interval != 0:
-		events := schedule.NewInterval(
+		events := event.NewInterval(
 			sh.Interval,
 			logger,
 		)
 		return &events
 
 	case sh.OnInit:
-		events := schedule.Init{}
+		events := event.Init{}
 		return &events
 	}
 

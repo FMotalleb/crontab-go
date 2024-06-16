@@ -1,3 +1,4 @@
+// Package mocklogger provides a logrus.Logger that does not log into stdout or stderr.
 package mocklogger
 
 import (

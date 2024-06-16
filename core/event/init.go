@@ -1,4 +1,4 @@
-package schedule
+package event
 
 type Init struct {
 	notifyChan chan any
@@ -16,7 +16,7 @@ func (c *Init) BuildTickChannel() <-chan any {
 	return c.notifyChan
 }
 
-// cancel implements abstraction.Scheduler.
+// Cancel implements abstraction.Scheduler.
 func (c *Init) Cancel() {
 	close(c.notifyChan)
 }

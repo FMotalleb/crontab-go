@@ -7,8 +7,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/core/event"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
-	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
 // Validate checks the validity of the Config struct.
@@ -71,7 +71,6 @@ func (c *JobConfig) Validate(log *logrus.Entry) error {
 func validateFailedHooks(c *JobConfig, log *logrus.Entry) error {
 	for _, t := range c.Hooks.Failed {
 		if err := t.Validate(log); err != nil {
-
 			log.Errorf("Validation error in failed hook for JobConfig %s: %v", c.Name, err)
 			return err
 		}
@@ -82,7 +81,6 @@ func validateFailedHooks(c *JobConfig, log *logrus.Entry) error {
 func validateDoneHooks(c *JobConfig, log *logrus.Entry) error {
 	for _, t := range c.Hooks.Done {
 		if err := t.Validate(log); err != nil {
-
 			log.Errorf("Validation error in done hook for JobConfig %s: %v", c.Name, err)
 			return err
 		}
@@ -93,7 +91,6 @@ func validateDoneHooks(c *JobConfig, log *logrus.Entry) error {
 func validateTasks(c *JobConfig, log *logrus.Entry) error {
 	for _, t := range c.Tasks {
 		if err := t.Validate(log); err != nil {
-
 			log.Errorf("Validation error in task for JobConfig %s: %v", c.Name, err)
 			return err
 		}
@@ -104,7 +101,6 @@ func validateTasks(c *JobConfig, log *logrus.Entry) error {
 func validateEvents(c *JobConfig, log *logrus.Entry) error {
 	for _, s := range c.Events {
 		if err := s.Validate(log); err != nil {
-
 			log.Errorf("Validation error in event for JobConfig %s: %v", c.Name, err)
 			return err
 		}
@@ -119,8 +115,98 @@ func validateEvents(c *JobConfig, log *logrus.Entry) error {
 func (t *Task) Validate(log *logrus.Entry) error {
 	// Log the start of validation
 	log.Tracef("Validating Task: %+v", t)
+	checkList := []func(*Task, *logrus.Entry) error{
+		validateActionsList,
+		validateCredential,
+		validateFields,
+		validateGetRequest,
+		validateTimeout,
+		validatePostData,
+		validateRetry,
+	}
+	for _, check := range checkList {
+		if err := check(t, log); err != nil {
+			return err
+		}
+	}
 
-	// Check the number of action fields
+	// Validate hooks
+	for _, task := range append(t.OnDone, t.OnFail...) {
+		if err := task.Validate(log); err != nil {
+			joinedErr := errors.Join(errors.New("hook: failed to validate"), err)
+			log.WithError(joinedErr).Warn("Validation failed for Task")
+			return joinedErr
+		}
+	}
+
+	// Log the successful validation
+	log.Tracef("Validation successful for Task: %+v", t)
+	return nil
+}
+
+func validateRetry(t *Task, log *logrus.Entry) error {
+	if t.RetryDelay < 0 {
+		err := fmt.Errorf(
+			"retry delay for tasks cannot be negative received `%d` for %+v",
+			t.RetryDelay,
+			t,
+		)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
+	}
+	return nil
+}
+
+func validatePostData(t *Task, log *logrus.Entry) error {
+	if t.Data != nil {
+		_, err := json.Marshal(t.Data)
+		if err != nil {
+			log.WithError(err).Warn("Validation failed for Task")
+			return err
+		}
+	}
+	return nil
+}
+
+func validateTimeout(t *Task, log *logrus.Entry) error {
+	if t.Timeout < 0 {
+		err := fmt.Errorf(
+			"timeout for tasks cannot be negative received `%d` for %+v",
+			t.Timeout,
+			t,
+		)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
+	}
+	return nil
+}
+
+func validateGetRequest(t *Task, log *logrus.Entry) error {
+	if t.Get != "" && t.Data != nil {
+		err := fmt.Errorf("GET request cannot have data field, violating GET URI: `%s`", t.Get)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
+	}
+	return nil
+}
+
+func validateFields(t *Task, log *logrus.Entry) error {
+	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
+		err := fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
+		log.WithError(err).Warn("Validation failed for Task")
+		return err
+	}
+	return nil
+}
+
+func validateCredential(t *Task, log *logrus.Entry) error {
+	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
+		log.WithError(err).Warn("Be careful when using credentials, in local mode you can't use credentials unless running as root")
+	}
+	return nil
+}
+
+func validateActionsList(t *Task, log *logrus.Entry) error {
 	actions := []bool{
 		t.Get != "",
 		t.Command != "",
@@ -142,69 +228,6 @@ func (t *Task) Validate(log *logrus.Entry) error {
 		log.WithError(err).Warn("Validation failed for Task")
 		return err
 	}
-
-	// Validate credentials
-	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
-		log.WithError(err).Warn("Be careful when using credentials, in local mode you can't use credentials unless running as root")
-		// return err
-	}
-
-	// Validate command-specific fields
-	if t.Command != "" && (t.Data != nil || t.Headers != nil) {
-		err := fmt.Errorf("command cannot have data or headers field, violating command: `%s`", t.Command)
-		log.WithError(err).Warn("Validation failed for Task")
-		return err
-	}
-
-	// Validate GET-specific fields
-	if t.Get != "" && t.Data != nil {
-		err := fmt.Errorf("GET request cannot have data field, violating GET URI: `%s`", t.Get)
-		log.WithError(err).Warn("Validation failed for Task")
-		return err
-	}
-
-	// Validate timeout
-	if t.Timeout < 0 {
-		err := fmt.Errorf(
-			"timeout for tasks cannot be negative received `%d` for %+v",
-			t.Timeout,
-			t,
-		)
-		log.WithError(err).Warn("Validation failed for Task")
-		return err
-	}
-
-	// Validate data
-	if t.Data != nil {
-		_, err := json.Marshal(t.Data)
-		if err != nil {
-			log.WithError(err).Warn("Validation failed for Task")
-			return err
-		}
-	}
-
-	// Validate retry delay
-	if t.RetryDelay < 0 {
-		err := fmt.Errorf(
-			"retry delay for tasks cannot be negative received `%d` for %+v",
-			t.RetryDelay,
-			t,
-		)
-		log.WithError(err).Warn("Validation failed for Task")
-		return err
-	}
-
-	// Validate hooks
-	for _, task := range append(t.OnDone, t.OnFail...) {
-		if err := task.Validate(log); err != nil {
-			joinedErr := errors.Join(errors.New("hook: failed to validate"), err)
-			log.WithError(joinedErr).Warn("Validation failed for Task")
-			return joinedErr
-		}
-	}
-
-	// Log the successful validation
-	log.Tracef("Validation successful for Task: %+v", t)
 	return nil
 }
 
@@ -217,24 +240,24 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 		err := fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
-	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
+	} else if _, err := event.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
 	}
 
-	// Check the active schedules to ensure only one of on_init, interval, or cron is set
-	schedules := []bool{
+	// Check the active events to ensure only one of on_init, interval, or cron is set
+	events := []bool{
 		s.Interval != 0,
 		s.Cron != "",
 		s.OnInit,
 	}
-	activeSchedules := 0
-	for _, t := range schedules {
+	activeEvents := 0
+	for _, t := range events {
 		if t {
-			activeSchedules++
+			activeEvents++
 		}
 	}
-	if activeSchedules != 1 {
+	if activeEvents != 1 {
 		err := fmt.Errorf(
 			"a single event must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
 			s.OnInit,

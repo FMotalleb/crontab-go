@@ -54,7 +54,7 @@ func TestConfig_Validate_LogLevelFails(t *testing.T) {
 
 func TestConfig_Validate_JobFails(t *testing.T) {
 	cfg := &config.Config{
-		LogFormat: enums.JsonLogger,
+		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.FatalLevel,
 		Jobs:      []config.JobConfig{failJob},
 	}
@@ -66,7 +66,7 @@ func TestConfig_Validate_JobFails(t *testing.T) {
 
 func TestConfig_Validate_AllValidationsPass(t *testing.T) {
 	cfg := &config.Config{
-		LogFormat: enums.JsonLogger,
+		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.DebugLevel,
 		Jobs: []config.JobConfig{
 			okJob,
@@ -80,7 +80,7 @@ func TestConfig_Validate_AllValidationsPass(t *testing.T) {
 
 func TestConfig_Validate_NoJobs(t *testing.T) {
 	cfg := &config.Config{
-		LogFormat: enums.JsonLogger,
+		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.DebugLevel,
 		Jobs:      []config.JobConfig{},
 	}

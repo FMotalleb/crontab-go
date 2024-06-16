@@ -1,4 +1,5 @@
-package schedule
+// Package event contains all event emitters supported by this package.
+package event
 
 import (
 	"github.com/robfig/cron/v3"

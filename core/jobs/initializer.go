@@ -1,3 +1,4 @@
+// Package jobs implements the main functionality for the jobs in the application
 package jobs
 
 import (

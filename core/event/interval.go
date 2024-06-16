@@ -1,4 +1,4 @@
-package schedule
+package event
 
 import (
 	"time"
@@ -42,7 +42,7 @@ func (c *Interval) BuildTickChannel() <-chan any {
 	return c.notifyChan
 }
 
-// cancel implements abstraction.Scheduler.
+// Cancel implements abstraction.Scheduler.
 func (c *Interval) Cancel() {
 	if c.ticker != nil {
 		c.logger.Debugln("scheduler cancel signal received for an active instance")

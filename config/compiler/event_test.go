@@ -9,7 +9,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/config"
 	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
-	"github.com/FMotalleb/crontab-go/core/schedule"
+	"github.com/FMotalleb/crontab-go/core/event"
 	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
@@ -31,7 +31,7 @@ func TestCompileEvent_IntervalNonZero(t *testing.T) {
 	log := logrus.NewEntry(logger)
 
 	sch := cfgcompiler.CompileEvent(sh, cr, log)
-	_, ok := sch.(*schedule.Interval)
+	_, ok := sch.(*event.Interval)
 	assert.Equal(t, ok, true)
 }
 
@@ -42,9 +42,9 @@ func TestCompileEvent_IntervalZeroWithCronSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	event := cfgcompiler.CompileEvent(sh, cr, log)
-	if _, ok := event.(*schedule.Cron); !ok {
-		t.Errorf("Expected Cron events, got %T", event)
+	e := cfgcompiler.CompileEvent(sh, cr, log)
+	if _, ok := e.(*event.Cron); !ok {
+		t.Errorf("Expected Cron events, got %T", e)
 	}
 }
 
@@ -55,9 +55,9 @@ func TestCompileEvent_IntervalZeroWithOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	event := cfgcompiler.CompileEvent(sh, cr, log)
-	if _, ok := event.(*schedule.Init); !ok {
-		t.Errorf("Expected Init events, got %T", event)
+	e := cfgcompiler.CompileEvent(sh, cr, log)
+	if _, ok := e.(*event.Init); !ok {
+		t.Errorf("Expected Init events, got %T", e)
 	}
 }
 
@@ -68,9 +68,9 @@ func TestCompileEvent_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	event := cfgcompiler.CompileEvent(sh, cr, log)
-	if event != nil {
-		t.Errorf("Expected nil, got %v", event)
+	e := cfgcompiler.CompileEvent(sh, cr, log)
+	if e != nil {
+		t.Errorf("Expected nil, got %v", e)
 	}
 }
 
@@ -81,8 +81,8 @@ func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	event := cfgcompiler.CompileEvent(sh, cr, log)
-	if _, ok := event.(*schedule.Cron); !ok {
-		t.Errorf("Expected Cron event, got %T", event)
+	e := cfgcompiler.CompileEvent(sh, cr, log)
+	if _, ok := e.(*event.Cron); !ok {
+		t.Errorf("Expected Cron event, got %T", e)
 	}
 }

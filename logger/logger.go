@@ -46,7 +46,7 @@ func InitFromConfig() {
 	log.Level, _ = cmd.CFG.LogLevel.ToLogrusLevel()
 
 	switch cmd.CFG.LogFormat {
-	case enums.JsonLogger:
+	case enums.JSONLogger:
 		log.Formatter = &logrus.JSONFormatter{
 			TimestampFormat: cmd.CFG.LogTimestampFormat,
 		}

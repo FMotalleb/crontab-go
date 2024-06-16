@@ -1,3 +1,4 @@
+// Package goutils provides utility functions to handle goroutines and/or channels easily.
 package goutils
 
 func ZipChannels[T interface{}](channels ...<-chan T) <-chan T {

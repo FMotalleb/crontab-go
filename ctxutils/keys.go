@@ -1,3 +1,4 @@
+// Package ctxutils provides utility functions for working with context.Context.
 package ctxutils
 
 type ContextKey string

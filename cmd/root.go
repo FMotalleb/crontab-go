@@ -1,3 +1,4 @@
+// Package cmd manages the command line interface/configuration file handling logic
 package cmd
 
 import (

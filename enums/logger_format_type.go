@@ -5,16 +5,16 @@ import "fmt"
 type LoggerFormatType string
 
 const (
-	JsonLogger  = LoggerFormatType("json")
+	JSONLogger  = LoggerFormatType("json")
 	AnsiLogger  = LoggerFormatType("ansi")
 	PlainLogger = LoggerFormatType("plain")
 )
 
 func (lf LoggerFormatType) Validate() error {
 	switch lf {
-	case JsonLogger, AnsiLogger, PlainLogger:
+	case JSONLogger, AnsiLogger, PlainLogger:
 		return nil
 	default:
-		return fmt.Errorf("Given Logger format: `%s`", lf)
+		return fmt.Errorf("given logger format: `%s`", lf)
 	}
 }

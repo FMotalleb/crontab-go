@@ -1,3 +1,4 @@
+// Package concurrency provides utility functions for working with goroutines.
 package concurrency
 
 import (

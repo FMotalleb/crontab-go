@@ -1,4 +1,4 @@
-// Package connection
+// Package connection provides implementation of the abstraction.CmdConnection interface for command tasks.
 package connection
 
 import (

@@ -1,5 +1,6 @@
 //go:build unix
 
+// Package credential provides functions to switch group and user for command execution.
 package credential
 
 import (

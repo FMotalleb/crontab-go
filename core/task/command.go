@@ -1,3 +1,4 @@
+// Package task provides implementation of the abstraction.Executable interface for command tasks.
 package task
 
 import (

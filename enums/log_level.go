@@ -1,3 +1,4 @@
+// Package enums provides enums used in crontab-go.
 package enums
 
 import (
