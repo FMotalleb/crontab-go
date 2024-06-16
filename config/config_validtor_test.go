@@ -36,7 +36,7 @@ func TestConfig_Validate_LogFormatFails(t *testing.T) {
 	log, _ := mocklogger.HijackOutput(logrus.New())
 	err := cfg.Validate(log.WithField("test", "test"))
 	assert.Error(t, err)
-	assert.Equal(t, "Given Logger format: `unknown`", err.Error())
+	assert.Equal(t, "given logger format: `unknown`", err.Error())
 }
 
 func TestConfig_Validate_LogLevelFails(t *testing.T) {
