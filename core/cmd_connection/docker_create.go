@@ -13,6 +13,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/helpers"
 )
 
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
@@ -127,10 +128,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer d.cli.ContainerRemove(ctx, exec.ID,
-		container.RemoveOptions{
-			Force: true,
-		},
+	defer helpers.WarnOnErr(
+		d.log,
+		d.cli.ContainerRemove(ctx, exec.ID,
+			container.RemoveOptions{
+				Force: true,
+			},
+		),
+		"Cannot remove the container: %s",
 	)
 	err = d.cli.ContainerStart(d.log.Context, exec.ID,
 		container.StartOptions{},
@@ -161,7 +166,11 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Close()
+	defer helpers.WarnOnErr(
+		d.log,
+		resp.Close(),
+		"cannot close the container's logs: %s",
+	)
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output
