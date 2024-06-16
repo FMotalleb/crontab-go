@@ -51,45 +51,64 @@ func (c *JobConfig) Validate(log *logrus.Entry) error {
 		log.Debugf("JobConfig %s is disabled", c.Name)
 		return nil
 	}
-
-	// Validate each events
-	for _, s := range c.Events {
-		if err := s.Validate(log); err != nil {
-			// Log the validation error
-			log.Errorf("Validation error in event for JobConfig %s: %v", c.Name, err)
-			return err
-		}
+	checkList := []func(*JobConfig, *logrus.Entry) error{
+		validateEvents,
+		validateTasks,
+		validateDoneHooks,
+		validateFailedHooks,
 	}
-
-	// Validate each task
-	for _, t := range c.Tasks {
-		if err := t.Validate(log); err != nil {
-			// Log the validation error
-			log.Errorf("Validation error in task for JobConfig %s: %v", c.Name, err)
-			return err
-		}
-	}
-
-	// Validate each done hook
-	for _, t := range c.Hooks.Done {
-		if err := t.Validate(log); err != nil {
-			// Log the validation error
-			log.Errorf("Validation error in done hook for JobConfig %s: %v", c.Name, err)
-			return err
-		}
-	}
-
-	// Validate each failed hook
-	for _, t := range c.Hooks.Failed {
-		if err := t.Validate(log); err != nil {
-			// Log the validation error
-			log.Errorf("Validation error in failed hook for JobConfig %s: %v", c.Name, err)
+	for _, check := range checkList {
+		if err := check(c, log); err != nil {
 			return err
 		}
 	}
 
 	// Log the successful validation
 	log.Tracef("Validation successful for JobConfig: %s", c.Name)
+	return nil
+}
+
+func validateFailedHooks(c *JobConfig, log *logrus.Entry) error {
+	for _, t := range c.Hooks.Failed {
+		if err := t.Validate(log); err != nil {
+
+			log.Errorf("Validation error in failed hook for JobConfig %s: %v", c.Name, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func validateDoneHooks(c *JobConfig, log *logrus.Entry) error {
+	for _, t := range c.Hooks.Done {
+		if err := t.Validate(log); err != nil {
+
+			log.Errorf("Validation error in done hook for JobConfig %s: %v", c.Name, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func validateTasks(c *JobConfig, log *logrus.Entry) error {
+	for _, t := range c.Tasks {
+		if err := t.Validate(log); err != nil {
+
+			log.Errorf("Validation error in task for JobConfig %s: %v", c.Name, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func validateEvents(c *JobConfig, log *logrus.Entry) error {
+	for _, s := range c.Events {
+		if err := s.Validate(log); err != nil {
+
+			log.Errorf("Validation error in event for JobConfig %s: %v", c.Name, err)
+			return err
+		}
+	}
 	return nil
 }
 
