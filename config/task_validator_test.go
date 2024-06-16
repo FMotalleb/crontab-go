@@ -1,17 +1,18 @@
 package config_test
 
 import (
-	"bytes"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/config"
+	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
 func TestTaskValidate_NegativeTimeout(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Command: "command",
 		Timeout: -1,
@@ -23,7 +24,8 @@ func TestTaskValidate_NegativeTimeout(t *testing.T) {
 }
 
 func TestTaskValidate_NegativeRetryDelay(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Command:    "command",
 		RetryDelay: -1,
@@ -35,7 +37,8 @@ func TestTaskValidate_NegativeRetryDelay(t *testing.T) {
 }
 
 func TestTaskValidate_NegativeTimeoutAndRetryDelay(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Command: "command",
 		Timeout: -1,
@@ -49,7 +52,8 @@ func TestTaskValidate_NegativeTimeoutAndRetryDelay(t *testing.T) {
 }
 
 func TestTaskValidate_ValidTimeoutAndRetryDelay(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Command:    "command",
 		Timeout:    10,
@@ -61,7 +65,8 @@ func TestTaskValidate_ValidTimeoutAndRetryDelay(t *testing.T) {
 }
 
 func TestTaskValidate_ValidTask(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Command:    "echo 'Hello, World!'",
 		Timeout:    10,
@@ -73,7 +78,8 @@ func TestTaskValidate_ValidTask(t *testing.T) {
 }
 
 func TestTaskValidate_InvalidPostData(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Post:       "http://localhost",
 		Timeout:    10,
@@ -86,7 +92,8 @@ func TestTaskValidate_InvalidPostData(t *testing.T) {
 }
 
 func TestTaskValidate_PostData(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	task := &config.Task{
 		Post:       "http://localhost",
 		Timeout:    10,
@@ -99,12 +106,9 @@ func TestTaskValidate_PostData(t *testing.T) {
 }
 
 func TestTaskValidate_CredentialLog(t *testing.T) {
-	logger := logrus.New()
-	buffer := bytes.NewBuffer([]byte{})
-	logger.SetOutput(buffer)
+	logger, buffer := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	log.Writer()
 	task := &config.Task{
 		Command:    "test",
 		Timeout:    10,
@@ -118,10 +122,8 @@ func TestTaskValidate_CredentialLog(t *testing.T) {
 }
 
 func TestTaskValidate_InvalidTaskWithData(t *testing.T) {
-	logger := logrus.New()
+	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
-	log.Writer()
 	task := &config.Task{
 		Command:    "test",
 		Data:       map[string]any{},
@@ -135,10 +137,8 @@ func TestTaskValidate_InvalidTaskWithData(t *testing.T) {
 }
 
 func TestTaskValidate_InvalidTaskWithHeader(t *testing.T) {
-	logger := logrus.New()
+	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
-	log.Writer()
 	task := &config.Task{
 		Command:    "test",
 		Headers:    map[string]string{},
@@ -152,10 +152,8 @@ func TestTaskValidate_InvalidTaskWithHeader(t *testing.T) {
 }
 
 func TestTaskValidate_InvalidGetWithData(t *testing.T) {
-	logger := logrus.New()
+	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
-	log.Writer()
 	task := &config.Task{
 		Get:        "http://test",
 		Data:       map[string]string{},
@@ -169,10 +167,8 @@ func TestTaskValidate_InvalidGetWithData(t *testing.T) {
 }
 
 func TestTaskValidate_ValidCommandWithErrorHook(t *testing.T) {
-	logger := logrus.New()
+	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
-	log.Writer()
 	task := &config.Task{
 		Command:    "test",
 		Timeout:    10,

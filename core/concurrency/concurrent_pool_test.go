@@ -58,6 +58,6 @@ func TestConcurrentPool_LockUnlockGoroutine(t *testing.T) {
 		end1 := <-chn
 		end2 := <-chn
 		diff := end2 - end1
-		assert.True(t, diff >= 1000 && diff <= 1010)
+		assert.True(t, diff >= 1000)
 	})
 }

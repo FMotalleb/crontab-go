@@ -8,6 +8,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 
 	"github.com/FMotalleb/crontab-go/config"
+	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
 func TestJobEvent_Validate_PositiveInterval(t *testing.T) {
@@ -16,7 +17,8 @@ func TestJobEvent_Validate_PositiveInterval(t *testing.T) {
 		Cron:     "",
 		OnInit:   false,
 	}
-	log := logrus.New().WithField("test", "job_event_validate")
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 
 	err := event.Validate(log)
 
@@ -29,7 +31,8 @@ func TestJobEvent_Validate_CorrectCron(t *testing.T) {
 		Cron:     "* * * * *",
 		OnInit:   false,
 	}
-	log := logrus.New().WithField("test", "job_event_validate")
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 
 	err := event.Validate(log)
 	assert.NoError(t, err)
@@ -41,7 +44,8 @@ func TestJobEvent_Validate_NegativeInterval(t *testing.T) {
 		Cron:     "",
 		OnInit:   false,
 	}
-	log := logrus.New().WithField("test", "job_event_validate")
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 
 	err := event.Validate(log)
 
@@ -57,7 +61,8 @@ func TestJobEvent_Validate_InvalidCronExpression(t *testing.T) {
 		Cron:     "invalid_cron_expression",
 		OnInit:   false,
 	}
-	log := logrus.New().WithField("test", "job_event_validate")
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 
 	err := event.Validate(log)
 
@@ -70,7 +75,8 @@ func TestJobEvent_Validate_MultipleActiveSchedules(t *testing.T) {
 		Cron:     "0 0 * * *",
 		OnInit:   true,
 	}
-	log := logrus.New().WithField("test", "job_event_validate")
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 
 	err := event.Validate(log)
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/enums"
+	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
 var failJob config.JobConfig = config.JobConfig{
@@ -32,8 +33,8 @@ func TestConfig_Validate_LogFormatFails(t *testing.T) {
 		LogLevel:  enums.DebugLevel,
 		Jobs:      []config.JobConfig{},
 	}
-	log := logrus.NewEntry(logrus.New())
-	err := cfg.Validate(log)
+	log, _ := mocklogger.HijackOutput(logrus.New())
+	err := cfg.Validate(log.WithField("test", "test"))
 	assert.Error(t, err)
 	assert.Equal(t, "Given Logger format: `unknown`", err.Error())
 }
@@ -44,7 +45,8 @@ func TestConfig_Validate_LogLevelFails(t *testing.T) {
 		LogLevel:  enums.LogLevel("unknown"),
 		Jobs:      []config.JobConfig{},
 	}
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	err := cfg.Validate(log)
 	assert.Error(t, err)
 	assert.Equal(t, "LogLevel must be one of (trace,debug,info,warn,fatal,panic) but received `unknown`", err.Error())
@@ -56,7 +58,8 @@ func TestConfig_Validate_JobFails(t *testing.T) {
 		LogLevel:  enums.FatalLevel,
 		Jobs:      []config.JobConfig{failJob},
 	}
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	err := cfg.Validate(log)
 	assert.Error(t, err)
 }
@@ -69,7 +72,8 @@ func TestConfig_Validate_AllValidationsPass(t *testing.T) {
 			okJob,
 		},
 	}
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	err := cfg.Validate(log)
 	assert.NoError(t, err)
 }
@@ -80,7 +84,8 @@ func TestConfig_Validate_NoJobs(t *testing.T) {
 		LogLevel:  enums.DebugLevel,
 		Jobs:      []config.JobConfig{},
 	}
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	err := cfg.Validate(log)
 	assert.NoError(t, err)
 }

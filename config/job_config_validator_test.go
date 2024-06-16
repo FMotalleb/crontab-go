@@ -7,10 +7,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/config"
+	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
 func TestJobConfig_Validate_Disabled(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
 		Disabled: true,
 	}
@@ -20,7 +22,8 @@ func TestJobConfig_Validate_Disabled(t *testing.T) {
 }
 
 func TestJobConfig_Validate_Events(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
 		Events: []config.JobEvent{
 			{Interval: -1}, // Invalid interval
@@ -32,7 +35,8 @@ func TestJobConfig_Validate_Events(t *testing.T) {
 }
 
 func TestJobConfig_Validate_Tasks(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
 		Tasks: []config.Task{
 			{Command: "echo", Get: "http://example.com"}, // Invalid task with both command and get
@@ -44,7 +48,8 @@ func TestJobConfig_Validate_Tasks(t *testing.T) {
 }
 
 func TestJobConfig_Validate_HooksDone(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
 		Hooks: config.JobHooks{
 			Done: []config.Task{
@@ -58,7 +63,8 @@ func TestJobConfig_Validate_HooksDone(t *testing.T) {
 }
 
 func TestJobConfig_Validate_HooksFailed(t *testing.T) {
-	log := logrus.NewEntry(logrus.New())
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
 		Hooks: config.JobHooks{
 			Failed: []config.Task{
