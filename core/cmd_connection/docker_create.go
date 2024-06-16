@@ -21,7 +21,6 @@ type DockerCreateConnection struct {
 	conn            *config.TaskConnection
 	log             *logrus.Entry
 	cli             *client.Client
-	imageName       string
 	containerConfig *container.Config
 	hostConfig      *container.HostConfig
 	networkConfig   *network.NetworkingConfig
