@@ -9,25 +9,25 @@ import (
 	"github.com/FMotalleb/crontab-go/core/schedule"
 )
 
-func CompileScheduler(sh *config.JobScheduler, cr *cron.Cron, logger *logrus.Entry) abstraction.Scheduler {
+func CompileEvents(sh *config.JobEvents, cr *cron.Cron, logger *logrus.Entry) abstraction.Events {
 	switch {
 	case sh.Cron != "":
-		scheduler := schedule.NewCron(
+		events := schedule.NewCron(
 			sh.Cron,
 			cr,
 			logger,
 		)
-		return &scheduler
+		return &events
 	case sh.Interval != 0:
-		scheduler := schedule.NewInterval(
+		events := schedule.NewInterval(
 			sh.Interval,
 			logger,
 		)
-		return &scheduler
+		return &events
 
 	case sh.OnInit:
-		scheduler := schedule.Init{}
-		return &scheduler
+		events := schedule.Init{}
+		return &events
 	}
 
 	return nil

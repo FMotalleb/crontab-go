@@ -38,7 +38,7 @@ func (cfg *Config) Validate(log *logrus.Entry) error {
 }
 
 // Validate checks the validity of a JobConfig.
-// It ensures that the job is not disabled and all its schedulers, tasks, done hooks, and failed hooks are valid.
+// It ensures that the job is not disabled and all its eventss, tasks, done hooks, and failed hooks are valid.
 // If any validation fails, it returns an error with the specific validation error.
 // Otherwise, it returns nil.
 func (c *JobConfig) Validate(log *logrus.Entry) error {
@@ -52,11 +52,11 @@ func (c *JobConfig) Validate(log *logrus.Entry) error {
 		return nil
 	}
 
-	// Validate each scheduler
-	for _, s := range c.Schedulers {
+	// Validate each events
+	for _, s := range c.Eventss {
 		if err := s.Validate(log); err != nil {
 			// Log the validation error
-			log.Errorf("Validation error in scheduler for JobConfig %s: %v", c.Name, err)
+			log.Errorf("Validation error in events for JobConfig %s: %v", c.Name, err)
 			return err
 		}
 	}
@@ -189,17 +189,17 @@ func (t *Task) Validate(log *logrus.Entry) error {
 	return nil
 }
 
-// Validate checks the validity of a JobScheduler configuration.
-// It ensures that the scheduler has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
+// Validate checks the validity of a JobEvents configuration.
+// It ensures that the events has a valid interval or cron expression, and only one of on_init, interval, or cron is set.
 // It returns an error if the validation fails, otherwise, it returns nil.
-func (s *JobScheduler) Validate(log *logrus.Entry) error {
+func (s *JobEvents) Validate(log *logrus.Entry) error {
 	// Check if the interval is a negative value
 	if s.Interval < 0 {
 		err := fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
-		log.WithError(err).Warn("Validation failed for JobScheduler")
+		log.WithError(err).Warn("Validation failed for JobEvents")
 		return err
 	} else if _, err := schedule.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
-		log.WithError(err).Warn("Validation failed for JobScheduler")
+		log.WithError(err).Warn("Validation failed for JobEvents")
 		return err
 	}
 
@@ -217,16 +217,16 @@ func (s *JobScheduler) Validate(log *logrus.Entry) error {
 	}
 	if activeSchedules != 1 {
 		err := fmt.Errorf(
-			"a single scheduler must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
+			"a single events must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
 		)
-		log.WithError(err).Warn("Validation failed for JobScheduler")
+		log.WithError(err).Warn("Validation failed for JobEvents")
 		return err
 	}
 
 	// Log the successful validation
-	log.Tracef("Validation successful for JobScheduler: %+v", s)
+	log.Tracef("Validation successful for JobEvents: %+v", s)
 	return nil
 }

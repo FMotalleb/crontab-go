@@ -47,10 +47,10 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 }
 
 func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) <-chan any {
-	schedulers := initSchedulers(job, cronInstance, logger)
-	logger.Trace("Schedulers initialized")
+	eventss := initEventss(job, cronInstance, logger)
+	logger.Trace("Eventss initialized")
 
-	signal := initEventSignal(schedulers, logger)
+	signal := initEventSignal(eventss, logger)
 
 	return signal
 }
