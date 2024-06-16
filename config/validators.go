@@ -207,7 +207,7 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 	schedules := []bool{
 		s.Interval != 0,
 		s.Cron != "",
-		s.OnInit == true,
+		s.OnInit,
 	}
 	activeSchedules := 0
 	for _, t := range schedules {
