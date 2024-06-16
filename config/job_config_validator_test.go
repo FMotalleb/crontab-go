@@ -11,14 +11,21 @@ import (
 )
 
 func TestJobConfig_Validate_Disabled(t *testing.T) {
-	logger, _ := mocklogger.HijackOutput(logrus.New())
+	logger, buff := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 	jobConfig := &config.JobConfig{
-		Disabled: true,
+		Disabled:    true,
+		Name:        "Test",
+		Concurrency: 35,
+		Tasks:       []config.Task{{}},
+		Events: []config.JobEvent{
+			{Interval: -1}, // Invalid interval
+		},
 	}
 
 	err := jobConfig.Validate(log)
 	assert.NoError(t, err, "Expected no error when job is disabled")
+	assert.Contains(t, buff.String(), "JobConfig Test is disabled")
 }
 
 func TestJobConfig_Validate_Events(t *testing.T) {
