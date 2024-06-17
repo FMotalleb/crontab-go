@@ -3,7 +3,8 @@ module github.com/FMotalleb/crontab-go
 go 1.22
 
 require (
-	github.com/docker/docker v26.1.4+incompatible
+	github.com/alecthomas/assert/v2 v2.10.0
+	github.com/docker/docker v27.0.0+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.9.3
@@ -13,7 +14,6 @@ require (
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/alecthomas/assert/v2 v2.10.0 // indirect
 	github.com/alecthomas/repr v0.4.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
