@@ -53,7 +53,8 @@
         "stylecheck",
         "typecheck",
         "unconvert",
-        "unparam"
+        "unparam",
+        "webserver"
     ],
     "json.schemaDownload.enable": true,
     "yaml.schemas": {
