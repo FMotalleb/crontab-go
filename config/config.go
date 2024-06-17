@@ -9,14 +9,23 @@ import (
 
 // Config represents the configuration for the crontab application.
 type Config struct {
+	// Log configs
 	LogTimestampFormat string                 `mapstructure:"log_timestamp_format" json:"log_timestamp_format"`
 	LogFormat          enums.LoggerFormatType `mapstructure:"log_format" json:"log_format"`
 	LogFile            string                 `mapstructure:"log_file" json:"log_file,omitempty"`
 	LogStdout          bool                   `mapstructure:"log_stdout" json:"log_stdout"`
 	LogLevel           enums.LogLevel         `mapstructure:"log_level" json:"log_level"`
-	Shell              string                 `mapstructure:"shell" json:"shell"`
-	ShellArgs          []string               `mapstructure:"shell_args" json:"shell_args"`
-	Jobs               []JobConfig            `mapstructure:"jobs" json:"jobs"`
+
+	// Command executor configs
+	Shell     string   `mapstructure:"shell" json:"shell"`
+	ShellArgs []string `mapstructure:"shell_args" json:"shell_args"`
+
+	// Web-server config
+	WebServerAddress string `mapstructure:"webserver_listen_address" json:"webserver_listen_address"`
+	WebServerPort    uint   `mapstructure:"webserver_port" json:"webserver_port"`
+	WebServerToken   string `mapstructure:"webserver_token" json:"webserver_token"`
+
+	Jobs []JobConfig `mapstructure:"jobs" json:"jobs"`
 }
 
 // JobConfig represents the configuration for a specific job.

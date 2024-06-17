@@ -93,6 +93,28 @@ func initConfig() {
 		"Cannot bind log_stdout env variable: %s",
 	)
 
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_port",
+			"listen_port",
+		),
+		"Cannot bind webserver_port env variable: %s",
+	)
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_address",
+			"listen_address",
+		),
+		"Cannot bind webserver_address env variable: %s",
+	)
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_token",
+			"token",
+		),
+		"Cannot bind webserver_token env variable: %s",
+	)
+
 	viper.SetDefault("log_level", "info")
 	warnOnErr(
 		viper.BindEnv(
