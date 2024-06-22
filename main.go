@@ -21,6 +21,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/core/jobs"
+	"github.com/FMotalleb/crontab-go/core/webserver"
 	"github.com/FMotalleb/crontab-go/logger"
 )
 
@@ -28,6 +29,14 @@ func main() {
 	cmd.Execute()
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")
+	// TODO: move somewhere else
+	go webserver.
+		NewWebServer(
+			cmd.CFG.WebServerAddress,
+			cmd.CFG.WebServerPort,
+			cmd.CFG.WebServerToken,
+		).
+		Serve()
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
 	jobs.InitializeJobs(log, cronInstance)

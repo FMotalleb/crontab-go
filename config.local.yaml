@@ -7,12 +7,12 @@ jobs:
     tasks:
       - command: php -v
         retry-delay: 5s
-        connections:
-          - image: docker-mysql-database-phpmyadmin
-            volumes:
-              - "/home/motalleb/Downloads:/var/local/test"
-        env:
-          SHELL: /bin/bash
+        # connections:
+        #   - image: docker-mysql-database-phpmyadmin
+        #     volumes:
+        #       - "/home/motalleb/Downloads:/var/local/test"
+        # env:
+        #   SHELL: /bin/bash
     events:
       - on-init: true
-      - interval: 10m10s
+      - interval: 10s
