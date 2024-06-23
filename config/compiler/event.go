@@ -2,6 +2,8 @@
 package cfgcompiler
 
 import (
+	"context"
+
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/FMotalleb/crontab-go/core/event"
 )
 
-func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abstraction.Event {
+func CompileEvent(ctx context.Context, sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abstraction.Event {
 	switch {
 	case sh.Cron != "":
 		events := event.NewCron(

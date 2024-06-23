@@ -15,4 +15,4 @@ jobs:
         #   SHELL: /bin/bash
     events:
       - on-init: true
-      - interval: 10s
+      - web-event: test

@@ -88,6 +88,7 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 	events := []bool{
 		s.Interval != 0,
 		s.Cron != "",
+		s.WebEvent != "",
 		s.OnInit,
 	}
 	activeEvents := 0
@@ -98,10 +99,11 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 	}
 	if activeEvents != 1 {
 		err := fmt.Errorf(
-			"a single event must have one of (on_init: true,interval,cron) field, received:(on_init: %t,cron: `%s`, interval: `%s`)",
+			"a single event must have one of (on-init: true,interval,cron,web-event) field, received:(on_init: %t,cron: `%s`, interval: `%s`, web_event: `%s`)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
+			s.WebEvent,
 		)
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err

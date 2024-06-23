@@ -117,6 +117,10 @@
         "on-init": {
           "type": "boolean",
           "description": "Indicates that the job should trigger its tasks once initialized."
+        },
+        "web-event": {
+          "type": "string",
+          "description": "Event name that received from webserver that should trigger this job."
         }
       },
       "required": [],

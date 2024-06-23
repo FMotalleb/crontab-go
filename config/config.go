@@ -44,6 +44,7 @@ type JobEvent struct {
 	Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
 	OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`
+	WebEvent string        `mapstructure:"web-event" json:"web_event,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.

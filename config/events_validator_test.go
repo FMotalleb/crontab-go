@@ -16,6 +16,7 @@ func TestJobEvent_Validate_PositiveInterval(t *testing.T) {
 		Interval: 10,
 		Cron:     "",
 		OnInit:   false,
+		WebEvent: "",
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
