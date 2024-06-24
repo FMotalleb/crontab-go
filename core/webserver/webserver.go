@@ -42,7 +42,7 @@ func (s *WebServer) Serve() {
 	)
 	ed := &endpoints.EventDispatchEndpoint{}
 	routes.Any(
-		"/events/:event/dispatch",
+		"/events/:event/emit",
 		ed.Endpoint,
 	)
 

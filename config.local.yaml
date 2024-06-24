@@ -5,7 +5,7 @@
 jobs:
   - name: Test Job
     tasks:
-      - command: php -v
+      - command: echo 1
         retry-delay: 5s
         # connections:
         #   - image: docker-mysql-database-phpmyadmin

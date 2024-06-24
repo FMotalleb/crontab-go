@@ -17,11 +17,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"context"
-
 	"github.com/robfig/cron/v3"
 
 	"github.com/FMotalleb/crontab-go/cmd"
+	"github.com/FMotalleb/crontab-go/core/global"
 	"github.com/FMotalleb/crontab-go/core/jobs"
 	"github.com/FMotalleb/crontab-go/core/webserver"
 	"github.com/FMotalleb/crontab-go/logger"
@@ -32,13 +31,12 @@ func main() {
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")
 	// TODO: move somewhere else
-	globalCtx := context.Background()
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
-	jobs.InitializeJobs(globalCtx, log, cronInstance)
+	jobs.InitializeJobs(log, cronInstance)
 	go webserver.
 		NewWebServer(
-			globalCtx,
+			global.CTX,
 			cmd.CFG.WebServerAddress,
 			cmd.CFG.WebServerPort,
 			cmd.CFG.WebServerToken,

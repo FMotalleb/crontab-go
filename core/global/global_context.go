@@ -7,6 +7,8 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
+var CTX = newGlobalContext()
+
 type (
 	EventListenerMap = map[string][]func()
 	GlobalContext    struct {
@@ -15,7 +17,7 @@ type (
 	}
 )
 
-func NewGlobalContext() *GlobalContext {
+func newGlobalContext() *GlobalContext {
 	ctx := &GlobalContext{
 		context.WithValue(
 			context.Background(),

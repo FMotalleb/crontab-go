@@ -13,7 +13,7 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func InitializeJobs(ctx context.Context, log *logrus.Entry, cronInstance *cron.Cron) {
+func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 	for _, job := range cmd.CFG.Jobs {
 		if job.Disabled {
 			log.Warnf("job %s is disabled", job.Name)
@@ -23,8 +23,8 @@ func InitializeJobs(ctx context.Context, log *logrus.Entry, cronInstance *cron.C
 		if job.Concurrency == 0 {
 			job.Concurrency = 1
 		}
-
-		c := context.WithValue(ctx, ctxutils.JobKey, job)
+		c := context.Background()
+		c = context.WithValue(c, ctxutils.JobKey, job)
 
 		var lock sync.Locker = concurrency.NewConcurrentPool(job.Concurrency)
 
