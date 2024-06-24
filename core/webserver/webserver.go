@@ -1,3 +1,4 @@
+// Package webserver implements the logic for the webserver
 package webserver
 
 import (
@@ -7,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/FMotalleb/crontab-go/core/webserver/endpoints"
+	"github.com/FMotalleb/crontab-go/core/webserver/endpoint"
 	"github.com/FMotalleb/crontab-go/helpers"
 	"github.com/FMotalleb/crontab-go/logger"
 )
@@ -40,7 +41,8 @@ func (s *WebServer) Serve() {
 			c.String(200, "bar")
 		},
 	)
-	ed := &endpoints.EventDispatchEndpoint{}
+
+	ed := &endpoint.EventDispatchEndpoint{}
 	routes.Any(
 		"/events/:event/emit",
 		ed.Endpoint,

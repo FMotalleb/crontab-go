@@ -1,4 +1,5 @@
-package endpoints
+// Package endpoint implements the logic behind each endpoint of the webserver
+package endpoint
 
 import (
 	"fmt"
@@ -9,16 +10,10 @@ import (
 	"github.com/FMotalleb/crontab-go/core/global"
 )
 
-type EventChannel = chan string
-
-type EventDispatchEndpoint struct {
-	eventChan EventChannel
-}
+type EventDispatchEndpoint struct{}
 
 func NewEventDispatchEndpoint() *EventDispatchEndpoint {
-	return &EventDispatchEndpoint{
-		eventChan: make(EventChannel),
-	}
+	return &EventDispatchEndpoint{}
 }
 
 func (ed *EventDispatchEndpoint) Endpoint(c *gin.Context) {
