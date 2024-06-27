@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/FMotalleb/crontab-go/cmd/parser"
 	"github.com/FMotalleb/crontab-go/config"
 )
 
@@ -27,7 +28,10 @@ designed to replace the traditional crontab in Docker environments.
 With its seamless integration and easy-to-use YAML configuration,
 Cronjob-go simplifies the process of scheduling and managing recurring tasks
 within your containerized applications.`,
-	Run: func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(cmd.Args)
+		initConfig()
+	},
 }
 
 func Execute() {
@@ -39,9 +43,11 @@ func Execute() {
 
 func init() {
 	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
-	cobra.OnInitialize(initConfig)
 
+	rootCmd.AddCommand(parser.ParserCmd)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is config.yaml)")
+
+	// cobra.OnInitialize()
 }
 
 func warnOnErr(err error, message string) {
@@ -161,7 +167,6 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
-
 	panicOnErr(
 		viper.ReadInConfig(),
 		"Cannot read the config file: %s",
