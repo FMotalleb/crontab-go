@@ -30,8 +30,3 @@ func (w *WebEventListener) BuildTickChannel() <-chan any {
 	}()
 	return c
 }
-
-// Cancel implements abstraction.Scheduler.
-func (w *WebEventListener) Cancel() {
-	// TODO: implement cancel
-}

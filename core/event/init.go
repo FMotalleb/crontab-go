@@ -10,13 +10,8 @@ func (c *Init) BuildTickChannel() <-chan any {
 
 	go func() {
 		c.notifyChan <- false
-		c.Cancel()
+		close(c.notifyChan)
 	}()
 
 	return c.notifyChan
-}
-
-// Cancel implements abstraction.Scheduler.
-func (c *Init) Cancel() {
-	close(c.notifyChan)
 }
