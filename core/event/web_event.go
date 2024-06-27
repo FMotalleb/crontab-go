@@ -22,11 +22,5 @@ func (w *WebEventListener) BuildTickChannel() <-chan any {
 			w.c <- false
 		},
 	)
-	c := make(chan any)
-	go func() {
-		for range w.c {
-			c <- false
-		}
-	}()
-	return c
+	return w.c
 }
