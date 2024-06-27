@@ -21,9 +21,10 @@ type Config struct {
 	ShellArgs []string `mapstructure:"shell_args" json:"shell_args"`
 
 	// Web-server config
-	WebServerAddress string `mapstructure:"webserver_listen_address" json:"webserver_listen_address"`
-	WebServerPort    uint   `mapstructure:"webserver_port" json:"webserver_port"`
-	WebServerToken   string `mapstructure:"webserver_token" json:"webserver_token"`
+	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address"`
+	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port"`
+	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username"`
+	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password"`
 
 	Jobs []JobConfig `mapstructure:"jobs" json:"jobs"`
 }

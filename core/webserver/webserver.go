@@ -14,27 +14,33 @@ import (
 )
 
 type WebServer struct {
-	ctx     context.Context
-	address string
-	port    uint
-	token   string
-	log     *logrus.Entry
+	ctx      context.Context
+	address  string
+	port     uint
+	username string
+	password string
+	log      *logrus.Entry
 }
 
-func NewWebServer(ctx context.Context, address string, port uint, token string) *WebServer {
+func NewWebServer(ctx context.Context, address string, port uint, username string, password string) *WebServer {
 	return &WebServer{
-		ctx:     ctx,
-		address: address,
-		port:    port,
-		token:   token,
-		log:     logger.SetupLogger("WebServer"),
+		ctx:      ctx,
+		address:  address,
+		port:     port,
+		username: username,
+		password: password,
+		log:      logger.SetupLogger("WebServer"),
 	}
 }
 
 func (s *WebServer) Serve() {
 	engine := gin.New()
-
-	auth := gin.BasicAuth(gin.Accounts{"admin": s.token})
+	auth := func(*gin.Context) {}
+	if s.username != "" && s.password != "" {
+		auth = gin.BasicAuth(gin.Accounts{s.username: s.password})
+	} else {
+		s.log.Warnf("received no value on username or password, ignoring any authentication, if you intended to use no authentication ignore this message")
+	}
 	log := gin.LoggerWithConfig(gin.LoggerConfig{
 		Formatter: s.formatter,
 	})

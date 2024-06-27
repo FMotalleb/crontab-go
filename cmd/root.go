@@ -103,16 +103,25 @@ func initConfig() {
 	warnOnErr(
 		viper.BindEnv(
 			"webserver_address",
+			"webserver_listen_address",
 			"listen_address",
 		),
 		"Cannot bind webserver_address env variable: %s",
 	)
 	warnOnErr(
 		viper.BindEnv(
-			"webserver_token",
-			"token",
+			"webserver_password",
+			"password",
 		),
-		"Cannot bind webserver_token env variable: %s",
+		"Cannot bind webserver_password env variable: %s",
+	)
+
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_username",
+			"username",
+		),
+		"Cannot bind webserver_username env variable: %s",
 	)
 
 	viper.SetDefault("log_level", "info")

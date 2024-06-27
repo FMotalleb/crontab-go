@@ -34,14 +34,17 @@ func main() {
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
 	jobs.InitializeJobs(log, cronInstance)
-	go webserver.
-		NewWebServer(
-			global.CTX,
-			cmd.CFG.WebServerAddress,
-			cmd.CFG.WebServerPort,
-			cmd.CFG.WebServerToken,
-		).
-		Serve()
+	if cmd.CFG.WebServerAddress != "" {
+		go webserver.
+			NewWebServer(
+				global.CTX,
+				cmd.CFG.WebServerAddress,
+				cmd.CFG.WebServerPort,
+				cmd.CFG.WebserverUsername,
+				cmd.CFG.WebServerPassword,
+			).
+			Serve()
+	}
 	cronInstance.Start()
 	<-make(chan any)
 }

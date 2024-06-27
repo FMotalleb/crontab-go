@@ -10,7 +10,7 @@ import (
 )
 
 func Validate(log *logrus.Entry, usr string, grp string) error {
-	log.Warn("windows os does not have capability to set user dus validation will pass but will not work")
+	log.Warn("windows os does not have capability to set user thus validation will pass but will not work")
 	return nil
 }
 

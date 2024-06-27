@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,12 +44,9 @@ func validateWebserverConfig(cfg *Config) error {
 	if cfg.WebServerAddress != "" && cfg.WebServerPort == 0 {
 		return fmt.Errorf("address: %s:%d is not a valid address", cfg.WebServerAddress, cfg.WebServerPort)
 	}
-
-	if err := uuid.Validate(cfg.WebServerToken); err != nil {
-		return fmt.Errorf(
-			"webserver token must be a valid UUID token, received value: %s, error: %s",
-			cfg.WebServerToken,
-			err,
+	if len(cfg.WebServerPassword) < 8 {
+		cfg.debugLog(
+			"webserver password is weak",
 		)
 	}
 
