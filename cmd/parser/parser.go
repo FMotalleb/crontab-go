@@ -30,8 +30,13 @@ var (
 				log.Panicf("failed to marshal final config: %v", err)
 			}
 			hashMap := make(map[string]any)
-			json.Unmarshal(str, &hashMap)
-			ans, _ := yaml.Marshal(hashMap)
+			if err := json.Unmarshal(str, &hashMap); err != nil {
+				log.Panicf("failed to unmarshal final config: %v", err)
+			}
+			ans, err := yaml.Marshal(hashMap)
+			if err != nil {
+				log.Panicf("failed to marshal final config: %v", err)
+			}
 			result := string(ans)
 			log.Printf("output:\n%s", result)
 			if cfg.output != "" {
