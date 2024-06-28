@@ -20,7 +20,10 @@ func (l cronLine) exportEnv() (map[string]string, error) {
 	case 3:
 		answer[match[1]] = match[2]
 	default:
-		return nil, fmt.Errorf("unexpected line in cron file, environment regex selector cannot understand this line:\n%s", l.string)
+		return nil, fmt.Errorf("unexpected response from environment parser for line:\n%s", l.string)
+	}
+	if len(answer) != 1 && len(strings.Trim(l.string, " \n\t")) != 0 {
+		return nil, fmt.Errorf("line cannot be parsed as environment:\n%s", l.string)
 	}
 	return answer, nil
 }

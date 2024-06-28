@@ -25,7 +25,7 @@ var (
 
 func run(cmd *cobra.Command, args []string) {
 	cfg.cronFile = cmd.Flags().Arg(0)
-	cron, err := readInCron()
+	cron, err := readInCron(cfg)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -42,13 +42,13 @@ func run(cmd *cobra.Command, args []string) {
 	}
 	log.Printf("output:\n%s", result)
 	if cfg.output != "" {
-		writeOutput(result)
+		writeOutput(cfg, result)
 	}
 	log.Println("Done writing output")
 	os.Exit(0)
 }
 
-func writeOutput(result string) {
+func writeOutput(cfg *parserConfig, result string) {
 	outputFile, err := os.OpenFile(cfg.output, os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		log.Panicf("failed to open output file: %v", err)
@@ -60,7 +60,7 @@ func writeOutput(result string) {
 	}
 }
 
-func readInCron() (*CronString, error) {
+func readInCron(cfg *parserConfig) (*CronString, error) {
 	var str string = ""
 	if cfg.cronFile == "" {
 		return nil, errors.New("please provide a cron file path, usage: `--help`")
