@@ -52,14 +52,13 @@ func init() {
 
 func warnOnErr(err error, message string) {
 	if err != nil {
-		fmt.Printf(message, err)
+		logrus.Warnf(message, err)
 	}
 }
 
 func panicOnErr(err error, message string) {
 	if err != nil {
-		fmt.Printf(message, err)
-		panic(err)
+		logrus.Panicf(message, err)
 	}
 }
 

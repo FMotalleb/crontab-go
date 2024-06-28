@@ -17,16 +17,16 @@ type ConcurrentPool struct {
 
 // NewConcurrentPool creates a new ConcurrentPool with the specified capacity.
 // It panics if the capacity is 0.
-func NewConcurrentPool(capacity uint) *ConcurrentPool {
+func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 	if capacity == 0 {
-		panic(errors.New("capacity value of a concurrent poll cannot be 0"))
+		return nil, errors.New("capacity value of a concurrent poll cannot be 0")
 	}
 	return &ConcurrentPool{
 		internalSync: &sync.Mutex{},
 		available:    capacity,
 		used:         0,
 		changeChan:   make(chan interface{}),
-	}
+	}, nil
 }
 
 // Lock acquires a lock from the pool, waiting if necessary until a slot becomes available.

@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"context"
-	"sync"
 
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
@@ -26,8 +25,10 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		c := context.Background()
 		c = context.WithValue(c, ctxutils.JobKey, job)
 
-		var lock sync.Locker = concurrency.NewConcurrentPool(job.Concurrency)
-
+		lock, err := concurrency.NewConcurrentPool(job.Concurrency)
+		if err != nil {
+			log.Panicf("failed to validate job (%s): %v", job.Name, err)
+		}
 		logger := initLogger(c, log, job)
 		logger = logger.WithField("concurrency", job.Concurrency)
 		if err := job.Validate(log); err != nil {

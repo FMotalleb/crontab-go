@@ -34,8 +34,7 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf(
-				"recovering from a panic:\n%v\nif you think this is an error from application please report at: %s",
-				err,
+				"recovering from a panic if you think this is an error from application please report at: %s",
 				meta.Issues(),
 			)
 			os.Exit(1)

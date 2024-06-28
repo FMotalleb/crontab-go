@@ -8,14 +8,14 @@ import (
 )
 
 func TestConcurrentPool_PanicCase(t *testing.T) {
-	assert.Panics(t, func() {
-		NewConcurrentPool(0)
-	})
+	_, err := NewConcurrentPool(0)
+	assert.Error(t, err)
 }
 
 func TestConcurrentPool_LockUnlock(t *testing.T) {
 	t.Run("Lock and Unlock with capacity 1", func(t *testing.T) {
-		pool := NewConcurrentPool(1)
+		pool, err := NewConcurrentPool(1)
+		assert.NoError(t, err)
 		pool.Lock()
 		assert.Equal(t, 1, pool.access(get))
 		pool.Unlock()
@@ -23,7 +23,8 @@ func TestConcurrentPool_LockUnlock(t *testing.T) {
 	})
 
 	t.Run("Lock and Unlock with capacity 2", func(t *testing.T) {
-		pool := NewConcurrentPool(2)
+		pool, err := NewConcurrentPool(2)
+		assert.NoError(t, err)
 		pool.Lock()
 		assert.Equal(t, 1, pool.access(get))
 		pool.Lock()
@@ -35,14 +36,16 @@ func TestConcurrentPool_LockUnlock(t *testing.T) {
 	})
 
 	t.Run("Unlock on a totally free pool", func(t *testing.T) {
-		pool := NewConcurrentPool(1)
+		pool, err := NewConcurrentPool(1)
+		assert.NoError(t, err)
 		assert.Panics(t, pool.Unlock)
 	})
 }
 
 func TestConcurrentPool_LockUnlockGoroutine(t *testing.T) {
 	t.Run("Lock and Unlock with capacity 1 (inside 2 goroutine)", func(t *testing.T) {
-		pool := NewConcurrentPool(1)
+		pool, err := NewConcurrentPool(1)
+		assert.NoError(t, err)
 
 		chn := make(chan int64)
 		for i := 0; i < 2; i++ {

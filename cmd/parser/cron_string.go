@@ -2,15 +2,13 @@ package parser
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"regexp"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/FMotalleb/crontab-go/config"
 )
-
-var envRegex = regexp.MustCompile(`^(?<key>[\w\d_]+)=(?<value>.*)$`)
 
 type CronString struct {
 	string
@@ -18,23 +16,6 @@ type CronString struct {
 
 func NewCronString(cron string) CronString {
 	return CronString{cron}
-}
-
-func NewCronFromFile(filePath string) CronString {
-	file, err := os.OpenFile(filePath, os.O_RDONLY, 0o644)
-	if err != nil {
-		log.Panicf("can't open cron file: %v", err)
-	}
-	stat, err := file.Stat()
-	if err != nil {
-		log.Panicf("can't stat cron file: %v", err)
-	}
-	content := make([]byte, stat.Size())
-	_, err = file.Read(content)
-	if err != nil {
-		log.Panicf("can't open cron file: %v", err)
-	}
-	return CronString{string(content)}
 }
 
 func (s CronString) replaceAll(regex string, repl string) CronString {
@@ -79,44 +60,57 @@ func (s CronString) lines() []string {
 func (s *CronString) parseAsSpec(
 	pattern string,
 	hasUser bool,
-) []cronSpec {
+) ([]cronSpec, error) {
 	envTable := make(map[string]string)
 	specs := make([]cronSpec, 0)
 	lines := s.sanitize().lines()
-	matcher, parser := buildMapper(hasUser, pattern)
-
+	matcher, parser, err := buildMapper(hasUser, pattern)
+	if err != nil {
+		return []cronSpec{}, err
+	}
 	for _, line := range lines {
 		l := cronLine{line}
-		if env := l.exportEnv(); len(env) > 0 {
-			for key, val := range l.exportEnv() {
+		if env, err := l.exportEnv(); len(env) > 0 {
+			if err != nil {
+				return nil, err
+			}
+			for key, val := range env {
 				if old, ok := envTable[key]; ok {
-					log.Printf("env var of key `%s`, value `%s`, is going to be replaced by `%s`\n", key, old, val)
+					logrus.Warnf("env var of key `%s`, value `%s`, is going to be replaced by `%s`", key, old, val)
 				}
 				envTable[key] = val
 
 			}
 		} else {
-			if spec := l.exportSpec(matcher, envTable, parser); spec != nil {
+			spec, err := l.exportSpec(matcher, envTable, parser)
+			if err != nil {
+				return nil, err
+			}
+			if spec != nil {
 				specs = append(specs, *spec)
 			}
+
 		}
 	}
-	return specs
+	return specs, nil
 }
 
 func (s *CronString) ParseConfig(
 	pattern string,
 	hasUser bool,
-) *config.Config {
-	specs := s.parseAsSpec(pattern, hasUser)
+) (*config.Config, error) {
+	specs, err := s.parseAsSpec(pattern, hasUser)
+	if err != nil {
+		return nil, err
+	}
 	cfg := &config.Config{}
 	for _, spec := range specs {
 		addSpec(cfg, spec)
 	}
-	return cfg
+	return cfg, nil
 }
 
-func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, func([]string, map[string]string) *cronSpec) {
+func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, cronSpecParser, error) {
 	lineParser := "(?<cmd>.*)"
 	if hasUser {
 		lineParser = fmt.Sprintf(`(?<user>\w[\w\d]*)\s+%s`, lineParser)
@@ -125,15 +119,18 @@ func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, func([]string, m
 
 	matcher, err := regexp.Compile(cronLineMatcher)
 	if err != nil {
-		log.Panicf("cannot parse cron `%s`", matcher)
+		return nil, nil, fmt.Errorf("cannot parse cron `%s`", matcher)
 	}
 	var parser cronSpecParser
 	if hasUser {
-		parser = withUserParser(matcher)
+		parser, err = withUserParser(matcher)
 	} else {
-		parser = normalParser(matcher)
+		parser, err = normalParser(matcher)
 	}
-	return matcher, parser
+	if err != nil {
+		return nil, nil, err
+	}
+	return matcher, parser, nil
 }
 
 func addSpec(cfg *config.Config, spec cronSpec) {
