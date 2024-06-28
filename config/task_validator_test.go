@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -118,7 +119,11 @@ func TestTaskValidate_CredentialLog(t *testing.T) {
 
 	err := task.Validate(log)
 	assert.NoError(t, err)
-	assert.Contains(t, buffer.String(), "Be careful when using credentials, in local mode you can't use credentials unless running as root")
+	if runtime.GOOS == "windows" {
+		assert.Contains(t, buffer.String(), "windows os does not have capability")
+	} else {
+		assert.Contains(t, buffer.String(), "Be careful when using credentials, in local mode you can't use credentials unless running as root")
+	}
 }
 
 func TestTaskValidate_InvalidTaskWithData(t *testing.T) {
