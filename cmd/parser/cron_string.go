@@ -30,7 +30,10 @@ func NewCronFromFile(filePath string) CronString {
 		log.Panicf("can't stat cron file: %v", err)
 	}
 	content := make([]byte, stat.Size())
-	file.Read(content)
+	_, err = file.Read(content)
+	if err != nil {
+		log.Panicf("can't open cron file: %v", err)
+	}
 	return CronString{string(content)}
 }
 

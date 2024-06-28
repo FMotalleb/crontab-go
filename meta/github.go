@@ -1,9 +1,18 @@
+// Package meta contains meta data information about this program.
 package meta
 
 import "fmt"
 
+func GHUserName() string {
+	return "FMotalleb"
+}
+
+func GHProjectName() string {
+	return "crontab-go"
+}
+
 func Project() string {
-	return "https://github.com/FMotalleb/crontab-go"
+	return fmt.Sprintf("https://github.com/%s/%s", GHUserName(), GHProjectName())
 }
 
 func Issues() string {
