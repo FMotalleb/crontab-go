@@ -1,6 +1,7 @@
 package concurrency
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -58,7 +59,8 @@ func TestConcurrentPool_LockUnlockGoroutine(t *testing.T) {
 		end1 := <-chn
 		end2 := <-chn
 		diff := end2 - end1
-		// 10% less than the actual value, possible timing issues
-		assert.True(t, diff >= 900)
+		assert.NotZero(t, diff)
+		fmt.Println(diff)
+		assert.True(t, diff >= 1000)
 	})
 }
