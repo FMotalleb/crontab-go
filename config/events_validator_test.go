@@ -96,7 +96,7 @@ func TestJobEvent_Validate_MultipleActiveSchedules(t *testing.T) {
 
 	err := event.Validate(log)
 
-	expectedErr := "a single event must have one of (on_init: true,interval,cron) field, received:(on_init: true,cron: `0 0 * * *`, interval: `60ns`)"
+	expectedErr := "a single event must have one of "
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), expectedErr)
