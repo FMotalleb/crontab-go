@@ -64,6 +64,14 @@ func panicOnErr(err error, message string) {
 }
 
 func initConfig() {
+	if runtime.GOOS == "windows" {
+		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
+		viper.SetDefault("shell_args", "/c")
+	} else {
+		viper.SetDefault("shell", "/bin/sh")
+		viper.SetDefault("shell_args", "-c")
+	}
+
 	setupEnv()
 
 	if cfgFile != "" {
@@ -163,13 +171,6 @@ func setupEnv() {
 		"Cannot bind log_level env variable: %s",
 	)
 
-	if runtime.GOOS == "windows" {
-		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
-		viper.SetDefault("shell_args", "/c")
-	} else {
-		viper.SetDefault("shell", "/bin/sh")
-		viper.SetDefault("shell_args", "-c")
-	}
 	warnOnErr(
 		viper.BindEnv(
 			"shell",
