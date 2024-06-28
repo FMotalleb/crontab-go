@@ -20,7 +20,7 @@ func normalParser(regex *regexp.Regexp) cronSpecParser {
 	// userIndex := regex.SubexpIndex("user")
 	cmdIndex := regex.SubexpIndex("cmd")
 	if cronIndex < 0 || cmdIndex < 0 {
-		log.Panicf("cannot find groups (cron,cmd) in regexp: `%v`", regex.SubexpIndex)
+		log.Panicf("cannot find groups (cron,cmd) in regexp: `%s", regex)
 	}
 	return func(match []string, env map[string]string) *cronSpec {
 		return &cronSpec{
@@ -37,7 +37,7 @@ func withUserParser(regex *regexp.Regexp) cronSpecParser {
 	userIndex := regex.SubexpIndex("user")
 	cmdIndex := regex.SubexpIndex("cmd")
 	if cronIndex < 0 || cmdIndex < 0 || userIndex < 0 {
-		log.Panicf("cannot find groups (cron,user,cmd) in regexp: `%v`", regex.SubexpIndex)
+		log.Panicf("cannot find groups (cron,user,cmd) in regexp: `%s", regex)
 	}
 	return func(match []string, env map[string]string) *cronSpec {
 		return &cronSpec{

@@ -32,14 +32,12 @@ import (
 
 func main() {
 	defer func() {
-		log.Printf("here")
 		if err := recover(); err != nil {
 			log.Printf(
-				"exception: %v\n\nif you think this is an error from application please report at: %s",
+				"recovering from a panic:\n%v\nif you think this is an error from application please report at: %s",
 				err,
 				meta.Issues(),
 			)
-
 			os.Exit(1)
 		}
 	}()

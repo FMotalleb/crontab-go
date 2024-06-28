@@ -1,0 +1,49 @@
+jobs:
+    - description: Imported from cron file
+      events:
+        - cron: '* * * * *'
+      hooks: {}
+      name: 'FromCron: * * * * *'
+      tasks:
+        - command: php -v --help
+          env:
+            PATH: C:\xampp\php;
+          user: tng
+        - command: php -v --help --params
+          env:
+            PATH: C:\xampp\php;
+          user: tng
+    - description: Imported from cron file
+      events:
+        - cron: 0 0 * * *
+      hooks: {}
+      name: 'FromCron: 0 0 * * *'
+      tasks:
+        - command: php -v --help --params
+          env:
+            PATH: C:\xampp\php;
+          user: tng
+        - command: php -v --help --params
+          env:
+            PATH: C:\xampp\php;
+          user: tng
+    - description: Imported from cron file
+      events:
+        - cron: 0 0 */2 * *
+      hooks: {}
+      name: 'FromCron: 0 0 */2 * *'
+      tasks:
+        - command: php -v --help --params
+          env:
+            PATH: C:\xampp\php;
+          user: tng
+escription: Imported from cron file
+      events:
+        - cron: 0 0 */2 * *
+      hooks: {}
+      name: 'FromCron: 0 0 */2 * *'
+      tasks:
+        - command: php -v --help --params
+          env:
+            PATH: C:\xampp\php;
+          user: tng
