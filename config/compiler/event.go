@@ -19,6 +19,9 @@ func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abst
 			logger,
 		)
 		return &events
+	case sh.WebEvent != "":
+		events := event.NewEventListener(sh.WebEvent)
+		return &events
 	case sh.Interval != 0:
 		events := event.NewInterval(
 			sh.Interval,

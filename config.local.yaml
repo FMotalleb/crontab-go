@@ -5,14 +5,14 @@
 jobs:
   - name: Test Job
     tasks:
-      - command: php -v
+      - command: echo 1
         retry-delay: 5s
-        connections:
-          - image: docker-mysql-database-phpmyadmin
-            volumes:
-              - "/home/motalleb/Downloads:/var/local/test"
-        env:
-          SHELL: /bin/bash
+        # connections:
+        #   - image: docker-mysql-database-phpmyadmin
+        #     volumes:
+        #       - "/home/motalleb/Downloads:/var/local/test"
+        # env:
+        #   SHELL: /bin/bash
     events:
       - on-init: true
-      - interval: 10m10s
+      - web-event: test

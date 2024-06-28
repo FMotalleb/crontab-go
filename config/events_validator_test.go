@@ -11,11 +11,27 @@ import (
 	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
+func TestJobEvent_Validate_WebEvent(t *testing.T) {
+	event := config.JobEvent{
+		Interval: 0,
+		Cron:     "",
+		OnInit:   false,
+		WebEvent: "test-event",
+	}
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
+
+	err := event.Validate(log)
+
+	assert.NoError(t, err)
+}
+
 func TestJobEvent_Validate_PositiveInterval(t *testing.T) {
 	event := config.JobEvent{
 		Interval: 10,
 		Cron:     "",
 		OnInit:   false,
+		WebEvent: "",
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -80,7 +96,7 @@ func TestJobEvent_Validate_MultipleActiveSchedules(t *testing.T) {
 
 	err := event.Validate(log)
 
-	expectedErr := "a single event must have one of (on_init: true,interval,cron) field, received:(on_init: true,cron: `0 0 * * *`, interval: `60ns`)"
+	expectedErr := "a single event must have one of "
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), expectedErr)

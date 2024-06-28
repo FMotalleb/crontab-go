@@ -23,7 +23,6 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		if job.Concurrency == 0 {
 			job.Concurrency = 1
 		}
-
 		c := context.Background()
 		c = context.WithValue(c, ctxutils.JobKey, job)
 

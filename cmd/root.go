@@ -58,6 +58,32 @@ func panicOnErr(err error, message string) {
 }
 
 func initConfig() {
+	setupEnv()
+
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+	}
+
+	viper.AutomaticEnv()
+
+	panicOnErr(
+		viper.ReadInConfig(),
+		"Cannot read the config file: %s",
+	)
+	panicOnErr(
+		viper.Unmarshal(CFG),
+		"Cannot unmarshal the config file: %s",
+	)
+	panicOnErr(
+		CFG.Validate(logrus.WithField("section", "config.validation")),
+		"Failed to initialize config file: %s",
+	)
+}
+
+func setupEnv() {
 	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05Z07:00")
 	warnOnErr(
 		viper.BindEnv(
@@ -93,6 +119,37 @@ func initConfig() {
 		"Cannot bind log_stdout env variable: %s",
 	)
 
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_port",
+			"listen_port",
+		),
+		"Cannot bind webserver_port env variable: %s",
+	)
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_address",
+			"webserver_listen_address",
+			"listen_address",
+		),
+		"Cannot bind webserver_address env variable: %s",
+	)
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_password",
+			"password",
+		),
+		"Cannot bind webserver_password env variable: %s",
+	)
+
+	warnOnErr(
+		viper.BindEnv(
+			"webserver_username",
+			"username",
+		),
+		"Cannot bind webserver_username env variable: %s",
+	)
+
 	viper.SetDefault("log_level", "info")
 	warnOnErr(
 		viper.BindEnv(
@@ -120,27 +177,5 @@ func initConfig() {
 			"shell_args",
 		),
 		"Cannot bind shell_args env variable: %s",
-	)
-
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		viper.SetConfigName("config")
-		viper.SetConfigType("yaml")
-	}
-
-	viper.AutomaticEnv()
-
-	panicOnErr(
-		viper.ReadInConfig(),
-		"Cannot read the config file: %s",
-	)
-	panicOnErr(
-		viper.Unmarshal(CFG),
-		"Cannot unmarshal the config file: %s",
-	)
-	panicOnErr(
-		CFG.Validate(logrus.WithField("section", "config.validation")),
-		"Failed to initialize config file: %s",
 	)
 }

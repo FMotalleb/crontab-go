@@ -20,7 +20,9 @@ import (
 	"github.com/robfig/cron/v3"
 
 	"github.com/FMotalleb/crontab-go/cmd"
+	"github.com/FMotalleb/crontab-go/core/global"
 	"github.com/FMotalleb/crontab-go/core/jobs"
+	"github.com/FMotalleb/crontab-go/core/webserver"
 	"github.com/FMotalleb/crontab-go/logger"
 )
 
@@ -31,6 +33,17 @@ func main() {
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
 	jobs.InitializeJobs(log, cronInstance)
+	if cmd.CFG.WebServerAddress != "" {
+		go webserver.
+			NewWebServer(
+				global.CTX,
+				cmd.CFG.WebServerAddress,
+				cmd.CFG.WebServerPort,
+				cmd.CFG.WebserverUsername,
+				cmd.CFG.WebServerPassword,
+			).
+			Serve()
+	}
 	cronInstance.Start()
 	<-make(chan any)
 }

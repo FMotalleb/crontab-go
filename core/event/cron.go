@@ -32,7 +32,9 @@ func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
 
 // BuildTickChannel implements abstraction.Scheduler.
 func (c *Cron) BuildTickChannel() <-chan any {
-	c.Cancel()
+	if c.entry != nil {
+		c.logger.Fatal("already built the ticker channel")
+	}
 	c.notifyChan = make(chan any)
 	schedule, err := CronParser.Parse(c.cronSchedule)
 	if err != nil {
@@ -47,13 +49,4 @@ func (c *Cron) BuildTickChannel() <-chan any {
 func (c *Cron) Run() {
 	c.logger.Debugln("cron tick received")
 	c.notifyChan <- false
-}
-
-// Cancel implements abstraction.Scheduler.
-func (c *Cron) Cancel() {
-	if c.entry != nil {
-		c.logger.Debugln("scheduler cancel signal received for an active instance")
-		c.cron.Remove(*c.entry)
-		close(c.notifyChan)
-	}
 }

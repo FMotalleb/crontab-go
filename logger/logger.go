@@ -25,6 +25,10 @@ func SetupLoggerOf(parent logrus.Entry, section string) *logrus.Entry {
 	return parent.WithField("section", sectionValue)
 }
 
+func AddHook(hook logrus.Hook) {
+	log.AddHook(hook)
+}
+
 // InitFromConfig parsed using cmd.Execute()
 func InitFromConfig() {
 	log = logrus.New()

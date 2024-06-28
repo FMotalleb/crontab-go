@@ -19,7 +19,6 @@ func TestCompileEvent_IntervalZero(t *testing.T) {
 	cr := cron.New()
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
 	event := cfgcompiler.CompileEvent(sh, cr, log)
 	assert.Equal(t, event, nil)
 }

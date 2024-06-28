@@ -28,9 +28,10 @@ func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
 
 // BuildTickChannel implements abstraction.Scheduler.
 func (c *Interval) BuildTickChannel() <-chan any {
-	c.Cancel()
+	if c.ticker != nil {
+		c.logger.Fatal("already built the ticker channel")
+	}
 	c.notifyChan = make(chan any)
-
 	c.ticker = time.NewTicker(c.duration)
 	go func() {
 		// c.notifyChan <- false
@@ -40,13 +41,4 @@ func (c *Interval) BuildTickChannel() <-chan any {
 	}()
 
 	return c.notifyChan
-}
-
-// Cancel implements abstraction.Scheduler.
-func (c *Interval) Cancel() {
-	if c.ticker != nil {
-		c.logger.Debugln("scheduler cancel signal received for an active instance")
-		c.ticker.Stop()
-		close(c.notifyChan)
-	}
 }

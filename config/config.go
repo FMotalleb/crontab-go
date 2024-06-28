@@ -9,14 +9,24 @@ import (
 
 // Config represents the configuration for the crontab application.
 type Config struct {
+	// Log configs
 	LogTimestampFormat string                 `mapstructure:"log_timestamp_format" json:"log_timestamp_format"`
 	LogFormat          enums.LoggerFormatType `mapstructure:"log_format" json:"log_format"`
 	LogFile            string                 `mapstructure:"log_file" json:"log_file,omitempty"`
 	LogStdout          bool                   `mapstructure:"log_stdout" json:"log_stdout"`
 	LogLevel           enums.LogLevel         `mapstructure:"log_level" json:"log_level"`
-	Shell              string                 `mapstructure:"shell" json:"shell"`
-	ShellArgs          []string               `mapstructure:"shell_args" json:"shell_args"`
-	Jobs               []JobConfig            `mapstructure:"jobs" json:"jobs"`
+
+	// Command executor configs
+	Shell     string   `mapstructure:"shell" json:"shell"`
+	ShellArgs []string `mapstructure:"shell_args" json:"shell_args"`
+
+	// Web-server config
+	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address"`
+	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port"`
+	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username"`
+	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password"`
+
+	Jobs []JobConfig `mapstructure:"jobs" json:"jobs"`
 }
 
 // JobConfig represents the configuration for a specific job.
@@ -35,6 +45,7 @@ type JobEvent struct {
 	Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
 	OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`
+	WebEvent string        `mapstructure:"web-event" json:"web_event,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.

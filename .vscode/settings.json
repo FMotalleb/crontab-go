@@ -28,7 +28,9 @@
         }
     },
     "cSpell.words": [
+        "alecthomas",
         "bodyclose",
+        "cfgcompiler",
         "dupl",
         "errcheck",
         "exportloopref",
@@ -37,13 +39,17 @@
         "goconst",
         "gocritic",
         "gocyclo",
+        "godotenv",
         "gofumpt",
         "goimports",
+        "gonic",
         "goprintffuncname",
         "gosec",
         "gosimple",
         "govet",
         "ineffassign",
+        "joho",
+        "mocklogger",
         "nakedret",
         "noctx",
         "nolint",
@@ -51,9 +57,11 @@
         "sqlclosecheck",
         "staticcheck",
         "stylecheck",
+        "Tracef",
         "typecheck",
         "unconvert",
-        "unparam"
+        "unparam",
+        "webserver"
     ],
     "json.schemaDownload.enable": true,
     "yaml.schemas": {
