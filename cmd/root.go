@@ -64,6 +64,30 @@ func panicOnErr(err error, message string) {
 }
 
 func initConfig() {
+	setupEnv()
+
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+	}
+
+	panicOnErr(
+		viper.ReadInConfig(),
+		"Cannot read the config file: %s",
+	)
+	panicOnErr(
+		viper.Unmarshal(CFG),
+		"Cannot unmarshal the config file: %s",
+	)
+	panicOnErr(
+		CFG.Validate(logrus.WithField("section", "config.validation")),
+		"Failed to initialize config file: %s",
+	)
+}
+
+func setupEnv() {
 	viper.SetDefault("log_timestamp_format", "2006-01-02T15:04:05Z07:00")
 	warnOnErr(
 		viper.BindEnv(
@@ -159,24 +183,5 @@ func initConfig() {
 		"Cannot bind shell_args env variable: %s",
 	)
 
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		viper.SetConfigName("config")
-		viper.SetConfigType("yaml")
-	}
-
 	viper.AutomaticEnv()
-	panicOnErr(
-		viper.ReadInConfig(),
-		"Cannot read the config file: %s",
-	)
-	panicOnErr(
-		viper.Unmarshal(CFG),
-		"Cannot unmarshal the config file: %s",
-	)
-	panicOnErr(
-		CFG.Validate(logrus.WithField("section", "config.validation")),
-		"Failed to initialize config file: %s",
-	)
 }

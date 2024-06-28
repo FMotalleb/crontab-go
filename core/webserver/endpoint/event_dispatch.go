@@ -23,8 +23,9 @@ func (ed *EventDispatchEndpoint) Endpoint(c *gin.Context) {
 		c.String(http.StatusNotFound, fmt.Sprintf("event: '%s' not found", event))
 		return
 	}
+	listenerCount := len(listeners)
 	for _, listener := range listeners {
 		go listener()
 	}
-	c.String(200, fmt.Sprintf("event: '%s' emitted", event))
+	c.String(http.StatusOK, fmt.Sprintf("event: '%s' emitted, %d listeners where found", event, listenerCount))
 }

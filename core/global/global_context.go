@@ -1,3 +1,4 @@
+// Package global contains global state management logics
 package global
 
 import (
