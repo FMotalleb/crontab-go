@@ -30,7 +30,6 @@ func main() {
 	cmd.Execute()
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")
-	// TODO: move somewhere else
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
 	jobs.InitializeJobs(log, cronInstance)

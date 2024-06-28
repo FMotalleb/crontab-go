@@ -11,6 +11,21 @@ import (
 	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
 )
 
+func TestJobEvent_Validate_WebEvent(t *testing.T) {
+	event := config.JobEvent{
+		Interval: 0,
+		Cron:     "",
+		OnInit:   false,
+		WebEvent: "test-event",
+	}
+	logger, _ := mocklogger.HijackOutput(logrus.New())
+	log := logrus.NewEntry(logger)
+
+	err := event.Validate(log)
+
+	assert.NoError(t, err)
+}
+
 func TestJobEvent_Validate_PositiveInterval(t *testing.T) {
 	event := config.JobEvent{
 		Interval: 10,
