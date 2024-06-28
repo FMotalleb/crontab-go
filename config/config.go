@@ -44,8 +44,8 @@ type JobConfig struct {
 type JobEvent struct {
 	Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
-	OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`
-	WebEvent string        `mapstructure:"web-event" json:"web_event,omitempty"`
+	OnInit   bool          `mapstructure:"on-init" json:"on-init,omitempty"`
+	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.
@@ -64,7 +64,7 @@ type Task struct {
 
 	// Command params
 	Command          string            `mapstructure:"command" json:"command,omitempty"`
-	WorkingDirectory string            `mapstructure:"working-dir" json:"working_directory,omitempty"`
+	WorkingDirectory string            `mapstructure:"working-dir" json:"working-directory,omitempty"`
 	UserName         string            `mapstructure:"user" json:"user,omitempty"`
 	GroupName        string            `mapstructure:"group" json:"group,omitempty"`
 	Env              map[string]string `mapstructure:"env" json:"env,omitempty"`
@@ -72,12 +72,12 @@ type Task struct {
 
 	// Retry & Timeout config
 	Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
-	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
+	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry-delay,omitempty"`
 	Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 
 	// Hooks
-	OnDone []Task `mapstructure:"on-done" json:"on_done,omitempty"`
-	OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`
+	OnDone []Task `mapstructure:"on-done" json:"on-done,omitempty"`
+	OnFail []Task `mapstructure:"on-fail" json:"on-fail,omitempty"`
 }
 
 // TaskConnection represents the connection configuration for a task.

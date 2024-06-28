@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/core/global"
@@ -31,10 +32,13 @@ import (
 )
 
 func main() {
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors: true,
+	})
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf(
-				"recovering from a panic if you think this is an error from application please report at: %s",
+				"an error stopped application from working, if you think this is an error in application side please report to %s",
 				meta.Issues(),
 			)
 			os.Exit(1)

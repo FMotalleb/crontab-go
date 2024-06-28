@@ -158,10 +158,18 @@ func initJob(jobName string, timing string, cfg *config.Config) {
 	job.Name = jobName
 	job.Description = "Imported from cron file"
 	job.Disabled = false
-	job.Events = []config.JobEvent{
-		{
-			Cron: timing,
-		},
+	if strings.Contains(timing, "@reboot") {
+		job.Events = []config.JobEvent{
+			{
+				OnInit: true,
+			},
+		}
+	} else {
+		job.Events = []config.JobEvent{
+			{
+				Cron: timing,
+			},
+		}
 	}
 	cfg.Jobs = append(cfg.Jobs, job)
 }
