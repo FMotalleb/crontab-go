@@ -1,3 +1,5 @@
+// Package parser manages holds the logic behind the sub command `parse`
+// this package is responsible for parsing a crontab file into valid config yaml file
 package parser
 
 import (

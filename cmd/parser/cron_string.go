@@ -26,6 +26,9 @@ func NewCronFromFile(filePath string) CronString {
 		log.Panicf("can't open cron file: %v", err)
 	}
 	stat, err := file.Stat()
+	if err != nil {
+		log.Panicf("can't stat cron file: %v", err)
+	}
 	content := make([]byte, stat.Size())
 	file.Read(content)
 	return CronString{string(content)}
@@ -70,13 +73,13 @@ func (s CronString) lines() []string {
 	return strings.Split(s.string, "\n")
 }
 
-func (c *CronString) parseAsSpec(
+func (s *CronString) parseAsSpec(
 	pattern string,
 	hasUser bool,
 ) []cronSpec {
 	envTable := make(map[string]string)
 	specs := make([]cronSpec, 0)
-	lines := c.sanitize().lines()
+	lines := s.sanitize().lines()
 	matcher, parser := buildMapper(hasUser, pattern)
 
 	for _, line := range lines {
@@ -98,11 +101,11 @@ func (c *CronString) parseAsSpec(
 	return specs
 }
 
-func (c *CronString) ParseConfig(
+func (s *CronString) ParseConfig(
 	pattern string,
 	hasUser bool,
 ) *config.Config {
-	specs := c.parseAsSpec(pattern, hasUser)
+	specs := s.parseAsSpec(pattern, hasUser)
 	cfg := &config.Config{}
 	for _, spec := range specs {
 		addSpec(cfg, spec)
