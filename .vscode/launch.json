@@ -15,6 +15,19 @@
                 "-c",
                 "config.local.yaml"
             ]
-        }
+        },
+        {
+            "name": "Parse",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": ".",
+            "env": {},
+            "args": [
+                "parse",
+                "crontab.log",
+                "-u"
+            ]
+        },
     ]
 }

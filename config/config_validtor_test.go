@@ -31,7 +31,7 @@ func TestConfig_Validate_LogFormatFails(t *testing.T) {
 	cfg := &config.Config{
 		LogFormat: enums.LoggerFormatType("unknown"),
 		LogLevel:  enums.DebugLevel,
-		Jobs:      []config.JobConfig{},
+		Jobs:      []*config.JobConfig{},
 	}
 	log, _ := mocklogger.HijackOutput(logrus.New())
 	err := cfg.Validate(log.WithField("test", "test"))
@@ -43,7 +43,7 @@ func TestConfig_Validate_LogLevelFails(t *testing.T) {
 	cfg := &config.Config{
 		LogFormat: enums.AnsiLogger,
 		LogLevel:  enums.LogLevel("unknown"),
-		Jobs:      []config.JobConfig{},
+		Jobs:      []*config.JobConfig{},
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -56,7 +56,7 @@ func TestConfig_Validate_JobFails(t *testing.T) {
 	cfg := &config.Config{
 		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.FatalLevel,
-		Jobs:      []config.JobConfig{failJob},
+		Jobs:      []*config.JobConfig{&failJob},
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -68,8 +68,8 @@ func TestConfig_Validate_AllValidationsPass(t *testing.T) {
 	cfg := &config.Config{
 		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.DebugLevel,
-		Jobs: []config.JobConfig{
-			okJob,
+		Jobs: []*config.JobConfig{
+			&okJob,
 		},
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
@@ -82,7 +82,7 @@ func TestConfig_Validate_NoJobs(t *testing.T) {
 	cfg := &config.Config{
 		LogFormat: enums.JSONLogger,
 		LogLevel:  enums.DebugLevel,
-		Jobs:      []config.JobConfig{},
+		Jobs:      []*config.JobConfig{},
 	}
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)

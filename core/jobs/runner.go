@@ -34,9 +34,9 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 			log.Panicf("failed to validate job (%s): %v", job.Name, err)
 		}
 
-		signal := buildSignal(job, cronInstance, logger)
+		signal := buildSignal(*job, cronInstance, logger)
 
-		tasks, doneHooks, failHooks := initTasks(job, logger)
+		tasks, doneHooks, failHooks := initTasks(*job, logger)
 		logger.Trace("Tasks initialized")
 
 		go taskHandler(c, logger, signal, tasks, doneHooks, failHooks, lock)
@@ -54,7 +54,7 @@ func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.E
 	return signal
 }
 
-func initLogger(c context.Context, log *logrus.Entry, job config.JobConfig) *logrus.Entry {
+func initLogger(c context.Context, log *logrus.Entry, job *config.JobConfig) *logrus.Entry {
 	logger := log.WithContext(c).WithField("job.name", job.Name)
 	logger.Trace("Initializing Job")
 	return logger

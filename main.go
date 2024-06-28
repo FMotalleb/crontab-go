@@ -17,6 +17,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/robfig/cron/v3"
 
 	"github.com/FMotalleb/crontab-go/cmd"
@@ -24,13 +27,25 @@ import (
 	"github.com/FMotalleb/crontab-go/core/jobs"
 	"github.com/FMotalleb/crontab-go/core/webserver"
 	"github.com/FMotalleb/crontab-go/logger"
+	"github.com/FMotalleb/crontab-go/meta"
 )
 
 func main() {
+	defer func() {
+		log.Printf("here")
+		if err := recover(); err != nil {
+			log.Printf(
+				"exception: %v\n\nif you think this is an error from application please report at: %s",
+				err,
+				meta.Issues(),
+			)
+
+			os.Exit(1)
+		}
+	}()
 	cmd.Execute()
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")
-	// TODO: move somewhere else
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
 	jobs.InitializeJobs(log, cronInstance)
