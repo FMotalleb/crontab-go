@@ -1,8 +1,8 @@
 package parser
 
 type parserConfig struct {
-	cronFile string
-	output   string
-	matcher  string
-	hasUser  bool
+	cronFile    string
+	output      string
+	cronMatcher string
+	hasUser     bool
 }

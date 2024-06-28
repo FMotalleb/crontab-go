@@ -1,0 +1,176 @@
+package parser
+
+import (
+	"fmt"
+	"log"
+	"os"
+	"regexp"
+	"strings"
+
+	"github.com/FMotalleb/crontab-go/config"
+)
+
+var envRegex = regexp.MustCompile(`^(?<key>[\w\d_]+)=(?<value>.*)$`)
+
+type CronString struct {
+	string
+}
+
+func NewCronString(cron string) CronString {
+	return CronString{cron}
+}
+
+func NewCronFromFile(filePath string) CronString {
+	file, err := os.OpenFile(filePath, os.O_RDONLY, 0o644)
+	if err != nil {
+		log.Panicf("can't open cron file: %v", err)
+	}
+	stat, err := file.Stat()
+	content := make([]byte, stat.Size())
+	file.Read(content)
+	return CronString{string(content)}
+}
+
+func (s CronString) replaceAll(regex string, repl string) CronString {
+	reg := regexp.MustCompile(regex)
+	out := reg.ReplaceAllString(s.string, repl)
+	return CronString{out}
+}
+
+func (s CronString) sanitizeLineBreaker() CronString {
+	return s.replaceAll(
+		`\s*\\\s*\n\s*([\n|\n\s])*`,
+		" ",
+	)
+}
+
+func (s CronString) sanitizeEmptyLine() CronString {
+	return s.replaceAll(
+		`\n\s*\n`,
+		"\n",
+	)
+}
+
+func (s CronString) sanitizeComments() CronString {
+	return s.replaceAll(
+		`\s*#.*`,
+		"",
+	)
+}
+
+func (s CronString) sanitize() CronString {
+	return s.
+		replaceAll("\r\n", "\n").
+		sanitizeComments().
+		sanitizeLineBreaker().
+		sanitizeEmptyLine()
+}
+
+func (s CronString) lines() []string {
+	return strings.Split(s.string, "\n")
+}
+
+type cronLine struct {
+	string
+}
+
+func (l cronLine) exportEnv() map[string]string {
+	match := envRegex.FindStringSubmatch(l.string)
+	answer := make(map[string]string)
+	switch len(match) {
+	case 0:
+	case 3:
+		answer[match[1]] = match[2]
+	default:
+		log.Panicf("found multiple(%d) env vars in single line\n please attach your crontab file too\n affected line: %s\n parser result: %#v\n", len(match), l.string, match)
+	}
+	return answer
+}
+
+func (l cronLine) exportSpec(regex *regexp.Regexp, env map[string]string, parser cronSpecParser) *cronSpec {
+	match := regex.FindStringSubmatch(l.string)
+	if len(match) < 1 {
+		return nil
+	}
+	return parser(match, env)
+}
+
+func (c *CronString) parseAsSpec(
+	pattern string,
+	hasUser bool,
+) []cronSpec {
+	envTable := make(map[string]string)
+	specs := make([]cronSpec, 0)
+	lines := c.sanitize().lines()
+	lineParser := "(?<cmd>.*)"
+	if hasUser {
+		lineParser = fmt.Sprintf(`(?<user>\w[\w\d]*)\s+%s`, lineParser)
+	}
+	cronLineMatcher := fmt.Sprintf(`^(?<cron>%s)\s+%s$`, pattern, lineParser)
+
+	matcher, err := regexp.Compile(cronLineMatcher)
+	if err != nil {
+		log.Panicf("cannot parse cron `%s`", matcher)
+	}
+	var parser cronSpecParser
+	if hasUser {
+		parser = withUserParser(matcher)
+	} else {
+		parser = normalParser(matcher)
+	}
+
+	for _, line := range lines {
+		l := cronLine{line}
+		for key, val := range l.exportEnv() {
+			if old, ok := envTable[key]; ok {
+				log.Printf("env var of key `%s`, value `%s`, is going to be replaced by `%s`\n", key, old, val)
+			}
+			envTable[key] = val
+		}
+		if spec := l.exportSpec(matcher, envTable, parser); spec != nil {
+			specs = append(specs, *spec)
+		}
+
+	}
+	return specs
+}
+
+func (c *CronString) ParseConfig(
+	pattern string,
+	hasUser bool,
+) *config.Config {
+	specs := c.parseAsSpec(pattern, hasUser)
+	cfg := &config.Config{}
+	for _, spec := range specs {
+		addSpec(cfg, spec)
+	}
+	return cfg
+}
+
+func addSpec(cfg *config.Config, spec cronSpec) {
+	jobName := fmt.Sprintf("FromCron: %s", spec.timing)
+
+	for _, job := range cfg.Jobs {
+		if job.Name == jobName {
+			job.Tasks = append(
+				job.Tasks,
+				config.Task{
+					Command: spec.command,
+					Env:     spec.environ,
+				},
+			)
+			return
+		}
+	}
+	job := &config.JobConfig{}
+	job.Name = jobName
+	job.Description = "Imported from cron file"
+	job.Disabled = false
+	job.Events = []config.JobEvent{
+		{
+			Cron: spec.timing,
+		},
+	}
+	cfg.Jobs = append(cfg.Jobs, job)
+	addSpec(cfg, spec)
+}
