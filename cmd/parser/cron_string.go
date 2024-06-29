@@ -79,7 +79,6 @@ func (s *CronString) parseAsSpec(
 					logrus.Warnf("env var of key `%s`, value `%s`, is going to be replaced by `%s`", key, old, val)
 				}
 				envTable[key] = val
-
 			}
 		} else {
 			spec, err := l.exportSpec(matcher, envTable, parser)
@@ -89,7 +88,6 @@ func (s *CronString) parseAsSpec(
 			if spec != nil {
 				specs = append(specs, *spec)
 			}
-
 		}
 	}
 	return specs, nil

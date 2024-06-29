@@ -64,7 +64,6 @@ func writeOutput(cfg *parserConfig, result string) {
 }
 
 func readInCron(cfg *parserConfig) (*CronString, error) {
-	var str string = ""
 	if cfg.cronFile == "" {
 		return nil, errors.New("please provide a cron file path, usage: `--help`")
 	}
@@ -81,7 +80,7 @@ func readInCron(cfg *parserConfig) (*CronString, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't open cron file: %v", err)
 	}
-	str = string(content)
+	str := string(content)
 	cron := NewCronString(str)
 	return &cron, nil
 }
