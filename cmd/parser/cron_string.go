@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/config"
 )
@@ -46,11 +46,20 @@ func (s CronString) sanitizeComments() CronString {
 }
 
 func (s CronString) sanitize() CronString {
-	return s.
+	sane := s.
 		replaceAll("\r\n", "\n").
 		sanitizeComments().
 		sanitizeLineBreaker().
 		sanitizeEmptyLine()
+	log.TraceFn(func() []interface{} {
+		return []any{
+			"sanitizing input:\n",
+			s.string,
+			"\nOutput:\n",
+			sane.string,
+		}
+	})
+	return sane
 }
 
 func (s CronString) lines() []string {
@@ -65,18 +74,20 @@ func (s *CronString) parseAsSpec(
 	specs := make([]cronSpec, 0)
 	lines := s.sanitize().lines()
 	matcher, parser, err := buildMapper(hasUser, pattern)
+	log.Tracef("parsing lines using `%s` line matcher", matcher.String())
 	if err != nil {
 		return []cronSpec{}, err
 	}
-	for _, line := range lines {
+	for num, line := range lines {
 		l := cronLine{line}
 		if env, err := l.exportEnv(); len(env) > 0 {
+			log.Tracef("line %d(post sanitize) is identified as environment line", num)
 			if err != nil {
 				return nil, err
 			}
 			for key, val := range env {
 				if old, ok := envTable[key]; ok {
-					logrus.Warnf("env var of key `%s`, value `%s`, is going to be replaced by `%s`", key, old, val)
+					log.Warnf("env var of key `%s`, value `%s`, is going to be replaced by `%s`", key, old, val)
 				}
 				envTable[key] = val
 			}
@@ -113,22 +124,26 @@ func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, cronSpecParser, 
 	if hasUser {
 		lineParser = fmt.Sprintf(`(?<user>\w[\w\d]*)\s+%s`, lineParser)
 	}
+
 	cronLineMatcher := fmt.Sprintf(`^(?<cron>%s)\s+%s$`, pattern, lineParser)
 
 	matcher, err := regexp.Compile(cronLineMatcher)
 	if err != nil {
-		return nil, nil, fmt.Errorf("cannot parse cron `%s`", matcher)
+		return nil, nil, fmt.Errorf("failed to compile cron line parser regexp: `%s`", matcher)
 	}
-	var parser cronSpecParser
-	if hasUser {
-		parser, err = withUserParser(matcher)
-	} else {
-		parser, err = normalParser(matcher)
-	}
+	parser, err := getLineParser(hasUser, matcher)
 	if err != nil {
 		return nil, nil, err
 	}
 	return matcher, parser, nil
+}
+
+func getLineParser(hasUser bool, matcher *regexp.Regexp) (cronSpecParser, error) {
+	if hasUser {
+		return withUserParser(matcher)
+	} else {
+		return normalParser(matcher)
+	}
 }
 
 func addSpec(cfg *config.Config, spec cronSpec) {

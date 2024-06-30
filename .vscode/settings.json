@@ -58,6 +58,7 @@
         "staticcheck",
         "stylecheck",
         "Tracef",
+        "Traceln",
         "typecheck",
         "unconvert",
         "unparam",

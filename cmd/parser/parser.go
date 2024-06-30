@@ -24,11 +24,17 @@ var (
 )
 
 func run(cmd *cobra.Command, args []string) {
-	cfg.cronFile = cmd.Flags().Arg(0)
-	cron, err := readInCron(cfg)
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors: true,
 	})
+	log.SetOutput(os.Stderr)
+	cfg.cronFile = cmd.Flags().Arg(0)
+
+	if trace, err := cmd.Flags().GetBool("verbose"); err == nil && trace {
+		log.SetLevel(log.TraceLevel)
+	}
+	log.Traceln("source file: ", cfg.cronFile)
+	cron, err := readInCron(cfg)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -43,7 +49,8 @@ func run(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Panic(err)
 	}
-	log.Printf("output:\n%s", result)
+	fmt.Println("# yaml-language-server: $schema=https://raw.githubusercontent.com/FMotalleb/crontab-go/main/schema.json")
+	fmt.Println(result)
 	if cfg.output != "" {
 		writeOutput(cfg, result)
 	}
@@ -88,5 +95,6 @@ func readInCron(cfg *parserConfig) (*CronString, error) {
 func init() {
 	ParserCmd.PersistentFlags().StringVarP(&cfg.output, "output", "o", "", "output file to write configuration to")
 	ParserCmd.PersistentFlags().BoolVarP(&cfg.hasUser, "with-user", "u", false, "indicates that whether the given cron file has user field")
+	ParserCmd.PersistentFlags().BoolP("verbose", "v", false, "sets the logging level to trace and verbose logging")
 	ParserCmd.PersistentFlags().StringVar(&cfg.cronMatcher, "matcher", `(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|(\*\/\d))\s*){5,7})`, "matcher for cron")
 }
