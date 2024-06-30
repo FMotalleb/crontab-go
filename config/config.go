@@ -10,23 +10,23 @@ import (
 // Config represents the configuration for the crontab application.
 type Config struct {
 	// Log configs
-	LogTimestampFormat string                 `mapstructure:"log_timestamp_format" json:"log_timestamp_format"`
-	LogFormat          enums.LoggerFormatType `mapstructure:"log_format" json:"log_format"`
+	LogTimestampFormat string                 `mapstructure:"log_timestamp_format" json:"log_timestamp_format,omitempty"`
+	LogFormat          enums.LoggerFormatType `mapstructure:"log_format" json:"log_format,omitempty"`
 	LogFile            string                 `mapstructure:"log_file" json:"log_file,omitempty"`
-	LogStdout          bool                   `mapstructure:"log_stdout" json:"log_stdout"`
-	LogLevel           enums.LogLevel         `mapstructure:"log_level" json:"log_level"`
+	LogStdout          bool                   `mapstructure:"log_stdout" json:"log_stdout,omitempty"`
+	LogLevel           enums.LogLevel         `mapstructure:"log_level" json:"log_level,omitempty"`
 
 	// Command executor configs
-	Shell     string   `mapstructure:"shell" json:"shell"`
-	ShellArgs []string `mapstructure:"shell_args" json:"shell_args"`
+	Shell     string   `mapstructure:"shell" json:"shell,omitempty"`
+	ShellArgs []string `mapstructure:"shell_args" json:"shell_args,omitempty"`
 
 	// Web-server config
-	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address"`
-	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port"`
-	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username"`
-	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password"`
+	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address,omitempty"`
+	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port,omitempty"`
+	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username,omitempty"`
+	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password,omitempty"`
 
-	Jobs []JobConfig `mapstructure:"jobs" json:"jobs"`
+	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
 }
 
 // JobConfig represents the configuration for a specific job.
@@ -44,8 +44,8 @@ type JobConfig struct {
 type JobEvent struct {
 	Cron     string        `mapstructure:"cron" json:"cron,omitempty"`
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
-	OnInit   bool          `mapstructure:"on-init" json:"on_init,omitempty"`
-	WebEvent string        `mapstructure:"web-event" json:"web_event,omitempty"`
+	OnInit   bool          `mapstructure:"on-init" json:"on-init,omitempty"`
+	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.
@@ -64,7 +64,7 @@ type Task struct {
 
 	// Command params
 	Command          string            `mapstructure:"command" json:"command,omitempty"`
-	WorkingDirectory string            `mapstructure:"working-dir" json:"working_directory,omitempty"`
+	WorkingDirectory string            `mapstructure:"working-dir" json:"working-directory,omitempty"`
 	UserName         string            `mapstructure:"user" json:"user,omitempty"`
 	GroupName        string            `mapstructure:"group" json:"group,omitempty"`
 	Env              map[string]string `mapstructure:"env" json:"env,omitempty"`
@@ -72,12 +72,12 @@ type Task struct {
 
 	// Retry & Timeout config
 	Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
-	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry_delay,omitempty"`
+	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry-delay,omitempty"`
 	Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 
 	// Hooks
-	OnDone []Task `mapstructure:"on-done" json:"on_done,omitempty"`
-	OnFail []Task `mapstructure:"on-fail" json:"on_fail,omitempty"`
+	OnDone []Task `mapstructure:"on-done" json:"on-done,omitempty"`
+	OnFail []Task `mapstructure:"on-fail" json:"on-fail,omitempty"`
 }
 
 // TaskConnection represents the connection configuration for a task.

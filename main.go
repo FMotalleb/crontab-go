@@ -17,16 +17,33 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/robfig/cron/v3"
+	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/core/global"
 	"github.com/FMotalleb/crontab-go/core/jobs"
 	"github.com/FMotalleb/crontab-go/core/webserver"
 	"github.com/FMotalleb/crontab-go/logger"
+	"github.com/FMotalleb/crontab-go/meta"
 )
 
 func main() {
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors: true,
+	})
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf(
+				"an error stopped application from working, if you think this is an error in application side please report to %s",
+				meta.Issues(),
+			)
+			os.Exit(1)
+		}
+	}()
 	cmd.Execute()
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")

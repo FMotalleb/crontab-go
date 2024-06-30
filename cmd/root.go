@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/FMotalleb/crontab-go/cmd/parser"
 	"github.com/FMotalleb/crontab-go/config"
 )
 
@@ -27,7 +28,10 @@ designed to replace the traditional crontab in Docker environments.
 With its seamless integration and easy-to-use YAML configuration,
 Cronjob-go simplifies the process of scheduling and managing recurring tasks
 within your containerized applications.`,
-	Run: func(cmd *cobra.Command, args []string) {},
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(cmd.Args)
+		initConfig()
+	},
 }
 
 func Execute() {
@@ -39,25 +43,34 @@ func Execute() {
 
 func init() {
 	warnOnErr(godotenv.Load(), "Cannot initialize .env file: %s")
-	cobra.OnInitialize(initConfig)
 
+	rootCmd.AddCommand(parser.ParserCmd)
 	rootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is config.yaml)")
+
+	// cobra.OnInitialize()
 }
 
 func warnOnErr(err error, message string) {
 	if err != nil {
-		fmt.Printf(message, err)
+		logrus.Warnf(message, err)
 	}
 }
 
 func panicOnErr(err error, message string) {
 	if err != nil {
-		fmt.Printf(message, err)
-		panic(err)
+		logrus.Panicf(message, err)
 	}
 }
 
 func initConfig() {
+	if runtime.GOOS == "windows" {
+		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
+		viper.SetDefault("shell_args", "/c")
+	} else {
+		viper.SetDefault("shell", "/bin/sh")
+		viper.SetDefault("shell_args", "-c")
+	}
+
 	setupEnv()
 
 	if cfgFile != "" {
@@ -66,8 +79,6 @@ func initConfig() {
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
 	}
-
-	viper.AutomaticEnv()
 
 	panicOnErr(
 		viper.ReadInConfig(),
@@ -159,13 +170,6 @@ func setupEnv() {
 		"Cannot bind log_level env variable: %s",
 	)
 
-	if runtime.GOOS == "windows" {
-		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
-		viper.SetDefault("shell_args", "/c")
-	} else {
-		viper.SetDefault("shell", "/bin/sh")
-		viper.SetDefault("shell_args", "-c")
-	}
 	warnOnErr(
 		viper.BindEnv(
 			"shell",
@@ -178,4 +182,6 @@ func setupEnv() {
 		),
 		"Cannot bind shell_args env variable: %s",
 	)
+
+	viper.AutomaticEnv()
 }
