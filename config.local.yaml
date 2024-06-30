@@ -1,81 +1,18 @@
 # yaml-language-server: $schema=schema.json
 #TODO: unix/tcp socket controller
 #TODO: prometheus exporter
+
 jobs:
-  - description: Imported from cron file
-    events:
-      - cron: 0 * * * *
-    hooks: {}
-    name: "FromCron: 0 * * * *"
+  - name: Test Job
     tasks:
-      - command: /usr/bin/wget -O - -q -t 1 http://localhost/cron.php
-  - description: Imported from cron file
-    events:
-      - cron: "* * * * *"
-    hooks: {}
-    name: "FromCron: * * * * *"
-    tasks:
-      - command: /var/www/devdaily.com/bin/check-apache.sh
-  - description: Imported from cron file
-    events:
-      - cron: 5 10,22 * * *
-    hooks: {}
-    name: "FromCron: 5 10,22 * * *"
-    tasks:
-      - command: /var/www/devdaily.com/bin/mk-new-links.php
-  - description: Imported from cron file
-    events:
-      - cron: 30 4 * * *
-    hooks: {}
-    name: "FromCron: 30 4 * * *"
-    tasks:
-      - command: /var/www/devdaily.com/bin/create-all-backups.sh
-  - description: Imported from cron file
-    events:
-      - cron: 5 0,4,10,16 * * *
-    hooks: {}
-    name: "FromCron: 5 0,4,10,16 * * *"
-    tasks:
-      - command: /var/www/devdaily.com/bin/create-cat-list.sh
-  - description: Imported from cron file
-    events:
-      - cron: 5 0 * * *
-    hooks: {}
-    name: "FromCron: 5 0 * * *"
-    tasks:
-      - command: /var/www/devdaily.com/bin/resetContactForm.sh
-  - description: Imported from cron file
-    events:
-      - cron: 0,20,40  * * * *
-    hooks: {}
-    name: "FromCron: 0,20,40  * * * *"
-    tasks:
-      - command: /var/www/bin/ads/freshMint.sh
-  - description: Imported from cron file
-    events:
-      - cron: 5,25,45  * * * *
-    hooks: {}
-    name: "FromCron: 5,25,45  * * * *"
-    tasks:
-      - command: /var/www/bin/ads/greenTaffy.sh
-  - description: Imported from cron file
-    events:
-      - cron: 10,30,50 * * * *
-    hooks: {}
-    name: "FromCron: 10,30,50 * * * *"
-    tasks:
-      - command: /var/www/bin/ads/raspberry.sh
-  - description: Imported from cron file
-    events:
-      - cron: 15,35,55 * * * *
-    hooks: {}
-    name: "FromCron: 15,35,55 * * * *"
-    tasks:
-      - command: /var/www/bin/ads/robinsEgg.sh
-  - description: Imported from cron file
+      - command: echo 1
+        retry-delay: 5s
+        # connections:
+        #   - image: docker-mysql-database-phpmyadmin
+        #     volumes:
+        #       - "/home/motalleb/Downloads:/var/local/test"
+        # env:
+        #   SHELL: /bin/bash
     events:
       - on-init: true
-    hooks: {}
-    name: "FromCron: @reboot"
-    tasks:
-      - command: test
+      - web-event: test
