@@ -37,6 +37,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
       - name: Build and push Docker image Slim (bookworm-slim)
         uses: docker/build-push-action@v6
         with:
