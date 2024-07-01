@@ -43,16 +43,16 @@ func TestConcurrentPool_LockUnlock(t *testing.T) {
 }
 
 func TestConcurrentPool_LockUnlockGoroutine(t *testing.T) {
-	pool, err := NewConcurrentPool(1)
-
-	assert.NoError(t, err)
 	t.Run("Lock and Unlock with capacity 1 (inside 2 goroutine)", func(t *testing.T) {
+		pool, err := NewConcurrentPool(1)
+
+		assert.NoError(t, err)
 		chn := make(chan int64)
 		for i := 0; i < 2; i++ {
 			go func() {
 				pool.Lock()
 				defer pool.Unlock()
-				time.Sleep(time.Second * 1)
+				time.Sleep(time.Millisecond * 50)
 				chn <- time.Now().UnixMilli()
 			}()
 		}
@@ -60,6 +60,6 @@ func TestConcurrentPool_LockUnlockGoroutine(t *testing.T) {
 		end2 := <-chn
 		diff := end2 - end1
 		assert.NotZero(t, diff)
-		assert.True(t, diff >= 1000)
+		assert.True(t, diff >= 50)
 	})
 }

@@ -9,10 +9,11 @@ import (
 // ConcurrentPool implements a simple semaphore-like structure to limit
 // the number of concurrent goroutines working together.
 type ConcurrentPool struct {
-	internalSync sync.Locker
-	available    uint             // total capacity of the pool
-	used         uint             // number of slots currently in use
-	changeChan   chan interface{} // channel for signaling changes in the pool's state
+	accessLock sync.Locker
+	lockerLock sync.Locker
+	available  uint             // total capacity of the pool
+	used       uint             // number of slots currently in use
+	changeChan chan interface{} // channel for signaling changes in the pool's state
 }
 
 // NewConcurrentPool creates a new ConcurrentPool with the specified capacity.
@@ -22,16 +23,19 @@ func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 		return nil, errors.New("capacity value of a concurrent poll cannot be 0")
 	}
 	return &ConcurrentPool{
-		internalSync: &sync.Mutex{},
-		available:    capacity,
-		used:         0,
-		changeChan:   make(chan interface{}),
+		lockerLock: new(sync.Mutex),
+		accessLock: new(sync.Mutex),
+		available:  capacity,
+		used:       0,
+		changeChan: make(chan interface{}),
 	}, nil
 }
 
 // Lock acquires a lock from the pool, waiting if necessary until a slot becomes available.
 // It increments the used count using the reserveSlot method.
 func (p *ConcurrentPool) Lock() {
+	p.lockerLock.Lock()
+	defer p.lockerLock.Unlock()
 	if p.available > p.get() {
 		p.increase()
 		return
@@ -67,12 +71,13 @@ func (p *ConcurrentPool) decrease() {
 }
 
 // access is the only way to access the internal state of the pool's `used` count.
-// inorder to maintain the integrity of the pool, it is protected by the internalSync mutex.
+// in order to maintain the integrity of the pool, it is protected by the internalSync mutex.
 // every operation (get,increase,decrease) is encapsulated in a function that takes the pool as argument
 func (p *ConcurrentPool) access(action func(p *ConcurrentPool) uint) uint {
-	p.internalSync.Lock()
-	defer p.internalSync.Unlock()
-	return action(p)
+	p.accessLock.Lock()
+	defer p.accessLock.Unlock()
+	ans := action(p)
+	return ans
 }
 
 func get(p *ConcurrentPool) uint {
