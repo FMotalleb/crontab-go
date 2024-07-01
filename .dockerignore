@@ -1,0 +1,11 @@
+.git/
+.github/
+.vscode/
+.*
+Dockerfile
+*.md
+*.yaml
+*.example
+LICENSE
+schema.json
+Makefile
