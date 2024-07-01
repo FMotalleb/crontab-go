@@ -12,7 +12,6 @@ import (
 // It returns an abstraction.CmdConnection interface based on the type of connection specified in the configuration.
 // If the connection type is not recognized or invalid, it logs a fatal error and returns nil.
 func CompileConnection(conn *config.TaskConnection, logger *logrus.Entry) abstraction.CmdConnection {
-	logger.Warn(conn)
 	switch {
 	case conn.Local:
 		return NewLocalCMDConn(logger)

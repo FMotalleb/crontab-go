@@ -123,33 +123,49 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		nil,
 		d.conn.ContainerName,
 	)
+
 	d.log.Debugf("container created: %v, warnings: %v", exec, exec.Warnings)
 	if err != nil {
 		return nil, err
 	}
-	defer helpers.WarnOnErr(
-		d.log,
-		d.cli.ContainerRemove(ctx, exec.ID,
-			container.RemoveOptions{
-				Force: true,
-			},
-		),
-		"Cannot remove the container: %s",
-	)
-	err = d.cli.ContainerStart(d.log.Context, exec.ID,
-		container.StartOptions{},
-	)
-	d.log.Debugf("container started: %v", exec)
-	if err != nil {
-		return nil, err
-	}
-	starting := true
-	for starting {
-		_, err := d.cli.ContainerStats(ctx, exec.ID, false)
+	defer func() {
+		helpers.WarnOnErr(
+			d.log,
+			d.cli.ContainerRemove(ctx, exec.ID,
+				container.RemoveOptions{
+					Force: true,
+				},
+			),
+			"cannot remove the container: %s",
+		)
+	}()
+
+	for true {
+		err = d.cli.ContainerStart(
+			ctx,
+			exec.ID,
+			container.StartOptions{},
+		)
+
 		if err == nil {
-			starting = false
+			break
 		}
 	}
+
+	d.log.Tracef("container started: %v", exec)
+
+	for {
+		_, err := d.cli.ContainerStats(
+			ctx,
+			exec.ID,
+			false,
+		)
+
+		if err == nil {
+			break
+		}
+	}
+
 	d.log.Debugf("container ready to attach: %v", exec)
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerLogs(
@@ -165,11 +181,13 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer helpers.WarnOnErr(
-		d.log,
-		resp.Close(),
-		"cannot close the container's logs: %s",
-	)
+	defer func() {
+		helpers.WarnOnErr(
+			d.log,
+			resp.Close(),
+			"cannot close the container's logs: %s",
+		)
+	}()
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output

@@ -106,7 +106,9 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Close()
+	defer func() {
+		resp.Close()
+	}()
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output
