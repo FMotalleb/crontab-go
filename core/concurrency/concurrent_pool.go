@@ -32,12 +32,13 @@ func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 // Lock acquires a lock from the pool, waiting if necessary until a slot becomes available.
 // It increments the used count using the reserveSlot method.
 func (p *ConcurrentPool) Lock() {
-	defer p.increase()
 	if p.available > p.get() {
+		p.increase()
 		return
 	}
 	for range p.changeChan {
 		if p.available > p.get() {
+			p.increase()
 			break
 		}
 	}
