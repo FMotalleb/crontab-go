@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/alecthomas/assert/v2 v2.10.0
-	github.com/docker/docker v27.0.2+incompatible
+	github.com/docker/docker v27.0.3+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.1
