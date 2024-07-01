@@ -69,6 +69,7 @@ func InitFromConfig() {
 	}
 
 	logrus.SetLevel(log.Level)
+	log.ReportCaller = log.IsLevelEnabled(logrus.TraceLevel)
 	logrus.SetFormatter(log.Formatter)
 	logrus.SetOutput(wr)
 }
