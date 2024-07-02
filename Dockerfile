@@ -1,16 +1,11 @@
 FROM golang:latest AS builder
 
 RUN mkdir /app
-
 COPY go.mod /app/
 COPY go.sum /app/
-
 WORKDIR /app
-
 RUN go mod download
-
 COPY ./ /app
-
 RUN CGO_ENABLED=0 go build -o crontab-go
 RUN chmod +x crontab-go
 
