@@ -5,7 +5,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 
@@ -17,7 +17,7 @@ type DockerAttachConnection struct {
 	conn        *config.TaskConnection
 	log         *logrus.Entry
 	cli         *client.Client
-	execCFG     *types.ExecConfig
+	execCFG     *container.ExecOptions
 	containerID string
 	ctx         context.Context
 }
@@ -62,7 +62,7 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 		append(shellArgs, task.Command)...,
 	)
 	// Create an exec configuration
-	d.execCFG = &types.ExecConfig{
+	d.execCFG = &container.ExecOptions{
 		AttachStdout: true,
 		AttachStderr: true,
 		Privileged:   true,
@@ -102,7 +102,13 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	}
 
 	// Attach to the exec instance
-	resp, err := d.cli.ContainerExecAttach(d.ctx, exec.ID, types.ExecStartCheck{})
+	resp, err := d.cli.ContainerExecAttach(
+		d.ctx,
+		exec.ID,
+		container.ExecStartOptions{
+			Tty: true,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}

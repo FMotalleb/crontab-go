@@ -140,7 +140,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		)
 	}()
 
-	for true {
+	for {
 		err = d.cli.ContainerStart(
 			ctx,
 			exec.ID,
