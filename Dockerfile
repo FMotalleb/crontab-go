@@ -1,5 +1,5 @@
+# Builder step compiles the application into standalone binary
 FROM golang:latest AS builder
-
 RUN mkdir /app
 COPY go.mod /app/
 COPY go.sum /app/
@@ -9,7 +9,8 @@ COPY ./ /app
 RUN CGO_ENABLED=0 go build -o crontab-go
 RUN chmod +x crontab-go
 
-
+# ──────────────────────────────────────────────────────────────────────────────
+# Output debian slim version: has a shell to execute commands and can be extended
 FROM debian:bookworm-slim AS slim
 
 COPY --from=builder /app/crontab-go /bin/crontab-go
@@ -28,10 +29,12 @@ ENV WEBSERVER_PORT=
 ENV WEBSERVER_USERNAME=
 ENV WEBSERVER_PASSWORD=
 
-
 ENTRYPOINT ["/bin/crontab-go" ]
 CMD ["-c","/config.yaml"]
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Output debian static distroless: does not have a shell, you are able to use GET,POST tasks
+# But you are able to attach to docker instance and execute commands there
 FROM gcr.io/distroless/static-debian12:latest-amd64 AS static
 
 COPY --from=builder /app/crontab-go /crontab-go
