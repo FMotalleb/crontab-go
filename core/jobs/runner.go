@@ -9,6 +9,7 @@ import (
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/concurrency"
+	"github.com/FMotalleb/crontab-go/core/global"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
@@ -23,7 +24,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 			job.Concurrency = 1
 		}
 		c := context.Background()
-		c = context.WithValue(c, ctxutils.JobKey, job)
+		c = context.WithValue(c, ctxutils.JobKey, job.Name)
 
 		lock, err := concurrency.NewConcurrentPool(job.Concurrency)
 		if err != nil {
@@ -36,7 +37,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		}
 
 		signal := buildSignal(*job, cronInstance, logger)
-
+		signal = global.CTX().CountSignals(c, "events", signal)
 		tasks, doneHooks, failHooks := initTasks(*job, logger)
 		logger.Trace("Tasks initialized")
 
