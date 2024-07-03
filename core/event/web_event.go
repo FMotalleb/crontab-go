@@ -17,7 +17,7 @@ func NewEventListener(event string) WebEventListener {
 
 // BuildTickChannel implements abstraction.Scheduler.
 func (w *WebEventListener) BuildTickChannel() <-chan any {
-	global.CTX.AddEventListener(
+	global.CTX().AddEventListener(
 		w.event, func() {
 			w.c <- false
 		},

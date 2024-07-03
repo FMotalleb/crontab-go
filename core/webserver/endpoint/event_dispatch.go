@@ -18,7 +18,7 @@ func NewEventDispatchEndpoint() *EventDispatchEndpoint {
 
 func (ed *EventDispatchEndpoint) Endpoint(c *gin.Context) {
 	event := c.Param("event")
-	listeners := global.CTX.EventListeners()[event]
+	listeners := global.CTX().EventListeners()[event]
 	if len(listeners) == 0 {
 		c.String(http.StatusNotFound, fmt.Sprintf("event: '%s' not found", event))
 		return

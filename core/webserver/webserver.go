@@ -4,8 +4,10 @@ package webserver
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/core/webserver/endpoint"
@@ -13,31 +15,41 @@ import (
 	"github.com/FMotalleb/crontab-go/logger"
 )
 
-type WebServer struct {
-	ctx      context.Context
-	address  string
-	port     uint
-	username string
-	password string
-	log      *logrus.Entry
+type AuthConfig struct {
+	Username string
+	Password string
 }
 
-func NewWebServer(ctx context.Context, address string, port uint, username string, password string) *WebServer {
+type WebServer struct {
+	*AuthConfig
+	ctx          context.Context
+	address      string
+	port         uint
+	log          *logrus.Entry
+	serveMetrics bool
+}
+
+func NewWebServer(ctx context.Context,
+	address string,
+	port uint,
+	serveMetrics bool,
+	authentication *AuthConfig,
+) *WebServer {
 	return &WebServer{
-		ctx:      ctx,
-		address:  address,
-		port:     port,
-		username: username,
-		password: password,
-		log:      logger.SetupLogger("WebServer"),
+		ctx:          ctx,
+		address:      address,
+		port:         port,
+		AuthConfig:   authentication,
+		log:          logger.SetupLogger("WebServer"),
+		serveMetrics: serveMetrics,
 	}
 }
 
 func (s *WebServer) Serve() {
 	engine := gin.New()
 	auth := func(*gin.Context) {}
-	if s.username != "" && s.password != "" {
-		auth = gin.BasicAuth(gin.Accounts{s.username: s.password})
+	if s.AuthConfig != nil && s.AuthConfig.Username != "" && s.AuthConfig.Password != "" {
+		auth = gin.BasicAuth(gin.Accounts{s.AuthConfig.Username: s.AuthConfig.Password})
 	} else {
 		s.log.Warnf("received no value on username or password, ignoring any authentication, if you intended to use no authentication ignore this message")
 	}
@@ -62,6 +74,15 @@ func (s *WebServer) Serve() {
 		"/events/:event/emit",
 		ed.Endpoint,
 	)
+	if s.serveMetrics {
+		engine.GET("/metrics", func(ctx *gin.Context) {
+			promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
+		})
+	} else {
+		engine.GET("/metrics", func(ctx *gin.Context) {
+			ctx.String(http.StatusNotFound, "Metrics are disabled, please enable metrics using `WEBSERVER_METRICS=true`")
+		})
+	}
 
 	err := engine.Run(fmt.Sprintf("%s:%d", s.address, s.port))
 	helpers.FatalOnErr(s.log, err, "Failed to start webserver: %s")

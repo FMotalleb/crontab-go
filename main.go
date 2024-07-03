@@ -37,9 +37,11 @@ func main() {
 	})
 	defer func() {
 		if err := recover(); err != nil {
+
 			log.Printf(
-				"an error stopped application from working, if you think this is an error in application side please report to %s",
+				"an error stopped application from working, if you think this is an error in application side please report to %s\nError: %v",
 				meta.Issues(),
+				err,
 			)
 			os.Exit(1)
 		}
@@ -53,11 +55,15 @@ func main() {
 	if cmd.CFG.WebServerAddress != "" {
 		go webserver.
 			NewWebServer(
-				global.CTX,
+				global.CTX(),
 				cmd.CFG.WebServerAddress,
 				cmd.CFG.WebServerPort,
-				cmd.CFG.WebserverUsername,
-				cmd.CFG.WebServerPassword,
+
+				cmd.CFG.WebServerMetrics,
+				&webserver.AuthConfig{
+					Username: cmd.CFG.WebserverUsername,
+					Password: cmd.CFG.WebServerPassword,
+				},
 			).
 			Serve()
 	}
