@@ -23,7 +23,7 @@ import (
 //   - []string: The complete set of environment variables for the task, including any task-specific overrides.
 func reshapeEnviron(taskEnvironments map[string]string, log *logrus.Entry) (string, []string, []string) {
 	shell := cmd.CFG.Shell
-	shellArgs := strings.Split(cmd.CFG.ShellArgs[0], ";")
+	shellArgs := strings.Split(cmd.CFG.ShellArgs[0], ":")
 	env := os.Environ()
 	log.Trace("Initial environment variables: ", env)
 	for key, val := range taskEnvironments {
@@ -36,7 +36,7 @@ func reshapeEnviron(taskEnvironments map[string]string, log *logrus.Entry) (stri
 			shell = val
 		case "shell_args":
 			log.Info("you've used `SHELL_ARGS` env variable in command environments, overriding the global shell_args with: ", val)
-			shellArgs = strings.Split(val, ";")
+			shellArgs = strings.Split(val, ":")
 		}
 	}
 	log.Trace("Final environment variables: ", env)
