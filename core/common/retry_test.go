@@ -5,24 +5,22 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alecthomas/assert/v2"
+
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 func TestSetMaxRetry(t *testing.T) {
 	r := &Retry{}
 	r.SetMaxRetry(5)
-	if r.maxRetries != 5 {
-		t.Errorf("expected maxRetries to be 5, got %d", r.maxRetries)
-	}
+	assert.Equal(t, 5, r.maxRetries)
 }
 
 func TestSetRetryDelay(t *testing.T) {
 	r := &Retry{}
 	delay := 2 * time.Second
 	r.SetRetryDelay(delay)
-	if r.retryDelay != delay {
-		t.Errorf("expected retryDelay to be %v, got %v", delay, r.retryDelay)
-	}
+	assert.Equal(t, r.retryDelay, delay)
 }
 
 func TestWaitForRetry(t *testing.T) {
@@ -32,13 +30,8 @@ func TestWaitForRetry(t *testing.T) {
 	start := time.Now()
 	err := r.WaitForRetry(ctx)
 	elapsed := time.Since(start)
-
-	if err != nil {
-		t.Errorf("expected no error, got %v", err)
-	}
-	if elapsed < 2*time.Second {
-		t.Errorf("expected at least 2 seconds delay, got %v", elapsed)
-	}
+	assert.NoError(t, err)
+	assert.True(t, elapsed > 2*time.Second)
 }
 
 func TestWaitForRetryMaxExceeded(t *testing.T) {
@@ -46,23 +39,16 @@ func TestWaitForRetryMaxExceeded(t *testing.T) {
 	ctx := context.WithValue(context.Background(), ctxutils.RetryCountKey, uint(5))
 
 	err := r.WaitForRetry(ctx)
-	if err == nil {
-		t.Errorf("expected error, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func TestIncreaseRetry(t *testing.T) {
 	ctx := context.WithValue(context.Background(), ctxutils.RetryCountKey, uint(2))
 	newCtx := IncreaseRetry(ctx)
-	if GetRetry(newCtx) != 3 {
-		t.Errorf("expected retry count to be 3, got %d", GetRetry(newCtx))
-	}
+	assert.Equal(t, 3, GetRetry(newCtx))
 }
 
 func TestZeroValueRetry(t *testing.T) {
 	ctx := context.Background()
-
-	if GetRetry(ctx) != 0 {
-		t.Errorf("expected retry count to be 3, got %d", GetRetry(ctx))
-	}
+	assert.Equal(t, 0, GetRetry(ctx))
 }
