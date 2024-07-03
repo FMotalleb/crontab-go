@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
@@ -37,7 +38,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		}
 
 		signal := buildSignal(*job, cronInstance, logger)
-		signal = global.CTX().CountSignals(c, "events", signal)
+		signal = global.CTX().CountSignals(c, "events", signal, "amount of events dispatched", prometheus.Labels{})
 		tasks, doneHooks, failHooks := initTasks(*job, logger)
 		logger.Trace("Tasks initialized")
 

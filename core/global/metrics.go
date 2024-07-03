@@ -11,9 +11,13 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func (c *GlobalContext) MetricCounter(ctx context.Context, name string) *concurrency.LockedValue[float64] {
+func (c *GlobalContext) MetricCounter(
+	ctx context.Context,
+	name string,
+	help string,
+	labels prometheus.Labels,
+) *concurrency.LockedValue[float64] {
 	tag := name
-	labels := make(prometheus.Labels)
 	for _, label := range []ctxutils.ContextKey{ctxutils.JobKey} {
 		if value, ok := ctx.Value(label).(string); ok {
 			labels[string(label)] = value
@@ -28,6 +32,7 @@ func (c *GlobalContext) MetricCounter(ctx context.Context, name string) *concurr
 		prometheus.CounterOpts{
 			Name:        name,
 			ConstLabels: labels,
+			Help:        help,
 			Namespace:   "crontab_go",
 		},
 		func() float64 {
@@ -40,11 +45,11 @@ func (c *GlobalContext) MetricCounter(ctx context.Context, name string) *concurr
 			return ans
 		},
 	)
-	return c.MetricCounter(ctx, name)
+	return c.MetricCounter(ctx, name, help, labels)
 }
 
-func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-chan any) <-chan any {
-	counter := c.MetricCounter(ctx, name)
+func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-chan any, help string, labels prometheus.Labels) <-chan any {
+	counter := c.MetricCounter(ctx, name, help, labels)
 	out := make(chan any)
 	go func() {
 		for c := range signal {
