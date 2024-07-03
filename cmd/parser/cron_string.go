@@ -159,6 +159,7 @@ func addSpec(cfg *config.Config, spec cronSpec) {
 				job.Tasks,
 				task,
 			)
+			job.Concurrency++
 			return
 		}
 	}
@@ -171,6 +172,7 @@ func initJob(jobName string, timing string, cfg *config.Config) {
 	job.Name = jobName
 	job.Description = "Imported from cron file"
 	job.Disabled = false
+	job.Concurrency = 1
 	if strings.Contains(timing, "@reboot") {
 		job.Events = []config.JobEvent{
 			{
