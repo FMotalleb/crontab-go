@@ -27,7 +27,7 @@ func (ed *EventDispatchEndpoint) Endpoint(c *gin.Context) {
 	global.CTX().MetricCounter(
 		c,
 		"webserver_events",
-		"amount of events dispatched",
+		"amount of events dispatched using webserver",
 		prometheus.Labels{"event_name": event},
 	).Operate(
 		func(f float64) float64 {
@@ -35,7 +35,7 @@ func (ed *EventDispatchEndpoint) Endpoint(c *gin.Context) {
 		},
 	)
 	listenerCount := len(listeners)
-	global.CTX().MetricCounter(c, "webserver_event_listeners_invoked", "amount of events dispatched", prometheus.Labels{"event_name": event}).Operate(
+	global.CTX().MetricCounter(c, "webserver_event_listeners_invoked", "amount of listeners invoked by `event_name` event", prometheus.Labels{"event_name": event}).Operate(
 		func(f float64) float64 {
 			return f + float64(listenerCount)
 		},

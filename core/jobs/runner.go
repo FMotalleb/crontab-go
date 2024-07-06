@@ -38,7 +38,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 		}
 
 		signal := buildSignal(*job, cronInstance, logger)
-		signal = global.CTX().CountSignals(c, "events", signal, "amount of events dispatched", prometheus.Labels{})
+		signal = global.CTX().CountSignals(c, "events", signal, "amount of events dispatched for this job", prometheus.Labels{})
 		tasks, doneHooks, failHooks := initTasks(*job, logger)
 		logger.Trace("Tasks initialized")
 
