@@ -3,17 +3,17 @@ package concurrency
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 )
 
 // ConcurrentPool implements a simple semaphore-like structure to limit
 // the number of concurrent goroutines working together.
 type ConcurrentPool struct {
-	accessLock sync.Locker
 	lockerLock sync.Locker
-	available  uint             // total capacity of the pool
-	used       uint             // number of slots currently in use
-	changeChan chan interface{} // channel for signaling changes in the pool's state
+	available  uint               // total capacity of the pool
+	used       *LockedValue[uint] // number of slots currently in use
+	changeChan chan interface{}   // channel for signaling changes in the pool's state
 }
 
 // NewConcurrentPool creates a new ConcurrentPool with the specified capacity.
@@ -24,9 +24,8 @@ func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 	}
 	return &ConcurrentPool{
 		lockerLock: new(sync.Mutex),
-		accessLock: new(sync.Mutex),
 		available:  capacity,
-		used:       0,
+		used:       NewLockedValue[uint](0),
 		changeChan: make(chan interface{}),
 	}, nil
 }
@@ -36,6 +35,7 @@ func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 func (p *ConcurrentPool) Lock() {
 	p.lockerLock.Lock()
 	defer p.lockerLock.Unlock()
+	fmt.Print(p.get())
 	if p.available > p.get() {
 		p.increase()
 		return
@@ -59,37 +59,21 @@ func (p *ConcurrentPool) Unlock() {
 }
 
 func (p *ConcurrentPool) get() uint {
-	return p.access(get)
+	return p.used.Get()
 }
 
 func (p *ConcurrentPool) increase() {
-	p.access(increase)
+	p.used.Operate(
+		func(current uint) uint {
+			return (current + 1)
+		},
+	)
 }
 
 func (p *ConcurrentPool) decrease() {
-	p.access(decrease)
-}
-
-// access is the only way to access the internal state of the pool's `used` count.
-// in order to maintain the integrity of the pool, it is protected by the internalSync mutex.
-// every operation (get,increase,decrease) is encapsulated in a function that takes the pool as argument
-func (p *ConcurrentPool) access(action func(p *ConcurrentPool) uint) uint {
-	p.accessLock.Lock()
-	defer p.accessLock.Unlock()
-	ans := action(p)
-	return ans
-}
-
-func get(p *ConcurrentPool) uint {
-	return p.used
-}
-
-func decrease(p *ConcurrentPool) uint {
-	p.used--
-	return p.used
-}
-
-func increase(p *ConcurrentPool) uint {
-	p.used++
-	return p.used
+	p.used.Operate(
+		func(current uint) uint {
+			return (current - 1)
+		},
+	)
 }

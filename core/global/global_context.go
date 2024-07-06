@@ -5,27 +5,38 @@ import (
 	"context"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/FMotalleb/crontab-go/core/concurrency"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-var CTX = newGlobalContext()
+func CTX() *GlobalContext {
+	return ctx
+}
+
+var ctx = newGlobalContext()
 
 type (
 	EventListenerMap = map[string][]func()
 	GlobalContext    struct {
 		context.Context
-		lock sync.Locker
+		lock          sync.Locker
+		countersValue map[string]*concurrency.LockedValue[float64]
+		counters      map[string]prometheus.CounterFunc
 	}
 )
 
 func newGlobalContext() *GlobalContext {
 	ctx := &GlobalContext{
-		context.WithValue(
+		Context: context.WithValue(
 			context.Background(),
 			ctxutils.EventListeners,
 			EventListenerMap{},
 		),
-		&sync.Mutex{},
+		lock:          &sync.Mutex{},
+		countersValue: make(map[string]*concurrency.LockedValue[float64]),
+		counters:      make(map[string]prometheus.CounterFunc),
 	}
 	return ctx
 }

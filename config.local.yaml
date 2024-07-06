@@ -20,3 +20,5 @@ jobs:
       - on-init: true
       # - interval: 1s
       - web-event: test
+      - web-event: test
+      - web-event: test

@@ -17,22 +17,22 @@ func TestConcurrentPool_LockUnlock(t *testing.T) {
 		pool, err := NewConcurrentPool(1)
 		assert.NoError(t, err)
 		pool.Lock()
-		assert.Equal(t, 1, pool.access(get))
+		assert.Equal(t, 1, pool.get())
 		pool.Unlock()
-		assert.Equal(t, 0, pool.access(get))
+		assert.Equal(t, 0, pool.get())
 	})
 
 	t.Run("Lock and Unlock with capacity 2", func(t *testing.T) {
 		pool, err := NewConcurrentPool(2)
 		assert.NoError(t, err)
 		pool.Lock()
-		assert.Equal(t, 1, pool.access(get))
+		assert.Equal(t, 1, pool.get())
 		pool.Lock()
-		assert.Equal(t, 2, pool.access(get))
+		assert.Equal(t, 2, pool.get())
 		pool.Unlock()
-		assert.Equal(t, 1, pool.access(get))
+		assert.Equal(t, 1, pool.get())
 		pool.Unlock()
-		assert.Equal(t, 0, pool.access(get))
+		assert.Equal(t, 0, pool.get())
 	})
 
 	t.Run("Unlock on a totally free pool", func(t *testing.T) {

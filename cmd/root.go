@@ -155,6 +155,14 @@ func setupEnv() {
 
 	warnOnErr(
 		viper.BindEnv(
+			"webserver_metrics",
+			"prometheus_metrics",
+		),
+		"Cannot bind webserver_metrics env variable: %s",
+	)
+
+	warnOnErr(
+		viper.BindEnv(
 			"webserver_username",
 			"username",
 		),

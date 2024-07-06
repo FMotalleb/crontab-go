@@ -25,6 +25,7 @@ type Config struct {
 	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port,omitempty"`
 	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username,omitempty"`
 	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password,omitempty"`
+	WebServerMetrics  bool   `mapstructure:"webserver_metrics" json:"webserver_metrics,omitempty"`
 
 	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
 }
