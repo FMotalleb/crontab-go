@@ -12,10 +12,10 @@ import (
 )
 
 func CTX() *GlobalContext {
-	return ctx
+	return c
 }
 
-var ctx = newGlobalContext()
+var c = newGlobalContext()
 
 type (
 	EventListenerMap = map[string][]func()
@@ -41,15 +41,15 @@ func newGlobalContext() *GlobalContext {
 	return ctx
 }
 
-func (ctx *GlobalContext) EventListeners() EventListenerMap {
-	listeners := ctx.Value(ctxutils.EventListeners)
+func (c *GlobalContext) EventListeners() EventListenerMap {
+	listeners := c.Value(ctxutils.EventListeners)
 	return listeners.(EventListenerMap)
 }
 
-func (ctx *GlobalContext) AddEventListener(event string, listener func()) {
-	ctx.lock.Lock()
-	defer ctx.lock.Unlock()
-	listeners := ctx.EventListeners()
+func (c *GlobalContext) AddEventListener(event string, listener func()) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	listeners := c.EventListeners()
 	listeners[event] = append(listeners[event], listener)
-	ctx.Context = context.WithValue(ctx.Context, ctxutils.EventListeners, listeners)
+	c.Context = context.WithValue(c.Context, ctxutils.EventListeners, listeners)
 }
