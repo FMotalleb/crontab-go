@@ -1,17 +1,15 @@
 package event
 
-type Init struct {
-	notifyChan chan any
-}
+type Init struct{}
 
 // BuildTickChannel implements abstraction.Scheduler.
 func (c *Init) BuildTickChannel() <-chan any {
-	c.notifyChan = make(chan any)
+	notifyChan := make(chan any)
 
 	go func() {
-		c.notifyChan <- false
-		close(c.notifyChan)
+		notifyChan <- false
+		close(notifyChan)
 	}()
 
-	return c.notifyChan
+	return notifyChan
 }
