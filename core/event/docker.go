@@ -48,7 +48,7 @@ func NewDockerEvent(
 		connection:       connection,
 		containerMatcher: *regexp.MustCompile(containerMatcher),
 		imageMatcher:     *regexp.MustCompile(imageMatcher),
-		actions:          toAction(logger, actions),
+		actions:          toAction(actions),
 		labels:           reshapeLabelMatcher(labels),
 		errorThreshold:   errorLimit,
 		errorPolicy:      errorPolicy,
@@ -91,10 +91,14 @@ func (de *DockerEvent) BuildTickChannel() <-chan any {
 					case Kill:
 						de.log.Fatalf("Received more than %d consecutive errors from docker, marking instance as unstable and killing in return, this may happen due to dockerd restarting", errs)
 					case Reconnect:
-						de.log.Fatalf("Received more than %d consecutive errors from docker, marking instance as unstable and retry connecting to docker", errs)
+						de.log.Warnf("Received more than %d consecutive errors from docker, marking instance as unstable and retry connecting to docker", errs)
+						for range de.BuildTickChannel() {
+							notifyChan <- nil
+						}
 					default:
 						de.log.Fatalf("unexpected event.ErrorLimitPolicy: %#v, valid options are (kill,giv-up,reconnect)", de.errorPolicy)
 					}
+					errCount.Set(0)
 				}
 				if de.errorThrottle > 0 {
 					time.Sleep(de.errorThrottle)
@@ -102,7 +106,7 @@ func (de *DockerEvent) BuildTickChannel() <-chan any {
 			case event := <-msg:
 				de.log.Trace("received an event from docker: ", event)
 				if de.matches(&event) {
-					notifyChan <- false
+					notifyChan <- nil
 				}
 				errCount.Set(0)
 			}
@@ -140,7 +144,7 @@ func reshapeLabelMatcher(labels map[string]string) map[string]regexp.Regexp {
 	return res
 }
 
-func toAction(log *logrus.Entry, acts []string) *utils.List[events.Action] {
+func toAction(acts []string) *utils.List[events.Action] {
 	actions := utils.NewList[events.Action]()
 	for _, act := range acts {
 		actions.Add(events.Action(act))

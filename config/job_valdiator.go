@@ -207,7 +207,7 @@ func dockerValidation(s *JobEvent, log *logrus.Entry) error {
 		log.Debug("error limit will be set to 1")
 	}
 	if s.Docker.ErrorLimitPolicy == "" {
-		log.Info("error limit set to non-zero number but no error policy was specified, using default policy (reconnect)")
+		log.Info("no error policy was specified, using default policy (reconnect)")
 	}
 	if !utils.NewList("", event.GiveUp, event.Kill, event.Reconnect).Contains(s.Docker.ErrorLimitPolicy) {
 		err := fmt.Errorf("given error limit policy: %#v is not allowed, possible error policies are (give-up,kill,reconnect)", s.Docker.ErrorLimitPolicy)
