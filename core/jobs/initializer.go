@@ -8,7 +8,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
-	"github.com/FMotalleb/crontab-go/core/goutils"
+	"github.com/FMotalleb/crontab-go/core/utils"
 )
 
 func initEventSignal(events []abstraction.Event, logger *logrus.Entry) <-chan any {
@@ -17,7 +17,7 @@ func initEventSignal(events []abstraction.Event, logger *logrus.Entry) <-chan an
 		signals = append(signals, sh.BuildTickChannel())
 	}
 	logger.Trace("Signals Built")
-	signal := goutils.ZipChannels(signals...)
+	signal := utils.ZipChannels(signals...)
 	return signal
 }
 

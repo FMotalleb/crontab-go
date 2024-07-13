@@ -2,10 +2,63 @@ package config
 
 import (
 	"fmt"
+	"regexp"
 
+	"github.com/docker/docker/api/types/events"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/core/event"
+	"github.com/FMotalleb/crontab-go/core/utils"
+)
+
+var acceptedActions = utils.NewList(
+	events.ActionCreate,
+	events.ActionStart,
+	events.ActionRestart,
+	events.ActionStop,
+	events.ActionCheckpoint,
+	events.ActionPause,
+	events.ActionUnPause,
+	events.ActionAttach,
+	events.ActionDetach,
+	events.ActionResize,
+	events.ActionUpdate,
+	events.ActionRename,
+	events.ActionKill,
+	events.ActionDie,
+	events.ActionOOM,
+	events.ActionDestroy,
+	events.ActionRemove,
+	events.ActionCommit,
+	events.ActionTop,
+	events.ActionCopy,
+	events.ActionArchivePath,
+	events.ActionExtractToDir,
+	events.ActionExport,
+	events.ActionImport,
+	events.ActionSave,
+	events.ActionLoad,
+	events.ActionTag,
+	events.ActionUnTag,
+	events.ActionPush,
+	events.ActionPull,
+	events.ActionPrune,
+	events.ActionDelete,
+	events.ActionEnable,
+	events.ActionDisable,
+	events.ActionConnect,
+	events.ActionDisconnect,
+	events.ActionReload,
+	events.ActionMount,
+	events.ActionUnmount,
+	events.ActionExecCreate,
+	events.ActionExecStart,
+	events.ActionExecDie,
+	events.ActionExecDetach,
+	events.ActionHealthStatus,
+	events.ActionHealthStatusRunning,
+	events.ActionHealthStatusHealthy,
+	events.ActionHealthStatusUnhealthy,
 )
 
 func (c *JobConfig) Validate(log *logrus.Entry) error {
@@ -82,28 +135,35 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 	} else if _, err := event.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
-	}
-
-	// Check the active events to ensure only one of on_init, interval, or cron is set
-	events := []bool{
-		s.Interval != 0,
-		s.Cron != "",
-		s.WebEvent != "",
-		s.OnInit,
-	}
-	activeEvents := 0
-	for _, t := range events {
-		if t {
-			activeEvents++
+	} else if s.Docker != nil {
+		returnValue := dockerValidation(s, log)
+		if returnValue != nil {
+			return returnValue
 		}
 	}
+
+	// Check the active events to ensure only one of on_init, interval, docker, or cron is set
+	events := utils.NewList(s.Interval != 0,
+		s.Cron != "",
+		s.WebEvent != "",
+		s.Docker != nil,
+		s.OnInit,
+	)
+	activeEvents := utils.Fold(events, 0, func(c int, item bool) int {
+		if item {
+			return c + 1
+		}
+		return c
+	})
+
 	if activeEvents != 1 {
 		err := fmt.Errorf(
-			"a single event must have one of (on-init: true,interval,cron,web-event) field, received:(on_init: %t,cron: `%s`, interval: `%s`, web_event: `%s`)",
+			"a single event must have one of (on-init: true,interval,cron,web-event,docker) field, received:(on_init: %t,cron: `%s`, interval: `%s`, web_event: `%s`, docker: %v)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
 			s.WebEvent,
+			s.Docker,
 		)
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
@@ -111,5 +171,53 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 
 	// Log the successful validation
 	log.Tracef("Validation successful for JobEvent: %+v", s)
+	return nil
+}
+
+func dockerValidation(s *JobEvent, log *logrus.Entry) error {
+	// Check if regex matchers are valid
+	checkList := utils.NewList[string]()
+	checkList.Add(
+		s.Docker.Name,
+		s.Docker.Image,
+	)
+	for _, v := range s.Docker.Labels {
+		checkList.Add(v)
+	}
+	err := utils.Fold(checkList, nil, func(initial error, item string) error {
+		if initial != nil {
+			return initial
+		}
+		_, err := regexp.Compile(s.Docker.Name)
+		return err
+	})
+	if err != nil {
+		log.WithError(err).Warn("Validation failed for one of docker regex pattern (container name, image name, labels value)")
+		return err
+	}
+	for _, i := range s.Docker.Actions {
+		if !acceptedActions.Contains(events.Action(i)) {
+			err := fmt.Errorf("given action: %#v is not allowed", i)
+			log.WithError(err).Warn("Validation failed for one of docker actions")
+			return err
+		}
+	}
+	// Validating error handler parameters
+	if s.Docker.ErrorLimit > 0 {
+		log.Debug("error limit will be set to 1")
+	}
+	if s.Docker.ErrorLimitPolicy == "" {
+		log.Info("error limit set to non-zero number but no error policy was specified, using default policy (reconnect)")
+	}
+	if !utils.NewList("", event.GiveUp, event.Kill, event.Reconnect).Contains(s.Docker.ErrorLimitPolicy) {
+		err := fmt.Errorf("given error limit policy: %#v is not allowed, possible error policies are (give-up,kill,reconnect)", s.Docker.ErrorLimitPolicy)
+		log.WithError(err).Warn("Validation failed for docker error limit policy")
+		return err
+	}
+	if s.Docker.ErrorThrottle < 0 {
+		err := fmt.Errorf("received a negative throttle value: `%v`", s.Docker.ErrorThrottle)
+		log.WithError(err).Warn("Validation failed for docker, throttling value error")
+		return err
+	}
 	return nil
 }

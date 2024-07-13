@@ -121,6 +121,124 @@
         "web-event": {
           "type": "string",
           "description": "Event name that received from webserver that should trigger this job."
+        },
+        "docker": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "type": "string",
+              "examples": [
+                "unix:///var/run/docker.sock"
+              ],
+              "description": "Docker connection string (context), defaults to `unix:///var/run/docker.sock`."
+            },
+            "name": {
+              "type": "string",
+              "examples": [
+                "nginx",
+                ".*nginx.*",
+                "^project.*"
+              ],
+              "description": "Name matcher of the container, supports regex."
+            },
+            "image": {
+              "type": "string",
+              "examples": [
+                "redis:7.2.1-alpine",
+                "redis:.*"
+              ],
+              "description": "Name matcher of the image, supports regex."
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "start",
+                  "restart",
+                  "stop",
+                  "checkpoint",
+                  "pause",
+                  "unpause",
+                  "attach",
+                  "detach",
+                  "resize",
+                  "update",
+                  "rename",
+                  "kill",
+                  "die",
+                  "oom",
+                  "destroy",
+                  "remove",
+                  "commit",
+                  "top",
+                  "copy",
+                  "archive-path",
+                  "extract-to-dir",
+                  "export",
+                  "import",
+                  "save",
+                  "load",
+                  "tag",
+                  "untag",
+                  "push",
+                  "pull",
+                  "prune",
+                  "delete",
+                  "enable",
+                  "disable",
+                  "connect",
+                  "disconnect",
+                  "reload",
+                  "mount",
+                  "unmount",
+                  "exec_create",
+                  "exec_start",
+                  "exec_die",
+                  "exec_detach",
+                  "health_status",
+                  "health_status: running",
+                  "health_status: healthy",
+                  "health_status: unhealthy"
+                ]
+              },
+              "description": "What happened to the container"
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels of the affected container, supports `key: regex value`."
+            },
+            "error-limit-count": {
+              "type": "integer",
+              "validate": {
+                "minimum": 1
+              },
+              "description": "How many consecutive errors must happen before enforcing the error-limit-policy"
+            },
+            "error-limit-policy": {
+              "type": "integer",
+              "enum": [
+                "kill",
+                "give-up",
+                "reconnect"
+              ],
+              "description": "What should happen after error limit is reached, (kill: kills the crontab-go, give-up: ignore error and disconnect from the instance and ignore this instance for the rest of the process, reconnect: reconnect: (default behavior) will attempt to reconnect to the instance)"
+            },
+            "error-throttle": {
+              "type": "string",
+              "description": "Wait time after an error happens (events from that docker instance in this time will be ignored).",
+              "examples": [
+                "1s",
+                "10m",
+                "1h",
+                "3.5h",
+                "5h30m15s"
+              ]
+            }
+          },
+          "description": "Listen for docker events"
         }
       },
       "required": [],
@@ -163,7 +281,7 @@
           "description": "Groupname that this command must run as. (root privilege needed)"
         },
         "env": {
-          "$ref": "#/definitions/Env",
+          "$ref": "#/definitions/Map",
           "description": "An Env object that defines the environment variables for the task."
         },
         "get": {
@@ -178,7 +296,7 @@
         "headers": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Header"
+            "$ref": "#/definitions/Map"
           },
           "description": "An array of Header objects that define the headers to be sent with the request."
         },
@@ -265,17 +383,11 @@
       "required": [],
       "title": "Data"
     },
-    "Env": {
+    "Map": {
       "type": "object",
       "additionalProperties": true,
       "properties": {},
-      "title": "Env"
-    },
-    "Header": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {},
-      "title": "Header"
+      "title": "Map"
     }
   }
 }

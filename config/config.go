@@ -4,6 +4,7 @@ package config
 import (
 	"time"
 
+	"github.com/FMotalleb/crontab-go/core/event"
 	"github.com/FMotalleb/crontab-go/enums"
 )
 
@@ -47,6 +48,19 @@ type JobEvent struct {
 	Interval time.Duration `mapstructure:"interval" json:"interval,omitempty"`
 	OnInit   bool          `mapstructure:"on-init" json:"on-init,omitempty"`
 	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
+	Docker   *DockerEvent  `mapstructure:"docker" json:"docker,omitempty"`
+}
+
+// DockerEvent represents a Docker event configuration
+type DockerEvent struct {
+	Connection       string                 `mapstructure:"connection" json:"connection,omitempty"`
+	Name             string                 `mapstructure:"name" json:"name,omitempty"`
+	Image            string                 `mapstructure:"image" json:"image,omitempty"`
+	Actions          []string               `mapstructure:"actions" json:"actions,omitempty"`
+	Labels           map[string]string      `mapstructure:"labels" json:"labels,omitempty"`
+	ErrorLimit       uint                   `mapstructure:"error-limit-count" json:"error-limit,omitempty"`
+	ErrorLimitPolicy event.ErrorLimitPolicy `mapstructure:"error-limit-policy" json:"error-limit-policy,omitempty"`
+	ErrorThrottle    time.Duration          `mapstructure:"error-throttle" json:"error-throttle,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.
