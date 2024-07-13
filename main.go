@@ -37,7 +37,6 @@ func main() {
 	})
 	defer func() {
 		if err := recover(); err != nil {
-
 			log.Printf(
 				"an error stopped application from working, if you think this is an error in application side please report to %s\nError: %v",
 				meta.Issues(),
