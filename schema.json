@@ -11,6 +11,10 @@
             "$ref": "#/definitions/Job"
           },
           "description": "An array of Job objects that define the tasks to be executed."
+        },
+        "variables":{
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "required": [
