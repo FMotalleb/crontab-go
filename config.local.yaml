@@ -3,12 +3,8 @@
 jobs:
   - name: echo
     tasks:
-      - command: echo "received"
+      - command: env
+        env:
+          "COLE": test
     events:
       - on-init: true
-      - docker:
-          connection: unix:///var/run/docker.sock
-          name: "^alpine"
-          image: "^alpine.*"
-          actions:
-            - start
