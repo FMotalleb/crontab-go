@@ -8,7 +8,8 @@ import (
 // Executable is an object that can be executed using a execute method and stopped using cancel method
 type Executable interface {
 	Execute(context.Context) error
-	SetDoneHooks([]Executable)
-	SetFailHooks([]Executable)
+	SetMetaName(string)
+	SetDoneHooks(context.Context, []Executable)
+	SetFailHooks(context.Context, []Executable)
 	Cancel()
 }

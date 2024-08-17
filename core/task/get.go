@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -100,5 +101,6 @@ func NewGet(task *config.Task, logger *logrus.Entry) abstraction.Executable {
 	get.SetMaxRetry(task.Retries)
 	get.SetRetryDelay(task.RetryDelay)
 	get.SetTimeout(task.Timeout)
+	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
 	return get
 }

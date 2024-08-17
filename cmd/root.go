@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 
@@ -29,7 +28,6 @@ With its seamless integration and easy-to-use YAML configuration,
 Cronjob-go simplifies the process of scheduling and managing recurring tasks
 within your containerized applications.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(cmd.Args)
 		initConfig()
 	},
 }

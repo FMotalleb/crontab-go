@@ -8,6 +8,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 type mockExecutable struct {
@@ -23,16 +24,20 @@ func (m *mockExecutable) Execute(ctx context.Context) error {
 }
 
 func TestSetDoneHooks(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	h := &Hooked{}
 	hooks := []abstraction.Executable{}
-	h.SetDoneHooks(hooks)
+	h.SetDoneHooks(ctx, hooks)
 	assert.Equal(t, hooks, h.doneHooks)
 }
 
 func TestSetFailHooks(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	h := &Hooked{}
 	failHooks := []abstraction.Executable{&mockExecutable{}}
-	h.SetFailHooks(failHooks)
+	h.SetFailHooks(ctx, failHooks)
 	assert.Equal(t, failHooks, h.failHooks)
 }
 

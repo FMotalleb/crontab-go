@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -120,5 +121,6 @@ func NewPost(task *config.Task, logger *logrus.Entry) abstraction.Executable {
 	post.SetMaxRetry(task.Retries)
 	post.SetRetryDelay(task.RetryDelay)
 	post.SetTimeout(task.Timeout)
+	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
 	return post
 }

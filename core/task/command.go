@@ -3,15 +3,14 @@ package task
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	connection "github.com/FMotalleb/crontab-go/core/cmd_connection"
 	"github.com/FMotalleb/crontab-go/core/common"
-	"github.com/FMotalleb/crontab-go/core/global"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
@@ -42,16 +41,6 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 
 	if err := c.WaitForRetry(ctx); err != nil {
 		c.DoFailHooks(ctx)
-		global.CTX().MetricCounter(
-			ctx,
-			"failed_tasks",
-			"Amount of failed tasks",
-			prometheus.Labels{"task_type": "command"},
-		).Operate(
-			func(f float64) float64 {
-				return f + 1
-			},
-		)
 		return err
 	}
 
@@ -104,16 +93,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 	if fc := getFailedConnections(ctx); len(fc) != 0 {
 		return c.Execute(ctx)
 	}
-	global.CTX().MetricCounter(
-		ctx,
-		"done_tasks",
-		"Amount of done tasks (with ok status)",
-		prometheus.Labels{"task_type": "command"},
-	).Operate(
-		func(f float64) float64 {
-			return f + 1
-		},
-	)
+
 	if errs := c.DoDoneHooks(ctx); len(errs) != 0 {
 		log.Warn("command finished successfully but its hooks failed")
 	}
@@ -134,6 +114,6 @@ func NewCommand(
 	cmd.SetMaxRetry(task.Retries)
 	cmd.SetRetryDelay(task.RetryDelay)
 	cmd.SetTimeout(task.Timeout)
-
+	cmd.SetMetaName(fmt.Sprintf("cmd: %s", task.Command))
 	return cmd
 }
