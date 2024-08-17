@@ -2,6 +2,8 @@
 package jobs
 
 import (
+	"context"
+
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
 	"github.com/FMotalleb/crontab-go/core/utils"
+	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 func initEventSignal(events []abstraction.Event, logger *logrus.Entry) <-chan any {
@@ -25,16 +28,19 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 	tasks := make([]abstraction.Executable, 0, len(job.Tasks))
 	doneHooks := make([]abstraction.Executable, 0, len(job.Hooks.Done))
 	failHooks := make([]abstraction.Executable, 0, len(job.Hooks.Failed))
+
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, ctxutils.JobKey, job.Name)
 	for _, t := range job.Tasks {
-		tasks = append(tasks, cfgcompiler.CompileTask(&t, logger))
+		tasks = append(tasks, cfgcompiler.CompileTask(ctx, &t, logger))
 	}
 	logger.Trace("Compiled Tasks")
 	for _, t := range job.Hooks.Done {
-		doneHooks = append(doneHooks, cfgcompiler.CompileTask(&t, logger))
+		doneHooks = append(doneHooks, cfgcompiler.CompileTask(ctx, &t, logger))
 	}
 	logger.Trace("Compiled Hooks.Done")
 	for _, t := range job.Hooks.Failed {
-		failHooks = append(failHooks, cfgcompiler.CompileTask(&t, logger))
+		failHooks = append(failHooks, cfgcompiler.CompileTask(ctx, &t, logger))
 	}
 	logger.Trace("Compiled Hooks.Fail")
 	return tasks, doneHooks, failHooks

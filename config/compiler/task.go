@@ -1,6 +1,8 @@
 package cfgcompiler
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
@@ -8,7 +10,7 @@ import (
 	"github.com/FMotalleb/crontab-go/core/task"
 )
 
-func CompileTask(t *config.Task, logger *logrus.Entry) abstraction.Executable {
+func CompileTask(ctx context.Context, t *config.Task, logger *logrus.Entry) abstraction.Executable {
 	var exe abstraction.Executable
 	switch {
 	case t.Command != "":
@@ -26,14 +28,14 @@ func CompileTask(t *config.Task, logger *logrus.Entry) abstraction.Executable {
 
 	onDone := []abstraction.Executable{}
 	for _, d := range t.OnDone {
-		onDone = append(onDone, CompileTask(&d, logger))
+		onDone = append(onDone, CompileTask(ctx, &d, logger))
 	}
-	exe.SetDoneHooks(onDone)
+	exe.SetDoneHooks(ctx, onDone)
 	onFail := []abstraction.Executable{}
 	for _, d := range t.OnFail {
-		onFail = append(onFail, CompileTask(&d, logger))
+		onFail = append(onFail, CompileTask(ctx, &d, logger))
 	}
-	exe.SetFailHooks(onFail)
+	exe.SetFailHooks(ctx, onFail)
 
 	return exe
 }

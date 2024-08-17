@@ -41,7 +41,8 @@ func (c *GlobalContext) MetricCounter(
 				return 0.0
 			}
 			ans := item.Get()
-			item.Set(0)
+			// a counter should not reset after it's collected by Prometheus.
+			// item.Set(0)
 			return ans
 		},
 	)
@@ -53,7 +54,6 @@ func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-
 	out := make(chan any)
 	go func() {
 		for c := range signal {
-			fmt.Print("1")
 			counter.Set(counter.Get() + 1)
 			out <- c
 		}

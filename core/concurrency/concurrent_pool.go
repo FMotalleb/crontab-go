@@ -3,7 +3,6 @@ package concurrency
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 )
 
@@ -35,7 +34,6 @@ func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 func (p *ConcurrentPool) Lock() {
 	p.lockerLock.Lock()
 	defer p.lockerLock.Unlock()
-	fmt.Print(p.get())
 	if p.available > p.get() {
 		p.increase()
 		return

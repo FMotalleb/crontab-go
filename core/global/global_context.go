@@ -21,7 +21,7 @@ type (
 	EventListenerMap = map[string][]func()
 	GlobalContext    struct {
 		context.Context
-		lock          sync.Locker
+		lock          *sync.RWMutex
 		countersValue map[string]*concurrency.LockedValue[float64]
 		counters      map[string]prometheus.CounterFunc
 	}
@@ -34,7 +34,7 @@ func newGlobalContext() *GlobalContext {
 			ctxutils.EventListeners,
 			EventListenerMap{},
 		),
-		lock:          &sync.Mutex{},
+		lock:          new(sync.RWMutex),
 		countersValue: make(map[string]*concurrency.LockedValue[float64]),
 		counters:      make(map[string]prometheus.CounterFunc),
 	}
@@ -42,6 +42,8 @@ func newGlobalContext() *GlobalContext {
 }
 
 func (c *GlobalContext) EventListeners() EventListenerMap {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 	listeners := c.Value(ctxutils.EventListeners)
 	return listeners.(EventListenerMap)
 }
