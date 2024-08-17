@@ -9,6 +9,13 @@ import (
 	"github.com/FMotalleb/crontab-go/core/global"
 )
 
+const (
+	okMetricName  = "done_tasks"
+	okMetricHelp  = "Amount of done tasks (with ok status)"
+	errMetricName = "failed_tasks"
+	errMetricHelp = "Amount of failed tasks"
+)
+
 type Hooked struct {
 	metaName  string
 	doneHooks []abstraction.Executable
@@ -22,36 +29,28 @@ func (h *Hooked) SetMetaName(metaName string) {
 func (h *Hooked) SetDoneHooks(ctx context.Context, hooks []abstraction.Executable) {
 	global.CTX().MetricCounter(
 		ctx,
-		"done_tasks",
-		"Amount of done tasks (with ok status)",
-		prometheus.Labels{"task_type": h.metaName},
-	).Operate(
-		func(f float64) float64 {
-			return f + 1
-		},
-	)
+		okMetricName,
+		okMetricHelp,
+		prometheus.Labels{"task": h.metaName},
+	).Set(0)
 	h.doneHooks = hooks
 }
 
 func (h *Hooked) SetFailHooks(ctx context.Context, failHooks []abstraction.Executable) {
 	global.CTX().MetricCounter(
 		ctx,
-		"done_tasks",
-		"Amount of done tasks (with ok status)",
+		errMetricName,
+		errMetricHelp,
 		prometheus.Labels{"task_type": h.metaName},
-	).Operate(
-		func(f float64) float64 {
-			return f + 1
-		},
-	)
+	).Set(0)
 	h.failHooks = failHooks
 }
 
 func (h *Hooked) DoDoneHooks(ctx context.Context) []error {
 	global.CTX().MetricCounter(
 		ctx,
-		"failed_tasks",
-		"Amount of failed tasks",
+		okMetricName,
+		okMetricHelp,
 		prometheus.Labels{"task_type": h.metaName},
 	).Operate(
 		func(f float64) float64 {
@@ -64,8 +63,8 @@ func (h *Hooked) DoDoneHooks(ctx context.Context) []error {
 func (h *Hooked) DoFailHooks(ctx context.Context) []error {
 	global.CTX().MetricCounter(
 		ctx,
-		"failed_tasks",
-		"Amount of failed tasks",
+		errMetricName,
+		errMetricHelp,
 		prometheus.Labels{"task_type": h.metaName},
 	).Operate(
 		func(f float64) float64 {
