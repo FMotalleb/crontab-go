@@ -27,7 +27,7 @@ func reshapeEnviron(taskEnvironments map[string]string, log *logrus.Entry) (stri
 	env := os.Environ()
 	log.Trace("Initial environment variables: ", env)
 	for key, val := range taskEnvironments {
-		env = append(env, fmt.Sprintf("%s=%s", key, val))
+		env = append(env, fmt.Sprintf("%s=%s", strings.ToUpper(key), val))
 		oldValue := os.Getenv(key)
 		log.Debugf("Adding environment variable: %s=%s, before this change was: `%s`", key, val, oldValue)
 		switch strings.ToLower(key) {
