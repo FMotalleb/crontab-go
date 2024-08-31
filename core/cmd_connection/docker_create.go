@@ -128,17 +128,17 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		helpers.WarnOnErr(
-			d.log,
-			d.cli.ContainerRemove(ctx, exec.ID,
+	defer helpers.WarnOnErr(
+		d.log,
+		func() error {
+			return d.cli.ContainerRemove(ctx, exec.ID,
 				container.RemoveOptions{
 					Force: true,
 				},
-			),
-			"cannot remove the container: %s",
-		)
-	}()
+			)
+		},
+		"cannot remove the container: %s",
+	)
 
 	for {
 		err = d.cli.ContainerStart(
@@ -181,13 +181,13 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		helpers.WarnOnErr(
-			d.log,
-			resp.Close(),
-			"cannot close the container's logs: %s",
-		)
-	}()
+	defer helpers.WarnOnErr(
+		d.log,
+		func() error {
+			return resp.Close()
+		},
+		"cannot close the container's logs: %s",
+	)
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output

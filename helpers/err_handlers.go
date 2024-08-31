@@ -5,20 +5,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func PanicOnErr(log *logrus.Entry, err error, message string) {
-	if err != nil {
+func PanicOnErr(log *logrus.Entry, errorCatcher func() error, message string) {
+	if err := errorCatcher(); err != nil {
 		log.Panicf(message, err)
 	}
 }
 
-func FatalOnErr(log *logrus.Entry, err error, message string) {
-	if err != nil {
+func FatalOnErr(log *logrus.Entry, errorCatcher func() error, message string) {
+	if err := errorCatcher(); err != nil {
 		log.Fatalf(message, err)
 	}
 }
 
-func WarnOnErr(log *logrus.Entry, err error, message string) {
-	if err != nil {
+func WarnOnErr(log *logrus.Entry, errorCatcher func() error, message string) error {
+	if err := errorCatcher(); err != nil {
 		log.Warnf(message, err)
+		return err
 	}
+	return nil
 }

@@ -63,9 +63,13 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	res, err := client.Do(req)
 	if res != nil {
 		if res.Body != nil {
-			defer func() {
-				helpers.WarnOnErr(log, res.Body.Close(), "cannot close response body: %s")
-			}()
+			defer helpers.WarnOnErr(
+				log,
+				func() error {
+					return res.Body.Close()
+				},
+				"cannot close response body: %s",
+			)
 		}
 		log = log.WithField("status", res.StatusCode)
 		log.Infoln("received response with status: ", res.Status)

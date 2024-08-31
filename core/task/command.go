@@ -70,7 +70,13 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		if err := connection.Prepare(cmdCtx, c.task); err != nil {
 			log.Warn("cannot prepare command: ", err)
 			ctx = addFailedConnections(ctx, conn)
-			helpers.WarnOnErr(log, connection.Disconnect(), "Cannot disconnect the command's connection: %s")
+			helpers.WarnOnErr(
+				log,
+				func() error {
+					return connection.Disconnect()
+				},
+				"Cannot disconnect the command's connection: %s",
+			)
 			continue
 		}
 
