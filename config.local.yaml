@@ -7,4 +7,6 @@ jobs:
         env:
           "COLE": test
     events:
-      - on-init: true
+      - log-file: /home/motalleb/Documents/GitHub/crontab-go/test
+        log-check-cycle: 1s
+        log-matcher: match

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func MayFirstNonZero[T comparable](items ...T) T {
+func FirstNonZeroForced[T comparable](items ...T) T {
 	item, _ := FirstNonZero(items...)
 	return item
 }

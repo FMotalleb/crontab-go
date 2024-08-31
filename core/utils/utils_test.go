@@ -38,7 +38,7 @@ func TestSelector(t *testing.T) {
 func TestNonZeroSelector(t *testing.T) {
 	t.Run("MayFirstNonZero", func(t *testing.T) {
 		items := []int{0, 1, 2, 3, 4, 5}
-		ans := utils.MayFirstNonZero(items...)
+		ans := utils.FirstNonZeroForced(items...)
 		assert.Equal(t, 1, ans)
 	})
 	t.Run("MayFirstNon", func(t *testing.T) {
