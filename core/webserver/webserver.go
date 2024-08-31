@@ -85,7 +85,13 @@ func (s *WebServer) Serve() {
 	}
 
 	err := engine.Run(fmt.Sprintf("%s:%d", s.address, s.port))
-	helpers.FatalOnErr(s.log, err, "Failed to start webserver: %s")
+	helpers.FatalOnErr(
+		s.log,
+		func() error {
+			return err
+		},
+		"Failed to start webserver: %s",
+	)
 }
 
 func (s *WebServer) formatter(params gin.LogFormatterParams) string {
