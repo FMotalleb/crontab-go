@@ -83,7 +83,7 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 
 	if res != nil {
 		if res.Body != nil {
-			defer helpers.WarnOnErrIgnored
+			defer helpers.WarnOnErrIgnored(
 				log,
 				res.Body.Close,
 				"cannot close response body: %s",
