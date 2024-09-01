@@ -2,6 +2,7 @@ package event
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"math"
 	"os"
@@ -83,13 +84,32 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 				return
 			}
 			for _, line := range strings.Split(data, lf.lineBreaker) {
-				if lf.matcher.MatchString(line) {
-					// TODO possibly emit matcher result here
-					notifyChan <- []string{"log-file", lf.filePath, line}
+				eventData := []string{"log-file", lf.filePath, line}
+				matches := lf.matcher.FindStringSubmatch(line)
+				names := lf.matcher.SubexpNames()
+
+				eventData = append(eventData, reshapeRegxpMatch(names, matches)...)
+				if matches != nil {
+					notifyChan <- eventData
 				}
 			}
 			time.Sleep(lf.checkCycle)
 		}
 	}()
 	return notifyChan
+}
+
+func reshapeRegxpMatch(keys []string, matches []string) []string {
+	if len(keys) == 0 || len(matches) == 0 {
+		return matches
+	}
+	result := make([]string, 0, len(keys))
+	for i, key := range keys {
+		if key != "" {
+			result = append(result, fmt.Sprintf("%s=%s", key, matches[i]))
+		} else if i == 0 {
+			result = append(result, fmt.Sprintf("match=%s", matches[i]))
+		}
+	}
+	return result
 }

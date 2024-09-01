@@ -9,4 +9,4 @@ jobs:
     events:
       - log-file: /home/motalleb/Documents/GitHub/crontab-go/test
         log-check-cycle: 1s
-        log-matcher: match
+        log-matcher: .*(?<id>\d{2}).*

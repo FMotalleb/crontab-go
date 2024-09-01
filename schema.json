@@ -12,7 +12,7 @@
           },
           "description": "An array of Job objects that define the tasks to be executed."
         },
-        "variables":{
+        "variables": {
           "type": "object",
           "additionalProperties": true
         }
@@ -98,7 +98,7 @@
       "properties": {
         "cron": {
           "type": "string",
-          "description": "A string that represents the cron expression that defines the scheduling frequency.",
+          "description": "A string that represents the cron expression that defines the scheduling frequency. (enables cron)",
           "examples": [
             "* * * * *",
             "* * * * * *",
@@ -109,7 +109,7 @@
         },
         "interval": {
           "type": "string",
-          "description": "A string that represents the interval at which the job should be executed.",
+          "description": "A string that represents the interval at which the job should be executed. (enables interval)",
           "examples": [
             "1s",
             "10m",
@@ -120,11 +120,42 @@
         },
         "on-init": {
           "type": "boolean",
-          "description": "Indicates that the job should trigger its tasks once initialized."
+          "description": "Indicates that the job should trigger its tasks once initialized. (enables on-init)"
         },
         "web-event": {
           "type": "string",
-          "description": "Event name that received from webserver that should trigger this job."
+          "description": "Event name that received from webserver that should trigger this job. (enables web events)"
+        },
+        "log-file": {
+          "type": "string",
+          "description": "Path to log file. (enables the log file checking)"
+        },
+        "log-check-cycle": {
+          "type": "string",
+          "description": "A string that represents the interval at which the log file should be checked.",
+          "examples": [
+            "1s",
+            "10m",
+            "1h",
+            "3.5h",
+            "5h30m15s"
+          ]
+        },
+        "log-line-breaker": {
+          "type": "string",
+          "examples": [
+            "\\n",
+            "\\r\\n"
+          ],
+          "description": "split log data by this string, defaults to `\\n`"
+        },
+        "log-matcher": {
+          "type": "string",
+          "examples": [
+            "[(?<level>INFO|ERROR|WARNING|DEBUG)] .*",
+            "AppState (<?id>\\d*)"
+          ],
+          "description": "log line will be matched against this matcher, defaults to `.`(anything)"
         },
         "docker": {
           "type": "object",
