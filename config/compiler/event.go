@@ -31,11 +31,9 @@ func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abst
 			logger,
 		)
 		return &event
-
 	case sh.OnInit:
 		event := event.Init{}
 		return &event
-
 	case sh.Docker != nil:
 		d := sh.Docker
 		con := utils.FirstNonZeroForced(d.Connection,
@@ -66,8 +64,6 @@ func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abst
 			return nil
 		}
 		return e
-
 	}
-
 	return nil
 }

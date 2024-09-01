@@ -25,7 +25,6 @@ func CompileTask(ctx context.Context, t *config.Task, logger *logrus.Entry) abst
 	if exe == nil {
 		logger.Panic("did not received any executable action from given task", t)
 	}
-
 	onDone := []abstraction.Executable{}
 	for _, d := range t.OnDone {
 		onDone = append(onDone, CompileTask(ctx, &d, logger))
@@ -36,6 +35,5 @@ func CompileTask(ctx context.Context, t *config.Task, logger *logrus.Entry) abst
 		onFail = append(onFail, CompileTask(ctx, &d, logger))
 	}
 	exe.SetFailHooks(ctx, onFail)
-
 	return exe
 }
