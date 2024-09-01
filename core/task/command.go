@@ -72,9 +72,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 			ctx = addFailedConnections(ctx, conn)
 			helpers.WarnOnErrIgnored(
 				log,
-				func() error {
-					return connection.Disconnect()
-				},
+				connection.Disconnect,
 				"Cannot disconnect the command's connection: %s",
 			)
 			continue
