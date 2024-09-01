@@ -3,24 +3,22 @@ package event
 import "github.com/FMotalleb/crontab-go/core/global"
 
 type WebEventListener struct {
-	c chan any
-
 	event string
 }
 
 func NewEventListener(event string) WebEventListener {
 	return WebEventListener{
-		c:     make(chan any),
 		event: event,
 	}
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (w *WebEventListener) BuildTickChannel() <-chan any {
+func (w *WebEventListener) BuildTickChannel() <-chan []string {
+	notifyChan := make(chan []string)
 	global.CTX().AddEventListener(
 		w.event, func() {
-			w.c <- false
+			notifyChan <- []string{"web", w.event}
 		},
 	)
-	return w.c
+	return notifyChan
 }

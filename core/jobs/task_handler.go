@@ -13,16 +13,17 @@ import (
 func taskHandler(
 	c context.Context,
 	logger *logrus.Entry,
-	signal <-chan any,
+	signal <-chan []string,
 	tasks []abstraction.Executable,
 	doneHooks []abstraction.Executable,
 	failHooks []abstraction.Executable,
 	lock sync.Locker,
 ) {
 	logger.Debug("Spawning task handler")
-	for range signal {
+	for event := range signal {
 		logger.Trace("Signal Received")
 		for _, task := range tasks {
+			c = context.WithValue(c, ctxutils.EventData, event)
 			go executeTask(c, task, doneHooks, failHooks, lock)
 		}
 	}

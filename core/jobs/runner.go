@@ -7,6 +7,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/cmd"
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/concurrency"
@@ -48,7 +49,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 	log.Debugln("Jobs Are Ready")
 }
 
-func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) <-chan any {
+func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) abstraction.EventChannel {
 	events := initEvents(job, cronInstance, logger)
 	logger.Trace("Events initialized")
 

@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -19,15 +20,15 @@ import (
 type LogFile struct {
 	logger      *logrus.Entry
 	filePath    string
-	lineBreaker rune
+	lineBreaker string
 	matcher     regexp.Regexp
 	// possibly will be deprecated or changed to an struct
 	checkCycle time.Duration
 }
 
 // NewLogFile creates a new LogFile with the given parameters.
-func NewLogFile(filePath string, lineBreaker rune, matcherStr string, checkCycle time.Duration, logger *logrus.Entry) (*LogFile, error) {
-	lineBreaker = utils.FirstNonZeroForced(lineBreaker, '\n')
+func NewLogFile(filePath string, lineBreaker string, matcherStr string, checkCycle time.Duration, logger *logrus.Entry) (*LogFile, error) {
+	lineBreaker = utils.FirstNonZeroForced(lineBreaker, "\n")
 	matcherStr = utils.FirstNonZeroForced(matcherStr, ".")
 	checkCycle = utils.FirstNonZeroForced(checkCycle, time.Second)
 
@@ -55,8 +56,8 @@ func NewLogFile(filePath string, lineBreaker rune, matcherStr string, checkCycle
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (lf *LogFile) BuildTickChannel() <-chan any {
-	notifyChan := make(chan any)
+func (lf *LogFile) BuildTickChannel() <-chan []string {
+	notifyChan := make(chan []string)
 	go func() {
 		// Use bufio to read file line by line
 		file, err := os.Open(lf.filePath)
@@ -75,15 +76,17 @@ func (lf *LogFile) BuildTickChannel() <-chan any {
 			return
 		}
 		for {
-			line, err := reader.ReadString(byte(lf.lineBreaker))
-			lf.logger.Tracef("read line: %s,Err: %s", line, err)
+			data, err := reader.ReadString(byte(0))
+			lf.logger.Tracef("read line: %s,Err: %s", data, err)
 			if err != nil && err != io.EOF {
 				lf.logger.Error("error reading log file: ", err)
 				return
 			}
-
-			if lf.matcher.MatchString(line) {
-				notifyChan <- false
+			for _, line := range strings.Split(data, lf.lineBreaker) {
+				if lf.matcher.MatchString(line) {
+					// TODO possibly emit matcher result here
+					notifyChan <- []string{"log_file", lf.filePath, line}
+				}
 			}
 			time.Sleep(lf.checkCycle)
 		}

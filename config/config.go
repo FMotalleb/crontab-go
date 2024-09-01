@@ -52,7 +52,7 @@ type JobEvent struct {
 
 	LogFile        string        `mapstructure:"log-file" json:"log-file,omitempty"`
 	LogCheckCycle  time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
-	LogLineBreaker rune          `mapstructure:"log-line-breaker" json:"log-line-breaker,omitempty"`
+	LogLineBreaker string        `mapstructure:"log-line-breaker" json:"log-line-breaker,omitempty"`
 	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 

@@ -11,4 +11,5 @@ var (
 	TaskKey        ContextKey = ContextKey("task")
 	FailedRemotes  ContextKey = ContextKey("failed-remotes")
 	EventListeners ContextKey = ContextKey("event-listeners")
+	EventData      ContextKey = ContextKey("event-data")
 )
