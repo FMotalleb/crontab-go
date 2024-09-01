@@ -3,7 +3,7 @@
 jobs:
   - name: echo
     tasks:
-      - command: env
+      - command: echo "$0 $@"
         env:
           "COLE": test
     events:

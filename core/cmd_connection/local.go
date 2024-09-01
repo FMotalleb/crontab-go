@@ -13,6 +13,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
+	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 // Local represents a local command connection.
@@ -43,10 +44,17 @@ func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
 			return fmt.Errorf("cannot get current working directory: %s", e)
 		}
 	}
+	params := ctx.Value(ctxutils.EventData).([]string)
 	l.cmd = exec.CommandContext(
 		ctx,
 		shell,
-		append(shellArgs, task.Command)...,
+		append(
+			shellArgs,
+			append(
+				[]string{task.Command},
+				params...,
+			)...,
+		)...,
 	)
 	l.log = l.log.WithFields(
 		logrus.Fields{

@@ -71,7 +71,7 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 		}()
 		reader := bufio.NewReader(file)
 		_, err = reader.Discard(math.MaxInt64)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			lf.logger.Warnln("error skipping initial data: ", err)
 			return
 		}
@@ -85,7 +85,7 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 			for _, line := range strings.Split(data, lf.lineBreaker) {
 				if lf.matcher.MatchString(line) {
 					// TODO possibly emit matcher result here
-					notifyChan <- []string{"log_file", lf.filePath, line}
+					notifyChan <- []string{"log-file", lf.filePath, line}
 				}
 			}
 			time.Sleep(lf.checkCycle)
