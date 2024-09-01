@@ -7,10 +7,9 @@ import (
 )
 
 type Interval struct {
-	duration   time.Duration
-	logger     *logrus.Entry
-	ticker     *time.Ticker
-	notifyChan chan any
+	duration time.Duration
+	logger   *logrus.Entry
+	ticker   *time.Ticker
 }
 
 func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
@@ -27,18 +26,19 @@ func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Interval) BuildTickChannel() <-chan any {
+func (c *Interval) BuildTickChannel() <-chan []string {
 	if c.ticker != nil {
 		c.logger.Fatal("already built the ticker channel")
 	}
-	c.notifyChan = make(chan any)
+	notifyChan := make(chan []string)
 	c.ticker = time.NewTicker(c.duration)
 	go func() {
 		// c.notifyChan <- false
-		for range c.ticker.C {
-			c.notifyChan <- false
+
+		for i := range c.ticker.C {
+			notifyChan <- []string{"interval", c.duration.String(), i.Format(time.RFC3339)}
 		}
 	}()
 
-	return c.notifyChan
+	return notifyChan
 }

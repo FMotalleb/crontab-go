@@ -38,21 +38,35 @@ func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abst
 
 	case sh.Docker != nil:
 		d := sh.Docker
-		con := utils.MayFirstNonZero(d.Connection,
+		con := utils.FirstNonZeroForced(d.Connection,
 			"unix:///var/run/docker.sock",
 		)
-		event := event.NewDockerEvent(
+		e := event.NewDockerEvent(
 			con,
 			d.Name,
 			d.Image,
 			d.Actions,
 			d.Labels,
-			utils.MayFirstNonZero(d.ErrorLimit, 1),
-			utils.MayFirstNonZero(d.ErrorLimitPolicy, event.Reconnect),
-			utils.MayFirstNonZero(d.ErrorThrottle, time.Second*5),
+			utils.FirstNonZeroForced(d.ErrorLimit, 1),
+			utils.FirstNonZeroForced(d.ErrorLimitPolicy, event.Reconnect),
+			utils.FirstNonZeroForced(d.ErrorThrottle, time.Second*5),
 			logger,
 		)
-		return event
+		return e
+	case sh.LogFile != "":
+		e, err := event.NewLogFile(
+			sh.LogFile,
+			sh.LogLineBreaker,
+			sh.LogMatcher,
+			sh.LogCheckCycle,
+			logger,
+		)
+		if err != nil {
+			logger.Error("Error creating LogFile: ", err)
+			return nil
+		}
+		return e
+
 	}
 
 	return nil

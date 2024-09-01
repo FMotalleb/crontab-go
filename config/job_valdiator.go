@@ -147,6 +147,7 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 		s.Cron != "",
 		s.WebEvent != "",
 		s.Docker != nil,
+		s.LogFile != "",
 		s.OnInit,
 	)
 	activeEvents := utils.Fold(events, 0, func(c int, item bool) int {
@@ -158,12 +159,13 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 
 	if activeEvents != 1 {
 		err := fmt.Errorf(
-			"a single event must have one of (on-init: true,interval,cron,web-event,docker) field, received:(on_init: %t,cron: `%s`, interval: `%s`, web_event: `%s`, docker: %v)",
+			"a single event must have one of (on-init: true,interval,cron,web-event,docker,log-file) field, received:(on_init: %t,cron: `%s`, interval: `%s`, web_event: `%s`, docker: %v,log-file: %v)",
 			s.OnInit,
 			s.Cron,
 			s.Interval,
 			s.WebEvent,
 			s.Docker,
+			s.LogFile,
 		)
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err

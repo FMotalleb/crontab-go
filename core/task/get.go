@@ -63,11 +63,9 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	res, err := client.Do(req)
 	if res != nil {
 		if res.Body != nil {
-			defer helpers.WarnOnErr(
+			defer helpers.WarnOnErrIgnored(
 				log,
-				func() error {
-					return res.Body.Close()
-				},
+				res.Body.Close,
 				"cannot close response body: %s",
 			)
 		}

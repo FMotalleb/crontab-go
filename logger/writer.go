@@ -23,7 +23,6 @@ func (w *writer) Write(b []byte) (n int, e error) {
 	if err != nil {
 		return n, err
 	}
-
 	if w.file != nil {
 		wf, er := w.file.Write(b)
 		if wf != n && n != 0 {

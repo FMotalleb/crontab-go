@@ -3,8 +3,10 @@
 jobs:
   - name: echo
     tasks:
-      - command: env
+      - command: echo "$0 $@"
         env:
           "COLE": test
     events:
-      - on-init: true
+      - log-file: /home/motalleb/Documents/GitHub/crontab-go/test
+        log-check-cycle: 1s
+        log-matcher: .*(?<id>\d{2}).*

@@ -49,9 +49,9 @@ func (c *GlobalContext) MetricCounter(
 	return c.MetricCounter(ctx, name, help, labels)
 }
 
-func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-chan any, help string, labels prometheus.Labels) <-chan any {
+func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-chan []string, help string, labels prometheus.Labels) <-chan []string {
 	counter := c.MetricCounter(ctx, name, help, labels)
-	out := make(chan any)
+	out := make(chan []string)
 	go func() {
 		for c := range signal {
 			counter.Set(counter.Get() + 1)

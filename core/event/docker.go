@@ -2,7 +2,9 @@ package event
 
 import (
 	"context"
+	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/events"
@@ -58,8 +60,8 @@ func NewDockerEvent(
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (de *DockerEvent) BuildTickChannel() <-chan any {
-	notifyChan := make(chan any)
+func (de *DockerEvent) BuildTickChannel() <-chan []string {
+	notifyChan := make(chan []string)
 
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(de.connection),
@@ -92,8 +94,8 @@ func (de *DockerEvent) BuildTickChannel() <-chan any {
 						de.log.Fatalf("Received more than %d consecutive errors from docker, marking instance as unstable and killing in return, this may happen due to dockerd restarting", errs)
 					case Reconnect:
 						de.log.Warnf("Received more than %d consecutive errors from docker, marking instance as unstable and retry connecting to docker", errs)
-						for range de.BuildTickChannel() {
-							notifyChan <- nil
+						for e := range de.BuildTickChannel() {
+							notifyChan <- e
 						}
 					default:
 						de.log.Fatalf("unexpected event.ErrorLimitPolicy: %#v, valid options are (kill,giv-up,reconnect)", de.errorPolicy)
@@ -106,7 +108,7 @@ func (de *DockerEvent) BuildTickChannel() <-chan any {
 			case event := <-msg:
 				de.log.Trace("received an event from docker: ", event)
 				if de.matches(&event) {
-					notifyChan <- nil
+					notifyChan <- []string{"docker", event.Scope, string(event.Action), event.Actor.ID, strings.Join(reshapeAttrib(event.Actor.Attributes), ",")}
 				}
 				errCount.Set(0)
 			}
@@ -140,6 +142,14 @@ func reshapeLabelMatcher(labels map[string]string) map[string]regexp.Regexp {
 	res := make(map[string]regexp.Regexp)
 	for k, v := range labels {
 		res[k] = *regexp.MustCompile(v)
+	}
+	return res
+}
+
+func reshapeAttrib(input map[string]string) []string {
+	res := make([]string, 0, len(input))
+	for k, v := range input {
+		res = append(res, fmt.Sprintf("%s=%s", k, v))
 	}
 	return res
 }

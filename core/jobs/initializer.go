@@ -14,8 +14,8 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func initEventSignal(events []abstraction.Event, logger *logrus.Entry) <-chan any {
-	signals := make([]<-chan any, 0, len(events))
+func initEventSignal(events []abstraction.Event, logger *logrus.Entry) abstraction.EventChannel {
+	signals := make([]<-chan []string, 0, len(events))
 	for _, sh := range events {
 		signals = append(signals, sh.BuildTickChannel())
 	}

@@ -11,6 +11,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 type DockerAttachConnection struct {
@@ -57,9 +58,16 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
 	}
+	params := ctx.Value(ctxutils.EventData).([]string)
 	cmd := append(
 		[]string{shell},
-		append(shellArgs, task.Command)...,
+		append(
+			shellArgs,
+			append(
+				[]string{task.Command},
+				params...,
+			)...,
+		)...,
 	)
 	// Create an exec configuration
 	d.execCFG = &container.ExecOptions{

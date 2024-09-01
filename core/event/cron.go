@@ -12,7 +12,6 @@ type Cron struct {
 	cronSchedule string
 	logger       *logrus.Entry
 	cron         *cron.Cron
-	notifyChan   chan any
 	entry        *cron.EntryID
 }
 
@@ -31,22 +30,35 @@ func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Cron) BuildTickChannel() <-chan any {
+func (c *Cron) BuildTickChannel() <-chan []string {
 	if c.entry != nil {
 		c.logger.Fatal("already built the ticker channel")
 	}
-	c.notifyChan = make(chan any)
+	notifyChan := make(chan []string)
 	schedule, err := CronParser.Parse(c.cronSchedule)
 	if err != nil {
 		c.logger.Warnln("cannot initialize cron: ", err)
 	} else {
-		entry := c.cron.Schedule(schedule, c)
+		entry := c.cron.Schedule(
+			schedule,
+			&cronJob{
+				logger:    c.logger,
+				scheduler: c.cronSchedule,
+				notify:    notifyChan,
+			},
+		)
 		c.entry = &entry
 	}
-	return c.notifyChan
+	return notifyChan
 }
 
-func (c *Cron) Run() {
-	c.logger.Debugln("cron tick received")
-	c.notifyChan <- false
+type cronJob struct {
+	logger    *logrus.Entry
+	scheduler string
+	notify    chan<- []string
+}
+
+func (j *cronJob) Run() {
+	j.logger.Debugln("cron tick received")
+	j.notify <- []string{"cron", j.scheduler}
 }

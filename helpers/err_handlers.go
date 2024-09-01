@@ -24,3 +24,9 @@ func WarnOnErr(log *logrus.Entry, errorCatcher func() error, message string) err
 	}
 	return nil
 }
+
+func WarnOnErrIgnored(log *logrus.Entry, errorCatcher func() error, message string) {
+	if err := errorCatcher(); err != nil {
+		log.Warnf(message, err)
+	}
+}

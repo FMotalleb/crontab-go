@@ -49,6 +49,11 @@ type JobEvent struct {
 	OnInit   bool          `mapstructure:"on-init" json:"on-init,omitempty"`
 	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
 	Docker   *DockerEvent  `mapstructure:"docker" json:"docker,omitempty"`
+
+	LogFile        string        `mapstructure:"log-file" json:"log-file,omitempty"`
+	LogCheckCycle  time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
+	LogLineBreaker string        `mapstructure:"log-line-breaker" json:"log-line-breaker,omitempty"`
+	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
 // DockerEvent represents a Docker event configuration
