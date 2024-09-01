@@ -137,7 +137,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer helpers.WarnOnErr(
+	defer helpers.WarnOnErrIgnored(
 		d.log,
 		func() error {
 			return d.cli.ContainerRemove(ctx, exec.ID,
@@ -190,7 +190,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer helpers.WarnOnErr(
+	defer helpers.WarnOnErrIgnored(
 		d.log,
 		func() error {
 			return resp.Close()

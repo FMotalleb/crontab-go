@@ -83,7 +83,7 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 
 	if res != nil {
 		if res.Body != nil {
-			defer helpers.WarnOnErr(
+			defer helpers.WarnOnErrIgnored(
 				log,
 				func() error {
 					return res.Body.Close()
