@@ -13,6 +13,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
@@ -53,7 +54,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task.Env, d.log)
+	cmdCtx := cmdutils.NewCtx(ctx, task.Env, d.log)
 	d.ctx = ctx
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
@@ -61,15 +62,10 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 	}
 
 	params := ctx.Value(ctxutils.EventData).([]string)
+	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command, params)
 	cmd := append(
 		[]string{shell},
-		append(
-			shellArgs,
-			append(
-				[]string{task.Command},
-				params...,
-			)...,
-		)...,
+		shellArgs...,
 	)
 	volumes := make(map[string]struct{})
 	for _, volume := range d.conn.Volumes {
@@ -80,7 +76,7 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 	d.containerConfig = &container.Config{
 		AttachStdout: true,
 		AttachStderr: true,
-		Env:          env,
+		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
 		User:         task.UserName,
 		Cmd:          cmd,

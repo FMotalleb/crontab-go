@@ -11,6 +11,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
@@ -50,7 +51,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task.Env, d.log)
+	cmdCtx := cmdutils.NewCtx(ctx, task.Env, d.log)
 	d.ctx = ctx
 	// Specify the container ID or name
 	d.containerID = d.conn.ContainerName
@@ -59,22 +60,17 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
 	}
 	params := ctx.Value(ctxutils.EventData).([]string)
+	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command, params)
 	cmd := append(
 		[]string{shell},
-		append(
-			shellArgs,
-			append(
-				[]string{task.Command},
-				params...,
-			)...,
-		)...,
+		shellArgs...,
 	)
 	// Create an exec configuration
 	d.execCFG = &container.ExecOptions{
 		AttachStdout: true,
 		AttachStderr: true,
 		Privileged:   true,
-		Env:          env,
+		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
 		User:         task.UserName,
 		Cmd:          cmd,
