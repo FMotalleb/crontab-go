@@ -25,6 +25,7 @@ func NewCtx(
 ) *Ctx {
 	result := &Ctx{
 		Context: ctx,
+		logger:  logger,
 	}
 	result.init(taskEnviron)
 	return result
