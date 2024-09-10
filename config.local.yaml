@@ -3,7 +3,7 @@
 jobs:
   - name: echo
     tasks:
-      - command: echo "$0 $@"
+      - command: echo "$CRONTAB_GO_EVENT_ARGUMENTS"
         env:
           "COLE": test
     events:

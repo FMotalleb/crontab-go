@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
@@ -110,7 +111,7 @@ func (ctx *Ctx) getShellArgCompatibility() config.ShellArgCompatibilityMode {
 func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell string, cmd []string, env []string) {
 	environments := ctx.envReshape()
 	shell = ctx.getShell()
-	shellArgs := strings.Split(ctx.getShellArg(), ":")
+	shellArgs := utils.EscapedSplit(ctx.getShellArg(), ':')
 	shellArgs = append(shellArgs, command)
 	switch ctx.getShellArgCompatibility() {
 	case config.ArgumentPassing:

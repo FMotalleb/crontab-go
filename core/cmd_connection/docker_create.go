@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"strings"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -14,6 +13,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
+	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
@@ -69,7 +69,7 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 	)
 	volumes := make(map[string]struct{})
 	for _, volume := range d.conn.Volumes {
-		inContainer := strings.Split(volume, ":")[1]
+		inContainer := utils.EscapedSplit(volume, ':')[1]
 		volumes[inContainer] = struct{}{}
 	}
 	// Create an exec configuration
