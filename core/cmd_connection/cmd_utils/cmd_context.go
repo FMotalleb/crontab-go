@@ -114,9 +114,11 @@ func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell st
 	shellArgs := utils.EscapedSplit(ctx.getShellArg(), ':')
 	shellArgs = append(shellArgs, command)
 	switch ctx.getShellArgCompatibility() {
-	case config.ArgumentPassing:
+	case config.EventArgOmit:
+		ctx.logger.Debug("event arguments will not be passed to the command")
+	case config.EventArgPassingAsArgs:
 		shellArgs = append(shellArgs, eventData...)
-	case config.EnvironmentPassing:
+	case config.EventArgPassingAsEnviron:
 		environments = append(
 			environments,
 			fmt.Sprintf("CRONTAB_GO_EVENT_ARGUMENTS=%s",
@@ -124,6 +126,7 @@ func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell st
 			),
 		)
 	default:
+		ctx.logger.Warn("event argument passing mode is not supported, using default mode (omitting)")
 	}
 	return shell, shellArgs, environments
 }

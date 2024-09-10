@@ -115,7 +115,8 @@ type TaskConnection struct {
 type ShellArgCompatibilityMode string
 
 const (
-	DefaultShellArgCompatibility ShellArgCompatibilityMode = ArgumentPassing
-	ArgumentPassing              ShellArgCompatibilityMode = "arg"
-	EnvironmentPassing           ShellArgCompatibilityMode = "env"
+	DefaultShellArgCompatibility ShellArgCompatibilityMode = EventArgOmit
+	EventArgOmit                 ShellArgCompatibilityMode = "none"
+	EventArgPassingAsArgs        ShellArgCompatibilityMode = "arg"
+	EventArgPassingAsEnviron     ShellArgCompatibilityMode = "env"
 )
