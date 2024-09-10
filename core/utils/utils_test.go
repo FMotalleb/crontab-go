@@ -162,3 +162,45 @@ func TestList(t *testing.T) {
 		assert.True(t, list.IsNotEmpty())
 	})
 }
+
+func TestEscapedSplit(t *testing.T) {
+	t.Run("Panic when last rune is escape rune '\\'",
+		func(t *testing.T) {
+			str := "must-panic\\"
+			assert.Panics(t, func() {
+				utils.EscapedSplit(str, '-')
+			})
+		},
+	)
+	t.Run("Normal input returns slice with single item (whole input)",
+		func(t *testing.T) {
+			str := "nothing to split"
+			result := utils.EscapedSplit(str, '-')
+			assert.Equal(t, []string{str}, result)
+		},
+	)
+	t.Run("Normal input (with escaped splitter) returns slice with single item (whole input)",
+		func(t *testing.T) {
+			str := "does\\ not\\ split"
+			expectedResult := []string{"does not split"}
+			result := utils.EscapedSplit(str, ' ')
+			assert.Equal(t, expectedResult, result)
+		},
+	)
+	t.Run("Normal escape does nothing to non split character",
+		func(t *testing.T) {
+			str := "does\\nnot\\nsplit"
+			expectedResult := []string{"does\\nnot\\nsplit"}
+			result := utils.EscapedSplit(str, ' ')
+			assert.Equal(t, expectedResult, result)
+		},
+	)
+	t.Run("Normal input with and without escaped splitter returns correct slice",
+		func(t *testing.T) {
+			str := "this splits but this\\ will\\ not"
+			expectedResult := []string{"this", "splits", "but", "this will not"}
+			result := utils.EscapedSplit(str, ' ')
+			assert.Equal(t, expectedResult, result)
+		},
+	)
+}

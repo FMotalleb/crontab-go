@@ -12,6 +12,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
@@ -35,7 +36,7 @@ func NewLocalCMDConn(log *logrus.Entry) abstraction.CmdConnection {
 // It sets up the command with the provided context, task, and environment.
 // It returns an error if the preparation fails.
 func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
-	shell, shellArgs, env := reshapeEnviron(task.Env, l.log)
+	cmdCtx := cmdutils.NewCtx(ctx, task.Env, l.log)
 	workingDir := task.WorkingDirectory
 	if workingDir == "" {
 		var e error
@@ -44,34 +45,30 @@ func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
 			return fmt.Errorf("cannot get current working directory: %s", e)
 		}
 	}
-	params := ctx.Value(ctxutils.EventData).([]string)
+
+	event := ctx.Value(ctxutils.EventData).([]string)
+	shell, commandArg, environ := cmdCtx.BuildExecuteParams(task.Command, event)
 	l.cmd = exec.CommandContext(
 		ctx,
 		shell,
-		append(
-			shellArgs,
-			append(
-				[]string{task.Command},
-				params...,
-			)...,
-		)...,
+		commandArg...,
 	)
 	l.log = l.log.WithFields(
 		logrus.Fields{
 			"working_directory": workingDir,
 			"shell":             shell,
-			"shell_args":        shellArgs,
+			"shell_args":        commandArg,
 		},
 	)
 	credential.SetUser(l.log, l.cmd, task.UserName, task.GroupName)
-	l.cmd.Env = env
+	l.cmd.Env = environ
 	l.cmd.Dir = workingDir
 
 	// Add additional logging fields if needed
 	l.log.WithFields(logrus.Fields{
 		"working_directory": workingDir,
 		"shell":             shell,
-		"shell_args":        shellArgs,
+		"shell_args":        commandArg,
 		"task":              task,
 	}).Debug("command prepared")
 
