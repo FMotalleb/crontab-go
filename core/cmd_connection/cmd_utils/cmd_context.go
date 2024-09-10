@@ -122,11 +122,23 @@ func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell st
 		environments = append(
 			environments,
 			fmt.Sprintf("CRONTAB_GO_EVENT_ARGUMENTS=%s",
-				strings.Join(eventData, " "),
+				collectEventForEnv(eventData),
 			),
 		)
 	default:
 		ctx.logger.Warn("event argument passing mode is not supported, using default mode (omitting)")
 	}
 	return shell, shellArgs, environments
+}
+
+func collectEventForEnv(eventData []string) string {
+	builder := &strings.Builder{}
+	for i, part := range eventData {
+		builder.WriteString(strings.ReplaceAll(part, ":", "\\:"))
+		if i < len(eventData)-1 {
+			builder.WriteRune(':')
+		}
+	}
+
+	return builder.String()
 }
