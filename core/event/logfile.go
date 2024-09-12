@@ -86,10 +86,11 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 			for _, line := range strings.Split(data, lf.lineBreaker) {
 				eventData := []string{"log-file", lf.filePath, line}
 				matches := lf.matcher.FindStringSubmatch(line)
-				names := lf.matcher.SubexpNames()
-
-				eventData = append(eventData, reshapeRegxpMatch(names, matches)...)
 				if matches != nil {
+					names := lf.matcher.SubexpNames()
+
+					eventData = append(eventData, reshapeRegxpMatch(names, matches)...)
+
 					notifyChan <- eventData
 				}
 			}
