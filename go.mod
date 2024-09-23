@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	github.com/alecthomas/assert/v2 v2.10.0
-	github.com/docker/docker v27.2.1+incompatible
+	github.com/docker/docker v27.3.1+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.20.3
