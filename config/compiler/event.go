@@ -21,7 +21,7 @@ func CompileEvent(sh *config.JobEvent, cr *cron.Cron, logger *logrus.Entry) abst
 			cr,
 			logger,
 		)
-		return &event
+		return event
 	case sh.WebEvent != "":
 		event := event.NewEventListener(sh.WebEvent)
 		return &event

@@ -23,7 +23,7 @@ linters:
     - dogsled
     - dupl
     - errcheck
-    - exportloopref
+    # - exportloopref
     - funlen
     # - gochecknoinits
     - gocritic
@@ -50,7 +50,7 @@ linters:
     - unparam
     - unused
     - whitespace
-    - copyloopvar
+    # - copyloopvar
 
 issues:
   # enable issues excluded by default
