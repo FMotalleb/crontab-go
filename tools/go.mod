@@ -2,14 +2,12 @@ module github.com/FMotalleb/crontab-go/build
 
 go 1.24
 
-toolchain go1.24.0
-
 // FIXME: temporary fix for go.opentelemetry.io/otel/exporters/otlp/internal v0.20.1
 replace go.opentelemetry.io/otel/exporters/otlp/internal v0.20.1 => go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.43.0
 
 require (
 	github.com/client9/misspell v0.3.4
-	github.com/golangci/golangci-lint v1.64.7
+	github.com/golangci/golangci-lint v1.64.8
 	github.com/goreleaser/goreleaser v1.26.2
 	golang.org/x/vuln v1.1.4
 )
