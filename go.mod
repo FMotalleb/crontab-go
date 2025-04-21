@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/alecthomas/assert/v2 v2.11.0
-	github.com/docker/docker v28.0.4+incompatible
+	github.com/docker/docker v28.1.1+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.22.0
@@ -15,7 +15,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+require (
+	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/moby/sys/atomicwriter v0.1.0 // indirect
+)
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
