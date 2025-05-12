@@ -3,6 +3,7 @@ package global
 
 import (
 	"context"
+	"reflect"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -51,7 +52,34 @@ func (c *GlobalContext) EventListeners() EventListenerMap {
 func (c *GlobalContext) AddEventListener(event string, listener func()) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	listeners := c.EventListeners()
+	listeners := c.Value(ctxutils.EventListeners).(EventListenerMap)
 	listeners[event] = append(listeners[event], listener)
 	c.Context = context.WithValue(c.Context, ctxutils.EventListeners, listeners)
+}
+
+func getTypename[T any](item T) string {
+	return reflect.TypeOf(item).String()
+}
+
+func PutIntoCtx[T any](item T) {
+	name := getTypename(item)
+	println(name)
+	c.Context = context.WithValue(c.Context, name, item)
+}
+
+func GetFromCtx[T any]() T {
+	var zero T // Default zero value for type T
+	name := reflect.TypeOf(zero).String()
+	println(name)
+	value := c.Value(name)
+	if value == nil {
+		return zero
+	}
+
+	// Type assertion to ensure the value is of type T
+	castedValue, ok := value.(T)
+	if !ok {
+		return zero
+	}
+	return castedValue
 }

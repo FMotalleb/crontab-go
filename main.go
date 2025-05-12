@@ -31,6 +31,11 @@ import (
 	"github.com/FMotalleb/crontab-go/meta"
 )
 
+type Mamad struct {
+	i int
+	t string
+}
+
 func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
