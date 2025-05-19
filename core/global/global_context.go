@@ -3,6 +3,7 @@ package global
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 
@@ -11,6 +12,10 @@ import (
 	"github.com/FMotalleb/crontab-go/core/concurrency"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
+
+func ctxKey(prefix string, key string) ctxutils.ContextKey {
+	return ctxutils.ContextKey(fmt.Sprintf("%s:%s", prefix, key))
+}
 
 func CTX() *GlobalContext {
 	return c
@@ -64,14 +69,14 @@ func getTypename[T any](item T) string {
 func PutIntoCtx[T any](item T) {
 	name := getTypename(item)
 	println(name)
-	c.Context = context.WithValue(c.Context, name, item)
+	c.Context = context.WithValue(c.Context, ctxKey("typed", name), item)
 }
 
 func GetFromCtx[T any]() T {
 	var zero T // Default zero value for type T
 	name := reflect.TypeOf(zero).String()
 	println(name)
-	value := c.Value(name)
+	value := c.Value(ctxKey("typed", name))
 	if value == nil {
 		return zero
 	}

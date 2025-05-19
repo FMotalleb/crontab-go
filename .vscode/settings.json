@@ -75,5 +75,6 @@
             "config.example.yaml",
             "config.yaml"
         ],
+        "file:///home/motalleb/Documents/GitHub/crontab-go/schema.json": "file:///home/motalleb/Documents/GitHub/crontab-go/config.local.yaml"
     }
 }
