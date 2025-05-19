@@ -2,6 +2,7 @@ package event
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -12,10 +13,34 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/utils"
 )
 
 // TODO[epic=events] add watch method (probably after fs watcher is implemented)
+
+func init() {
+	eg.Register(newLogListenerGenerator)
+}
+
+func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
+	if cfg.LogFile != "" {
+		e, err := NewLogFile(
+			cfg.LogFile,
+			cfg.LogLineBreaker,
+			cfg.LogMatcher,
+			cfg.LogCheckCycle,
+			log,
+		)
+		if err != nil {
+			log.Error("Error creating LogFileListener: ", err)
+			return nil, false
+		}
+		return e, true
+	}
+	return nil, false
+}
 
 // LogFile represents a log file that triggers an event when its content changes.
 type LogFile struct {
@@ -66,13 +91,13 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 			lf.logger.Error("failed to open log file: ", err)
 		}
 		defer func() {
-			if err := file.Close(); err != nil {
+			if err = file.Close(); err != nil {
 				lf.logger.Warnf("failed to close log file: %s", err)
 			}
 		}()
 		reader := bufio.NewReader(file)
 		_, err = reader.Discard(math.MaxInt64)
-		if err != nil && err != io.EOF {
+		if err != nil && !errors.Is(err, io.EOF) {
 			lf.logger.Warnln("error skipping initial data: ", err)
 			return
 		}
@@ -109,7 +134,7 @@ func reshapeRegxpMatch(keys []string, matches []string) []string {
 		if key != "" {
 			result = append(result, fmt.Sprintf("%s=%s", key, matches[i]))
 		} else if i == 0 {
-			result = append(result, fmt.Sprintf("match=%s", matches[i]))
+			result = append(result, "match="+matches[i])
 		}
 	}
 	return result

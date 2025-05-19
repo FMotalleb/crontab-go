@@ -13,12 +13,12 @@ import (
 
 var log *logrus.Logger = logrus.New()
 
-// SetupLogger for a section will add the section name to logger's field
+// SetupLogger for a section will add the section name to logger's field.
 func SetupLogger(section string) (l *logrus.Entry) {
 	return log.WithField("section", section)
 }
 
-// SetupLoggerOf a parent log entry
+// SetupLoggerOf a parent log entry.
 func SetupLoggerOf(parent logrus.Entry, section string) *logrus.Entry {
 	parentSection := parent.Data["section"]
 	sectionValue := fmt.Sprintf("%s.%s", parentSection, section)
@@ -29,7 +29,7 @@ func AddHook(hook logrus.Hook) {
 	log.AddHook(hook)
 }
 
-// InitFromConfig parsed using cmd.Execute()
+// InitFromConfig parsed using cmd.Execute().
 func InitFromConfig() {
 	log = logrus.New()
 	wr := &writer{

@@ -25,7 +25,7 @@ func TestSetRetryDelay(t *testing.T) {
 
 func TestWaitForRetry(t *testing.T) {
 	r := &Retry{maxRetries: 3, retryDelay: 1 * time.Second}
-	ctx := context.WithValue(context.Background(), ctxutils.RetryCountKey, uint(2))
+	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(2))
 
 	start := time.Now()
 	err := r.WaitForRetry(ctx)
@@ -36,19 +36,19 @@ func TestWaitForRetry(t *testing.T) {
 
 func TestWaitForRetryMaxExceeded(t *testing.T) {
 	r := &Retry{maxRetries: 3, retryDelay: 1 * time.Second}
-	ctx := context.WithValue(context.Background(), ctxutils.RetryCountKey, uint(5))
+	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(5))
 
 	err := r.WaitForRetry(ctx)
 	assert.Error(t, err)
 }
 
 func TestIncreaseRetry(t *testing.T) {
-	ctx := context.WithValue(context.Background(), ctxutils.RetryCountKey, uint(2))
+	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(2))
 	newCtx := IncreaseRetry(ctx)
 	assert.Equal(t, 3, GetRetry(newCtx))
 }
 
 func TestZeroValueRetry(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	assert.Equal(t, 0, GetRetry(ctx))
 }

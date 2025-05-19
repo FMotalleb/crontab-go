@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -12,6 +11,31 @@ import (
 	"github.com/FMotalleb/crontab-go/core/common"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
+
+func init() {
+	tg.Register(NewGet)
+}
+
+func NewGet(logger *logrus.Entry, task *config.Task) (abstraction.Executable, bool) {
+	if task.Get == "" {
+		return nil, false
+	}
+	get := &Get{
+		address: task.Get,
+		headers: &task.Headers,
+		log: logger.WithFields(
+			logrus.Fields{
+				"url":    task.Get,
+				"method": "get",
+			},
+		),
+	}
+	get.SetMaxRetry(task.Retries)
+	get.SetRetryDelay(task.RetryDelay)
+	get.SetTimeout(task.Timeout)
+	get.SetMetaName("get: " + task.Get)
+	return get, true
+}
 
 type Get struct {
 	common.Hooked
@@ -49,7 +73,7 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	g.SetCancel(cancel)
 
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(localCtx, "GET", g.address, nil)
+	req, err := http.NewRequestWithContext(localCtx, http.MethodGet, g.address, nil)
 	log.Debugln("sending get http request")
 	if err != nil {
 		log.
@@ -87,22 +111,4 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	}
 	g.DoDoneHooks(ctx)
 	return nil
-}
-
-func NewGet(task *config.Task, logger *logrus.Entry) abstraction.Executable {
-	get := &Get{
-		address: task.Get,
-		headers: &task.Headers,
-		log: logger.WithFields(
-			logrus.Fields{
-				"url":    task.Get,
-				"method": "get",
-			},
-		),
-	}
-	get.SetMaxRetry(task.Retries)
-	get.SetRetryDelay(task.RetryDelay)
-	get.SetTimeout(task.Timeout)
-	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
-	return get
 }

@@ -12,10 +12,14 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
+	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
+
+func init() {
+	cg.Register(NewLocalCMDConn)
+}
 
 // Local represents a local command connection.
 type Local struct {
@@ -24,25 +28,29 @@ type Local struct {
 }
 
 // NewLocalCMDConn creates a new instance of Local command connection.
-func NewLocalCMDConn(log *logrus.Entry) abstraction.CmdConnection {
-	return &Local{
+func NewLocalCMDConn(log *logrus.Entry, cfg *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if !cfg.Local {
+		return nil, false
+	}
+	res := &Local{
 		log: log.WithField(
 			"connection", "local",
 		),
 	}
+	return res, true
 }
 
 // Prepare prepares the command for execution.
 // It sets up the command with the provided context, task, and environment.
 // It returns an error if the preparation fails.
 func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
-	cmdCtx := cmdutils.NewCtx(ctx, task.Env, l.log)
+	cmdCtx := command.NewCtx(ctx, task.Env, l.log)
 	workingDir := task.WorkingDirectory
 	if workingDir == "" {
 		var e error
 		workingDir, e = os.Getwd()
 		if e != nil {
-			return fmt.Errorf("cannot get current working directory: %s", e)
+			return fmt.Errorf("cannot get current working directory: %w", e)
 		}
 	}
 
@@ -102,8 +110,7 @@ func (l *Local) Execute() ([]byte, error) {
 		l.log.WithError(err).WithField("output", strings.TrimSpace(res.String())).Warn("command execution failed")
 		l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
 		return output, err
-	} else {
-		l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
-		return res.Bytes(), nil
 	}
+	l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
+	return res.Bytes(), nil
 }

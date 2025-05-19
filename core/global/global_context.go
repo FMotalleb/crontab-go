@@ -17,7 +17,7 @@ func ctxKey(prefix string, key string) ctxutils.ContextKey {
 	return ctxutils.ContextKey(fmt.Sprintf("%s:%s", prefix, key))
 }
 
-func CTX() *GlobalContext {
+func CTX() *Context {
 	return c
 }
 
@@ -25,7 +25,7 @@ var c = newGlobalContext()
 
 type (
 	EventListenerMap = map[string][]func()
-	GlobalContext    struct {
+	Context          struct {
 		context.Context
 		lock          *sync.RWMutex
 		countersValue map[string]*concurrency.LockedValue[float64]
@@ -33,8 +33,8 @@ type (
 	}
 )
 
-func newGlobalContext() *GlobalContext {
-	ctx := &GlobalContext{
+func newGlobalContext() *Context {
+	ctx := &Context{
 		Context: context.WithValue(
 			context.Background(),
 			ctxutils.EventListeners,
@@ -47,14 +47,14 @@ func newGlobalContext() *GlobalContext {
 	return ctx
 }
 
-func (c *GlobalContext) EventListeners() EventListenerMap {
+func (c *Context) EventListeners() EventListenerMap {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	listeners := c.Value(ctxutils.EventListeners)
 	return listeners.(EventListenerMap)
 }
 
-func (c *GlobalContext) AddEventListener(event string, listener func()) {
+func (c *Context) AddEventListener(event string, listener func()) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	listeners := c.Value(ctxutils.EventListeners).(EventListenerMap)
@@ -66,13 +66,14 @@ func getTypename[T any](item T) string {
 	return reflect.TypeOf(item).String()
 }
 
-func PutIntoCtx[T any](item T) {
+func Put[T any](item T) {
 	name := getTypename(item)
-	println(name)
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	c.Context = context.WithValue(c.Context, ctxKey("typed", name), item)
 }
 
-func GetFromCtx[T any]() T {
+func Get[T any]() T {
 	var zero T // Default zero value for type T
 	name := reflect.TypeOf(zero).String()
 	println(name)

@@ -11,17 +11,37 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/concurrency"
 	"github.com/FMotalleb/crontab-go/core/utils"
 )
 
-type ErrorLimitPolicy string
+func init() {
+	eg.Register(newDockerGenerator)
+}
 
-const (
-	Kill      ErrorLimitPolicy = "kill"
-	GiveUp    ErrorLimitPolicy = "give-up"
-	Reconnect ErrorLimitPolicy = "reconnect"
-)
+func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
+	if cfg.Docker != nil {
+		d := cfg.Docker
+		con := utils.FirstNonZeroForced(d.Connection,
+			"unix:///var/run/docker.sock",
+		)
+		e := NewDockerEvent(
+			con,
+			d.Name,
+			d.Image,
+			d.Actions,
+			d.Labels,
+			utils.FirstNonZeroForced(d.ErrorLimit, 1),
+			utils.FirstNonZeroForced(d.ErrorLimitPolicy, config.ErrorPolReconnect),
+			utils.FirstNonZeroForced(d.ErrorThrottle, time.Second*5),
+			log,
+		)
+		return e, true
+	}
+	return nil, false
+}
 
 type DockerEvent struct {
 	connection       string
@@ -30,7 +50,7 @@ type DockerEvent struct {
 	actions          *utils.List[events.Action]
 	labels           map[string]regexp.Regexp
 	errorThreshold   uint
-	errorPolicy      ErrorLimitPolicy
+	errorPolicy      config.ErrorLimitPolicy
 	errorThrottle    time.Duration
 	log              *logrus.Entry
 }
@@ -42,10 +62,10 @@ func NewDockerEvent(
 	actions []string,
 	labels map[string]string,
 	errorLimit uint,
-	errorPolicy ErrorLimitPolicy,
+	errorPolicy config.ErrorLimitPolicy,
 	errorThrottle time.Duration,
 	logger *logrus.Entry,
-) *DockerEvent {
+) abstraction.EventGenerator {
 	return &DockerEvent{
 		connection:       connection,
 		containerMatcher: *regexp.MustCompile(containerMatcher),
@@ -86,13 +106,13 @@ func (de *DockerEvent) BuildTickChannel() <-chan []string {
 
 				if errs >= de.errorThreshold {
 					switch de.errorPolicy {
-					case GiveUp:
+					case config.ErrorPolGiveUp:
 						de.log.Warnf("Received more than %d consecutive errors from docker, marking instance as unstable and giving up this instance, no events will be received anymore", errs)
 						close(notifyChan)
 						return
-					case Kill:
+					case config.ErrorPolKill:
 						de.log.Fatalf("Received more than %d consecutive errors from docker, marking instance as unstable and killing in return, this may happen due to dockerd restarting", errs)
-					case Reconnect:
+					case config.ErrorPolReconnect:
 						de.log.Warnf("Received more than %d consecutive errors from docker, marking instance as unstable and retry connecting to docker", errs)
 						for e := range de.BuildTickChannel() {
 							notifyChan <- e

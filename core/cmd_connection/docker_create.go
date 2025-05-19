@@ -12,11 +12,15 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
+	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
+
+func init() {
+	cg.Register(NewDockerCreateConnection)
+}
 
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
 type DockerCreateConnection struct {
@@ -35,8 +39,11 @@ type DockerCreateConnection struct {
 // - conn: A TaskConnection instance containing the connection configuration.
 // Returns:
 // - A new instance of DockerCreateConnection.
-func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
-	return &DockerCreateConnection{
+func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if conn.ImageName == "" {
+		return nil, false
+	}
+	res := &DockerCreateConnection{
 		conn: conn,
 		log: log.WithFields(
 			logrus.Fields{
@@ -45,6 +52,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 			},
 		),
 	}
+	return res, true
 }
 
 // Prepare sets up the Docker container configuration based on the provided task.
@@ -54,7 +62,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task) error {
-	cmdCtx := cmdutils.NewCtx(ctx, task.Env, d.log)
+	cmdCtx := command.NewCtx(ctx, task.Env, d.log)
 	d.ctx = ctx
 	if d.conn.DockerConnection == "" {
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
@@ -120,6 +128,7 @@ func (d *DockerCreateConnection) Connect() error {
 func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	ctx := d.ctx
 	// Create the exec instance
+
 	exec, err := d.cli.ContainerCreate(
 		ctx,
 		d.containerConfig,
@@ -128,11 +137,12 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		nil,
 		d.conn.ContainerName,
 	)
-
-	d.log.Debugf("container created: %v, warnings: %v", exec, exec.Warnings)
 	if err != nil {
 		return nil, err
 	}
+
+	d.log.Debugf("container created: %v, warnings: %v", exec, exec.Warnings)
+
 	defer helpers.WarnOnErrIgnored(
 		d.log,
 		func() error {
@@ -160,7 +170,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	d.log.Tracef("container started: %v", exec)
 
 	for {
-		_, err := d.cli.ContainerStats(
+		_, err = d.cli.ContainerStats(
 			ctx,
 			exec.ID,
 			false,

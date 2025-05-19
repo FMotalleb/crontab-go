@@ -33,9 +33,8 @@ func (l cronLine) exportSpec(regex *regexp.Regexp, env map[string]string, parser
 	if len(match) < 1 {
 		if len(strings.Trim(l.string, " \n\t")) == 0 {
 			return nil, nil
-		} else {
-			return nil, fmt.Errorf("cannot parse this non-empty line as cron specification: %s", l.string)
 		}
+		return nil, fmt.Errorf("cannot parse this non-empty line as cron specification: %s", l.string)
 	}
 	return parser(match, env), nil
 }

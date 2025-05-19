@@ -11,7 +11,7 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func (c *GlobalContext) MetricCounter(
+func (c *Context) MetricCounter(
 	ctx context.Context,
 	name string,
 	help string,
@@ -49,7 +49,7 @@ func (c *GlobalContext) MetricCounter(
 	return c.MetricCounter(ctx, name, help, labels)
 }
 
-func (c *GlobalContext) CountSignals(ctx context.Context, name string, signal <-chan []string, help string, labels prometheus.Labels) <-chan []string {
+func (c *Context) CountSignals(ctx context.Context, name string, signal <-chan []string, help string, labels prometheus.Labels) <-chan []string {
 	counter := c.MetricCounter(ctx, name, help, labels)
 	out := make(chan []string)
 	go func() {

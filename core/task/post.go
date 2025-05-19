@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -14,6 +13,32 @@ import (
 	"github.com/FMotalleb/crontab-go/core/common"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
+
+func init() {
+	tg.Register(NewPost)
+}
+
+func NewPost(logger *logrus.Entry, task *config.Task) (abstraction.Executable, bool) {
+	if task.Post == "" {
+		return nil, false
+	}
+	post := &Post{
+		address: task.Post,
+		headers: &task.Headers,
+		data:    &task.Data,
+		log: logger.WithFields(
+			logrus.Fields{
+				"url":    task.Post,
+				"method": "post",
+			},
+		),
+	}
+	post.SetMaxRetry(task.Retries)
+	post.SetRetryDelay(task.RetryDelay)
+	post.SetTimeout(task.Timeout)
+	post.SetMetaName("post: " + task.Post)
+	return post, true
+}
 
 type Post struct {
 	common.Hooked
@@ -41,8 +66,8 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 			log.Warnf("recovering command execution from a fatal error: %s", err)
 		}
 	}()
-	err := p.WaitForRetry(ctx)
-	if err != nil {
+
+	if err := p.WaitForRetry(ctx); err != nil {
 		p.DoFailHooks(ctx)
 		return err
 	}
@@ -66,7 +91,7 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 		dataReader = bytes.NewReader(data)
 	}
 
-	req, err := http.NewRequestWithContext(localCtx, "POST", p.address, dataReader)
+	req, err := http.NewRequestWithContext(localCtx, http.MethodPost, p.address, dataReader)
 	log.Debugln("sending get http request")
 	if err != nil {
 		log.
@@ -106,23 +131,4 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 
 	p.DoDoneHooks(ctx)
 	return nil
-}
-
-func NewPost(task *config.Task, logger *logrus.Entry) abstraction.Executable {
-	post := &Post{
-		address: task.Post,
-		headers: &task.Headers,
-		data:    &task.Data,
-		log: logger.WithFields(
-			logrus.Fields{
-				"url":    task.Post,
-				"method": "post",
-			},
-		),
-	}
-	post.SetMaxRetry(task.Retries)
-	post.SetRetryDelay(task.RetryDelay)
-	post.SetTimeout(task.Timeout)
-	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
-	return post
 }

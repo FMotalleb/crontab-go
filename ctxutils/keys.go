@@ -4,13 +4,13 @@ package ctxutils
 type ContextKey string
 
 var (
-	ScopeKey       ContextKey = ContextKey("scope")
-	LoggerKey      ContextKey = ContextKey("logger")
-	RetryCountKey  ContextKey = ContextKey("retry-count")
-	JobKey         ContextKey = ContextKey("job")
-	TaskKey        ContextKey = ContextKey("task")
-	FailedRemotes  ContextKey = ContextKey("failed-remotes")
-	EventListeners ContextKey = ContextKey("event-listeners")
-	EventData      ContextKey = ContextKey("event-data")
-	Environments   ContextKey = ContextKey("cmd-environments")
+	ScopeKey       = ContextKey("scope")
+	LoggerKey      = ContextKey("logger")
+	RetryCountKey  = ContextKey("retry-count")
+	JobKey         = ContextKey("job")
+	TaskKey        = ContextKey("task")
+	FailedRemotes  = ContextKey("failed-remotes")
+	EventListeners = ContextKey("event-listeners")
+	EventData      = ContextKey("event-data")
+	Environments   = ContextKey("cmd-environments")
 )

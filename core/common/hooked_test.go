@@ -25,12 +25,12 @@ func newTask(typeName string) *mockExecutable {
 	return m
 }
 
-func (m *mockExecutable) Execute(ctx context.Context) error {
+func (m *mockExecutable) Execute(_ context.Context) error {
 	return m.err
 }
 
 func TestSetDoneHooks(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	h := &Hooked{}
 	hooks := []abstraction.Executable{}
@@ -39,7 +39,7 @@ func TestSetDoneHooks(t *testing.T) {
 }
 
 func TestSetFailHooks(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	h := &Hooked{}
 	failHooks := []abstraction.Executable{newTask("test_fail_list")}
@@ -48,7 +48,7 @@ func TestSetFailHooks(t *testing.T) {
 }
 
 func TestDoDoneHooks_NoErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	tsk := newTask("parent_done_ok")
 	tsk.SetDoneHooks(ctx, []abstraction.Executable{newTask("test_done_ok")})
@@ -58,7 +58,7 @@ func TestDoDoneHooks_NoErrors(t *testing.T) {
 }
 
 func TestDoFailHooks_WithErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	tsk := newTask("")
 	errHook := newTask("task_fail")
@@ -80,7 +80,7 @@ func TestExecuteTasks_MultipleErrors(t *testing.T) {
 		tsk1,
 		tsk2,
 	}
-	errs := executeTasks(context.Background(), tasks)
+	errs := executeTasks(t.Context(), tasks)
 	assert.Equal(t, len(errs), 2)
 	assert.EqualError(t, errs[0], "error1")
 	assert.EqualError(t, errs[1], "error2")

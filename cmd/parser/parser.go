@@ -23,7 +23,7 @@ var (
 	}
 )
 
-func run(cmd *cobra.Command, args []string) {
+func run(cmd *cobra.Command, _ []string) {
 	log.SetFormatter(&log.TextFormatter{
 		ForceColors: true,
 	})
@@ -76,16 +76,16 @@ func readInCron(cfg *parserConfig) (*CronString, error) {
 	}
 	file, err := os.OpenFile(cfg.cronFile, os.O_RDONLY, 0o644)
 	if err != nil {
-		return nil, fmt.Errorf("can't open cron file: %v", err)
+		return nil, fmt.Errorf("can't open cron file: %w", err)
 	}
 	stat, err := file.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("can't stat cron file: %v", err)
+		return nil, fmt.Errorf("can't stat cron file: %w", err)
 	}
 	content := make([]byte, stat.Size())
 	_, err = file.Read(content)
 	if err != nil {
-		return nil, fmt.Errorf("can't open cron file: %v", err)
+		return nil, fmt.Errorf("can't open cron file: %w", err)
 	}
 	str := string(content)
 	cron := NewCronString(str)

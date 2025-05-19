@@ -4,7 +4,21 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/config"
 )
+
+func init() {
+	eg.Register(newIntervalGenerator)
+}
+
+func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
+	if cfg.Interval > 0 {
+		return NewInterval(cfg.Interval, log), true
+	}
+	return nil, false
+}
 
 type Interval struct {
 	duration time.Duration
@@ -12,8 +26,8 @@ type Interval struct {
 	ticker   *time.Ticker
 }
 
-func NewInterval(schedule time.Duration, logger *logrus.Entry) Interval {
-	return Interval{
+func NewInterval(schedule time.Duration, logger *logrus.Entry) abstraction.EventGenerator {
+	return &Interval{
 		duration: schedule,
 		logger: logger.
 			WithFields(

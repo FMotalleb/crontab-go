@@ -11,9 +11,13 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
+	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
+
+func init() {
+	cg.Register(NewDockerAttachConnection)
+}
 
 type DockerAttachConnection struct {
 	conn        *config.TaskConnection
@@ -31,8 +35,11 @@ type DockerAttachConnection struct {
 // - conn: A TaskConnection instance containing the connection configuration.
 // Returns:
 // - A new instance of DockerAttachConnection implementing the CmdConnection interface.
-func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
-	return &DockerAttachConnection{
+func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if conn.ContainerName == "" {
+		return nil, false
+	}
+	res := &DockerAttachConnection{
 		conn: conn,
 		log: log.WithFields(
 			logrus.Fields{
@@ -41,6 +48,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 			},
 		),
 	}
+	return res, true
 }
 
 // Prepare sets up the DockerAttachConnection for executing a task.
@@ -51,7 +59,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 // Returns:
 // - An error if the preparation fails, otherwise nil.
 func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task) error {
-	cmdCtx := cmdutils.NewCtx(ctx, task.Env, d.log)
+	cmdCtx := command.NewCtx(ctx, task.Env, d.log)
 	d.ctx = ctx
 	// Specify the container ID or name
 	d.containerID = d.conn.ContainerName

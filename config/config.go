@@ -4,7 +4,6 @@ package config
 import (
 	"time"
 
-	"github.com/FMotalleb/crontab-go/core/event"
 	"github.com/FMotalleb/crontab-go/enums"
 )
 
@@ -58,16 +57,16 @@ type JobEvent struct {
 	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
-// DockerEvent represents a Docker event configuration
+// DockerEvent represents a Docker event configuration.
 type DockerEvent struct {
-	Connection       string                 `mapstructure:"connection" json:"connection,omitempty"`
-	Name             string                 `mapstructure:"name" json:"name,omitempty"`
-	Image            string                 `mapstructure:"image" json:"image,omitempty"`
-	Actions          []string               `mapstructure:"actions" json:"actions,omitempty"`
-	Labels           map[string]string      `mapstructure:"labels" json:"labels,omitempty"`
-	ErrorLimit       uint                   `mapstructure:"error-limit-count" json:"error-limit,omitempty"`
-	ErrorLimitPolicy event.ErrorLimitPolicy `mapstructure:"error-limit-policy" json:"error-limit-policy,omitempty"`
-	ErrorThrottle    time.Duration          `mapstructure:"error-throttle" json:"error-throttle,omitempty"`
+	Connection       string            `mapstructure:"connection" json:"connection,omitempty"`
+	Name             string            `mapstructure:"name" json:"name,omitempty"`
+	Image            string            `mapstructure:"image" json:"image,omitempty"`
+	Actions          []string          `mapstructure:"actions" json:"actions,omitempty"`
+	Labels           map[string]string `mapstructure:"labels" json:"labels,omitempty"`
+	ErrorLimit       uint              `mapstructure:"error-limit-count" json:"error-limit,omitempty"`
+	ErrorLimitPolicy ErrorLimitPolicy  `mapstructure:"error-limit-policy" json:"error-limit-policy,omitempty"`
+	ErrorThrottle    time.Duration     `mapstructure:"error-throttle" json:"error-throttle,omitempty"`
 }
 
 // JobHooks represents the hooks configuration for a job.
@@ -93,7 +92,7 @@ type Task struct {
 	Connections      []TaskConnection  `mapstructure:"connections" json:"connections,omitempty"`
 
 	// Retry & Timeout config
-	Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
+	Retries    int64         `mapstructure:"retries" json:"retries,omitempty"`
 	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry-delay,omitempty"`
 	Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 
@@ -119,4 +118,12 @@ const (
 	EventArgOmit                 ShellArgCompatibilityMode = "none"
 	EventArgPassingAsArgs        ShellArgCompatibilityMode = "arg"
 	EventArgPassingAsEnviron     ShellArgCompatibilityMode = "env"
+)
+
+type ErrorLimitPolicy string
+
+const (
+	ErrorPolKill      ErrorLimitPolicy = "kill"
+	ErrorPolGiveUp    ErrorLimitPolicy = "give-up"
+	ErrorPolReconnect ErrorLimitPolicy = "reconnect"
 )

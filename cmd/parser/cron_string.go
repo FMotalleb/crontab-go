@@ -122,7 +122,7 @@ func (s *CronString) ParseConfig(
 func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, cronSpecParser, error) {
 	lineParser := "(?<cmd>.*)"
 	if hasUser {
-		lineParser = fmt.Sprintf(`(?<user>\w[\w\d]*)\s+%s`, lineParser)
+		lineParser = "(?<user>\\w[\\w\\d]*)\\s+" + lineParser
 	}
 
 	cronLineMatcher := fmt.Sprintf(`^(?<cron>%s)\s+%s$`, pattern, lineParser)
@@ -141,13 +141,12 @@ func buildMapper(hasUser bool, pattern string) (*regexp.Regexp, cronSpecParser, 
 func getLineParser(hasUser bool, matcher *regexp.Regexp) (cronSpecParser, error) {
 	if hasUser {
 		return withUserParser(matcher)
-	} else {
-		return normalParser(matcher)
 	}
+	return normalParser(matcher)
 }
 
 func addSpec(cfg *config.Config, spec cronSpec) {
-	jobName := fmt.Sprintf("FromCron: %s", spec.timing)
+	jobName := "FromCron: " + spec.timing
 	for _, job := range cfg.Jobs {
 		if job.Name == jobName {
 			task := config.Task{

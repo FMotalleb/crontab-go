@@ -3,7 +3,6 @@ package task
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 
@@ -13,6 +12,31 @@ import (
 	"github.com/FMotalleb/crontab-go/core/common"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
+
+func init() {
+	tg.Register(NewCommand)
+}
+
+func NewCommand(
+	logger *logrus.Entry,
+	task *config.Task,
+) (abstraction.Executable, bool) {
+	if task.Command == "" {
+		return nil, false
+	}
+	log := logger.WithField("command", task.Command)
+	cmd := &Command{
+		log: log.WithField(
+			"command", task.Command,
+		),
+		task: task,
+	}
+	cmd.SetMaxRetry(task.Retries)
+	cmd.SetRetryDelay(task.RetryDelay)
+	cmd.SetTimeout(task.Timeout)
+	cmd.SetMetaName("cmd: " + task.Command)
+	return cmd, true
+}
 
 type Command struct {
 	common.Hooked
@@ -58,20 +82,20 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		log.Debug("no explicit Connection provided using local task connection by default")
 	}
 	for _, conn := range connections {
-		log := log.WithFields(
+		l := log.WithFields(
 			logrus.Fields{
 				"is-local": conn.Local,
 			},
 		)
-		connection := connection.CompileConnection(&conn, log)
+		connection := connection.Get(&conn, l)
 		cmdCtx, cancel := c.ApplyTimeout(ctx)
 		c.SetCancel(cancel)
 
 		if err := connection.Prepare(cmdCtx, c.task); err != nil {
-			log.Warn("cannot prepare command: ", err)
+			l.Warn("cannot prepare command: ", err)
 			ctx = addFailedConnections(ctx, conn)
 			helpers.WarnOnErrIgnored(
-				log,
+				l,
 				connection.Disconnect,
 				"Cannot disconnect the command's connection: %s",
 			)
@@ -79,7 +103,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		}
 
 		if err := connection.Connect(); err != nil {
-			log.Warn("error when tried to connect, exiting current remote", err)
+			l.Warn("error when tried to connect, exiting current remote", err)
 			ctx = addFailedConnections(ctx, conn)
 			continue
 		}
@@ -87,9 +111,9 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		if err != nil {
 			ctx = addFailedConnections(ctx, conn)
 		}
-		log.Infof("command finished with answer: %s, error: %s", ans, err)
+		l.Infof("command finished with answer: %s, error: %s", ans, err)
 		if err := connection.Disconnect(); err != nil {
-			log.Warn("error when tried to disconnect", err)
+			l.Warn("error when tried to disconnect", err)
 			ctx = addFailedConnections(ctx, conn)
 			continue
 		}
@@ -102,22 +126,4 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		log.Warn("command finished successfully but its hooks failed")
 	}
 	return nil
-}
-
-func NewCommand(
-	task *config.Task,
-	logger *logrus.Entry,
-) abstraction.Executable {
-	log := logger.WithField("command", task.Command)
-	cmd := &Command{
-		log: log.WithField(
-			"command", task.Command,
-		),
-		task: task,
-	}
-	cmd.SetMaxRetry(task.Retries)
-	cmd.SetRetryDelay(task.RetryDelay)
-	cmd.SetTimeout(task.Timeout)
-	cmd.SetMetaName(fmt.Sprintf("cmd: %s", task.Command))
-	return cmd
 }

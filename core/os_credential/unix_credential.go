@@ -17,18 +17,18 @@ import (
 func Validate(log *logrus.Entry, usr string, grp string) error {
 	cu, err := osUser.Current()
 	if err != nil {
-		return fmt.Errorf("cannot get current user error: %s", err)
+		return fmt.Errorf("cannot get current user error: %w", err)
 	}
 	if usr != "" && cu.Uid != "0" {
 		return errors.New("cannot switch user of tasks without root privilege, if you need to use user in tasks run crontab-go as user root")
 	}
 	_, _, err = lookupUIDAndGID(usr, log)
 	if err != nil {
-		return fmt.Errorf("cannot get uid and gid of user `%s` error: %s", usr, err)
+		return fmt.Errorf("cannot get uid and gid of user `%s` error: %w", usr, err)
 	}
 	_, err = lookupGID(grp, log)
 	if err != nil {
-		return fmt.Errorf("cannot get gid of group `%s` error: %s", grp, err)
+		return fmt.Errorf("cannot get gid of group `%s` error: %w", grp, err)
 	}
 
 	return nil
