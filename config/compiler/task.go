@@ -1,3 +1,4 @@
+// Package cfgcompiler is deprecated and will be removed in future releases.
 package cfgcompiler
 
 import (

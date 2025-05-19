@@ -13,7 +13,7 @@ func init() {
 	registerGenerator(newIntervalGenerator)
 }
 
-func newIntervalGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	if cfg.Interval != 0 {
 		return NewInterval(cfg.Interval, log)
 	}

@@ -13,7 +13,7 @@ func registerGenerator(maker abstraction.GeneratorMaker) {
 	generators = append(generators, maker)
 }
 
-func EventGeneratorOf(log *logrus.Entry, config config.JobEvent) abstraction.EventGenerator {
+func EventGeneratorOf(log *logrus.Entry, config *config.JobEvent) abstraction.EventGenerator {
 	for _, maker := range generators {
 		generator := maker(log, config)
 		if generator != nil {

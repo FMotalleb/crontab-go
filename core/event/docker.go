@@ -21,8 +21,8 @@ func init() {
 	registerGenerator(newDockerGenerator)
 }
 
-func newDockerGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
-	if cfg.Cron != "" {
+func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+	if cfg.Docker != nil {
 		d := cfg.Docker
 		con := utils.FirstNonZeroForced(d.Connection,
 			"unix:///var/run/docker.sock",

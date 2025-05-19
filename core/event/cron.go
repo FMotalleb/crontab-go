@@ -14,7 +14,7 @@ func init() {
 	registerGenerator(newCronGenerator)
 }
 
-func newCronGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+func newCronGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	if cfg.Cron != "" {
 		return NewCron(cfg.Cron, global.Get[*cron.Cron](), log)
 	}

@@ -12,7 +12,7 @@ func init() {
 	registerGenerator(newWebEventGenerator)
 }
 
-func newWebEventGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+func newWebEventGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	if cfg.WebEvent != "" {
 		return NewWebEventListener(cfg.WebEvent)
 	}

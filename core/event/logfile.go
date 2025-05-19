@@ -23,7 +23,7 @@ func init() {
 	registerGenerator(newLogListenerGenerator)
 }
 
-func newLogListenerGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	if cfg.LogFile != "" {
 		e, err := NewLogFile(
 			cfg.LogFile,

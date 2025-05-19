@@ -1,4 +1,4 @@
-package cfgcompiler_test
+package event_test
 
 import (
 	"testing"
@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/config"
-	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
 	"github.com/FMotalleb/crontab-go/core/event"
 	"github.com/FMotalleb/crontab-go/core/global"
 	mocklogger "github.com/FMotalleb/crontab-go/logger/mock_logger"
@@ -25,7 +24,7 @@ func TestCompileEvent_IntervalZero(t *testing.T) {
 	prepareState()
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	event := cfgcompiler.CompileEvent(sh, log)
+	event := event.EventGeneratorOf(log, sh)
 	assert.Equal(t, event, nil)
 }
 
@@ -34,8 +33,7 @@ func TestCompileEvent_IntervalNonZero(t *testing.T) {
 	prepareState()
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-
-	sch := cfgcompiler.CompileEvent(sh, log)
+	sch := event.EventGeneratorOf(log, sh)
 	_, ok := sch.(*event.Interval)
 	assert.Equal(t, ok, true)
 }
@@ -47,7 +45,7 @@ func TestCompileEvent_IntervalZeroWithCronSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := cfgcompiler.CompileEvent(sh, log)
+	e := event.EventGeneratorOf(log, sh)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron events, got %T", e)
 	}
@@ -60,7 +58,7 @@ func TestCompileEvent_IntervalZeroWithOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := cfgcompiler.CompileEvent(sh, log)
+	e := event.EventGeneratorOf(log, sh)
 	if _, ok := e.(*event.Init); !ok {
 		t.Errorf("Expected Init events, got %T", e)
 	}
@@ -73,7 +71,7 @@ func TestCompileEvent_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := cfgcompiler.CompileEvent(sh, log)
+	e := event.EventGeneratorOf(log, sh)
 	if e != nil {
 		t.Errorf("Expected nil, got %v", e)
 	}
@@ -86,7 +84,7 @@ func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := cfgcompiler.CompileEvent(sh, log)
+	e := event.EventGeneratorOf(log, sh)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron event, got %T", e)
 	}

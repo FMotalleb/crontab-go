@@ -12,7 +12,7 @@ type EventGenerator interface {
 }
 
 type (
-	GeneratorMaker func(*logrus.Entry, config.JobEvent) EventGenerator
+	GeneratorMaker func(*logrus.Entry, *config.JobEvent) EventGenerator
 	Event          = []string
 	EventChannel   = <-chan Event
 )

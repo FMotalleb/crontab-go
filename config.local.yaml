@@ -5,8 +5,12 @@ jobs:
     tasks:
       - command: echo "$CRONTAB_GO_EVENT_ARGUMENTS"
         env:
-          "COLE": test
+          SHELL: /bin/bash
+          COLE: test
     events:
-      - log-file: /home/motalleb/Documents/GitHub/crontab-go/test
-        log-check-cycle: 1s
-        log-matcher: .*(?<id>\d{2}).*
+      # - cron: "0 * * * * *"
+      # - interval: 5s
+      # - on-init: true
+      # - web-event: test
+      - docker:
+          image: nginx

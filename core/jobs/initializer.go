@@ -9,6 +9,7 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
+	"github.com/FMotalleb/crontab-go/core/event"
 	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
@@ -48,7 +49,7 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 func initEvents(job config.JobConfig, logger *logrus.Entry) []abstraction.EventGenerator {
 	events := make([]abstraction.EventGenerator, 0, len(job.Events))
 	for _, sh := range job.Events {
-		events = append(events, cfgcompiler.CompileEvent(&sh, logger))
+		events = append(events, event.EventGeneratorOf(logger, &sh))
 	}
 	return events
 }

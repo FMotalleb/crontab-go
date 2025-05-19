@@ -11,7 +11,7 @@ func init() {
 	registerGenerator(newInitGenerator)
 }
 
-func newInitGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+func newInitGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	if cfg.OnInit {
 		return &Init{}
 	}
