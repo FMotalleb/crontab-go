@@ -27,7 +27,7 @@ designed to replace the traditional crontab in Docker environments.
 With its seamless integration and easy-to-use YAML configuration,
 Cronjob-go simplifies the process of scheduling and managing recurring tasks
 within your containerized applications.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		initConfig()
 	},
 }
@@ -101,7 +101,6 @@ func setupEnv() {
 		),
 		"Cannot bind log_timestamp_format env variable: %s",
 	)
-
 	viper.SetDefault("log_format", "ansi")
 	warnOnErr(
 		viper.BindEnv(
@@ -110,7 +109,6 @@ func setupEnv() {
 		),
 		"Cannot bind log_format env variable: %s",
 	)
-
 	warnOnErr(
 		viper.BindEnv(
 			"log_file",
@@ -118,7 +116,6 @@ func setupEnv() {
 		),
 		"Cannot bind log_file env variable: %s",
 	)
-
 	viper.SetDefault("log_stdout", true)
 	warnOnErr(
 		viper.BindEnv(
@@ -127,7 +124,6 @@ func setupEnv() {
 		),
 		"Cannot bind log_stdout env variable: %s",
 	)
-
 	warnOnErr(
 		viper.BindEnv(
 			"webserver_port",

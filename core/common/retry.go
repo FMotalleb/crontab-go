@@ -10,11 +10,11 @@ import (
 )
 
 type Retry struct {
-	maxRetries uint
+	maxRetries int64
 	retryDelay time.Duration
 }
 
-func (r *Retry) SetMaxRetry(retries uint) {
+func (r *Retry) SetMaxRetry(retries int64) {
 	r.maxRetries = retries
 }
 
@@ -33,8 +33,8 @@ func (r *Retry) WaitForRetry(ctx context.Context) error {
 	return nil
 }
 
-func GetRetry(ctx context.Context) uint {
-	if result, ok := ctx.Value(ctxutils.RetryCountKey).(uint); ok {
+func GetRetry(ctx context.Context) int64 {
+	if result, ok := ctx.Value(ctxutils.RetryCountKey).(int64); ok {
 		return result
 	}
 	return 0
@@ -42,6 +42,5 @@ func GetRetry(ctx context.Context) uint {
 
 func IncreaseRetry(ctx context.Context) context.Context {
 	current := GetRetry(ctx)
-
 	return context.WithValue(ctx, ctxutils.RetryCountKey, current+1)
 }

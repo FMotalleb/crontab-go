@@ -14,7 +14,7 @@ import (
 )
 
 func TestCompileTask_NonExistingTask(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -28,7 +28,7 @@ func TestCompileTask_NonExistingTask(t *testing.T) {
 }
 
 func TestCompileTask_GetTask(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -40,7 +40,7 @@ func TestCompileTask_GetTask(t *testing.T) {
 }
 
 func TestCompileTask_CommandTask(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -52,7 +52,7 @@ func TestCompileTask_CommandTask(t *testing.T) {
 }
 
 func TestCompileTask_PostTask(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
@@ -64,7 +64,7 @@ func TestCompileTask_PostTask(t *testing.T) {
 }
 
 func TestCompileTask_WithHooks(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)

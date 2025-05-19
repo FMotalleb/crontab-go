@@ -50,7 +50,7 @@ func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
 		var e error
 		workingDir, e = os.Getwd()
 		if e != nil {
-			return fmt.Errorf("cannot get current working directory: %s", e)
+			return fmt.Errorf("cannot get current working directory: %w", e)
 		}
 	}
 
@@ -110,8 +110,7 @@ func (l *Local) Execute() ([]byte, error) {
 		l.log.WithError(err).WithField("output", strings.TrimSpace(res.String())).Warn("command execution failed")
 		l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
 		return output, err
-	} else {
-		l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
-		return res.Bytes(), nil
 	}
+	l.log.WithField("output", strings.TrimSpace(res.String())).Debug("command output")
+	return res.Bytes(), nil
 }

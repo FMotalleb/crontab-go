@@ -185,7 +185,7 @@ func dockerValidation(s *JobEvent, log *logrus.Entry) error {
 	for _, v := range s.Docker.Labels {
 		checkList.Add(v)
 	}
-	err := utils.Fold(checkList, nil, func(initial error, item string) error {
+	err := utils.Fold(checkList, nil, func(initial error, _ string) error {
 		if initial != nil {
 			return initial
 		}

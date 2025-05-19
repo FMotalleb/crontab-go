@@ -57,7 +57,7 @@ type JobEvent struct {
 	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
-// DockerEvent represents a Docker event configuration
+// DockerEvent represents a Docker event configuration.
 type DockerEvent struct {
 	Connection       string            `mapstructure:"connection" json:"connection,omitempty"`
 	Name             string            `mapstructure:"name" json:"name,omitempty"`
@@ -92,7 +92,7 @@ type Task struct {
 	Connections      []TaskConnection  `mapstructure:"connections" json:"connections,omitempty"`
 
 	// Retry & Timeout config
-	Retries    uint          `mapstructure:"retries" json:"retries,omitempty"`
+	Retries    int64         `mapstructure:"retries" json:"retries,omitempty"`
 	RetryDelay time.Duration `mapstructure:"retry-delay" json:"retry-delay,omitempty"`
 	Timeout    time.Duration `mapstructure:"timeout" json:"timeout,omitempty"`
 

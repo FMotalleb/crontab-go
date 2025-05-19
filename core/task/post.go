@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -37,7 +36,7 @@ func NewPost(logger *logrus.Entry, task *config.Task) (abstraction.Executable, b
 	post.SetMaxRetry(task.Retries)
 	post.SetRetryDelay(task.RetryDelay)
 	post.SetTimeout(task.Timeout)
-	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
+	post.SetMetaName("post: " + task.Post)
 	return post, true
 }
 
@@ -67,8 +66,8 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 			log.Warnf("recovering command execution from a fatal error: %s", err)
 		}
 	}()
-	err := p.WaitForRetry(ctx)
-	if err != nil {
+
+	if err := p.WaitForRetry(ctx); err != nil {
 		p.DoFailHooks(ctx)
 		return err
 	}
@@ -92,7 +91,7 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 		dataReader = bytes.NewReader(data)
 	}
 
-	req, err := http.NewRequestWithContext(localCtx, "POST", p.address, dataReader)
+	req, err := http.NewRequestWithContext(localCtx, http.MethodPost, p.address, dataReader)
 	log.Debugln("sending get http request")
 	if err != nil {
 		log.

@@ -128,6 +128,7 @@ func (d *DockerCreateConnection) Connect() error {
 func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	ctx := d.ctx
 	// Create the exec instance
+
 	exec, err := d.cli.ContainerCreate(
 		ctx,
 		d.containerConfig,
@@ -136,11 +137,12 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		nil,
 		d.conn.ContainerName,
 	)
-
-	d.log.Debugf("container created: %v, warnings: %v", exec, exec.Warnings)
 	if err != nil {
 		return nil, err
 	}
+
+	d.log.Debugf("container created: %v, warnings: %v", exec, exec.Warnings)
+
 	defer helpers.WarnOnErrIgnored(
 		d.log,
 		func() error {
@@ -168,7 +170,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 	d.log.Tracef("container started: %v", exec)
 
 	for {
-		_, err := d.cli.ContainerStats(
+		_, err = d.cli.ContainerStats(
 			ctx,
 			exec.ID,
 			false,

@@ -121,9 +121,7 @@ func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell st
 	case config.EventArgPassingAsEnviron:
 		environments = append(
 			environments,
-			fmt.Sprintf("CRONTAB_GO_EVENT_ARGUMENTS=%s",
-				collectEventForEnv(eventData),
-			),
+			"CRONTAB_GO_EVENT_ARGUMENTS="+collectEventForEnv(eventData),
 		)
 	default:
 		ctx.logger.Warn("event argument passing mode is not supported, using default mode (omitting)")

@@ -1,7 +1,6 @@
 package common
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -18,7 +17,7 @@ func TestTimeoutApply(t *testing.T) {
 	timeout := &Timeout{}
 	now := time.Now()
 	timeout.SetTimeout(time.Hour)
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx, cancel := timeout.ApplyTimeout(ctx)
 	deadline, _ := ctx.Deadline()
 	assert.Equal(t, time.Hour.Milliseconds(), deadline.UnixMilli()-now.UnixMilli())
@@ -27,7 +26,7 @@ func TestTimeoutApply(t *testing.T) {
 
 func TestNoTimeoutApply(t *testing.T) {
 	timeout := &Timeout{}
-	ctx := context.Background()
+	ctx := t.Context()
 	ctx, cancel := timeout.ApplyTimeout(ctx)
 	_, ok := ctx.Deadline()
 	assert.Equal(t, false, ok)

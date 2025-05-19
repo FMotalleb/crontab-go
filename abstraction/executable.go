@@ -9,7 +9,7 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 )
 
-// Executable is an object that can be executed using a execute method and stopped using cancel method
+// Executable is an object that can be executed using a execute method and stopped using cancel method.
 type Executable interface {
 	Execute(context.Context) error
 	SetMetaName(string)

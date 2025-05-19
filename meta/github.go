@@ -16,5 +16,5 @@ func Project() string {
 }
 
 func Issues() string {
-	return fmt.Sprintf("%s/issues", Project())
+	return Project() + "/issues"
 }

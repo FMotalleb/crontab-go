@@ -1,8 +1,8 @@
 package utils_test
 
 import (
-	"fmt"
 	"sort"
+	"strconv"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -97,9 +97,7 @@ func TestList(t *testing.T) {
 	})
 	t.Run("list map", func(t *testing.T) {
 		list := utils.NewList(1, 2, 3, 4, 5)
-		ans := utils.Map(list, func(v int) string {
-			return fmt.Sprintf("%d", v)
-		})
+		ans := utils.Map(list, strconv.Itoa)
 		assert.Equal(t, []string{"1", "2", "3", "4", "5"}, ans.Slice())
 	})
 	t.Run("list remove", func(t *testing.T) {

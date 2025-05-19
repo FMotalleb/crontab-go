@@ -2,7 +2,6 @@ package task
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -34,7 +33,7 @@ func NewGet(logger *logrus.Entry, task *config.Task) (abstraction.Executable, bo
 	get.SetMaxRetry(task.Retries)
 	get.SetRetryDelay(task.RetryDelay)
 	get.SetTimeout(task.Timeout)
-	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
+	get.SetMetaName("get: " + task.Get)
 	return get, true
 }
 
@@ -74,7 +73,7 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	g.SetCancel(cancel)
 
 	client := &http.Client{}
-	req, err := http.NewRequestWithContext(localCtx, "GET", g.address, nil)
+	req, err := http.NewRequestWithContext(localCtx, http.MethodGet, g.address, nil)
 	log.Debugln("sending get http request")
 	if err != nil {
 		log.

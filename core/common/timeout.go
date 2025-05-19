@@ -16,7 +16,6 @@ func (t *Timeout) SetTimeout(timeout time.Duration) {
 func (t *Timeout) ApplyTimeout(ctx context.Context) (context.Context, func()) {
 	if t.timeout != 0 {
 		return context.WithTimeout(ctx, t.timeout)
-	} else {
-		return context.WithCancel(ctx)
 	}
+	return context.WithCancel(ctx)
 }
