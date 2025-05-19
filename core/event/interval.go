@@ -14,7 +14,7 @@ func init() {
 }
 
 func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
-	if cfg.Interval != 0 {
+	if cfg.Interval > 0 {
 		return NewInterval(cfg.Interval, log), true
 	}
 	return nil, false

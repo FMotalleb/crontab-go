@@ -68,7 +68,8 @@ func getTypename[T any](item T) string {
 
 func Put[T any](item T) {
 	name := getTypename(item)
-	println(name)
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	c.Context = context.WithValue(c.Context, ctxKey("typed", name), item)
 }
 

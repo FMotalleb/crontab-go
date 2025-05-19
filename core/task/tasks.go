@@ -12,19 +12,19 @@ import (
 
 var tg = generator.New[*config.Task, abstraction.Executable]()
 
-func Build(ctx context.Context, log *logrus.Entry, cfg *config.Task) abstraction.Executable {
-	exe, ok := tg.Get(log, cfg)
+func Build(ctx context.Context, log *logrus.Entry, cfg config.Task) abstraction.Executable {
+	exe, ok := tg.Get(log, &cfg)
 	if !ok {
 		log.Panic("did not received any executable action from given task", cfg)
 	}
 	onDone := []abstraction.Executable{}
 	for _, d := range cfg.OnDone {
-		onDone = append(onDone, Build(ctx, log, &d))
+		onDone = append(onDone, Build(ctx, log, d))
 	}
 	exe.SetDoneHooks(ctx, onDone)
 	onFail := []abstraction.Executable{}
 	for _, d := range cfg.OnFail {
-		onFail = append(onFail, Build(ctx, log, &d))
+		onFail = append(onFail, Build(ctx, log, d))
 	}
 	exe.SetFailHooks(ctx, onFail)
 	return exe

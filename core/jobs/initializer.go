@@ -32,15 +32,15 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, job.Name)
 	for _, t := range job.Tasks {
-		tasks = append(tasks, task.Build(ctx, logger, &t))
+		tasks = append(tasks, task.Build(ctx, logger, t))
 	}
 	logger.Trace("Compiled Tasks")
 	for _, t := range job.Hooks.Done {
-		doneHooks = append(doneHooks, task.Build(ctx, logger, &t))
+		doneHooks = append(doneHooks, task.Build(ctx, logger, t))
 	}
 	logger.Trace("Compiled Hooks.Done")
 	for _, t := range job.Hooks.Failed {
-		failHooks = append(failHooks, task.Build(ctx, logger, &t))
+		failHooks = append(failHooks, task.Build(ctx, logger, t))
 	}
 	logger.Trace("Compiled Hooks.Fail")
 	return tasks, doneHooks, failHooks

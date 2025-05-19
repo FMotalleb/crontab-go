@@ -18,7 +18,7 @@ func TestCompileTask_NonExistingTask(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	taskConfig := &config.Task{}
+	taskConfig := config.Task{}
 	assert.Panics(
 		t,
 		func() {
@@ -32,7 +32,7 @@ func TestCompileTask_GetTask(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	taskConfig := &config.Task{
+	taskConfig := config.Task{
 		Get: "test",
 	}
 	exe := task.Build(ctx, log, taskConfig)
@@ -44,7 +44,7 @@ func TestCompileTask_CommandTask(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	taskConfig := &config.Task{
+	taskConfig := config.Task{
 		Command: "test",
 	}
 	exe := task.Build(ctx, log, taskConfig)
@@ -56,7 +56,7 @@ func TestCompileTask_PostTask(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	taskConfig := &config.Task{
+	taskConfig := config.Task{
 		Post: "test",
 	}
 	exe := task.Build(ctx, log, taskConfig)
@@ -68,7 +68,7 @@ func TestCompileTask_WithHooks(t *testing.T) {
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	taskConfig := &config.Task{
+	taskConfig := config.Task{
 		Command: "test",
 		OnDone: []config.Task{
 			{
