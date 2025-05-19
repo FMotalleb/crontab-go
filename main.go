@@ -31,6 +31,12 @@ import (
 	"github.com/FMotalleb/crontab-go/meta"
 )
 
+func initializeGlobalState() {
+	cronInstance := cron.New(cron.WithSeconds())
+	global.Put(cronInstance)
+	cronInstance.Start()
+}
+
 func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
@@ -48,9 +54,8 @@ func main() {
 	cmd.Execute()
 	logger.InitFromConfig()
 	log := logger.SetupLogger("Crontab-GO")
-	cronInstance := cron.New(cron.WithSeconds())
+	initializeGlobalState()
 	log.Info("Booting up")
-	global.Put(cronInstance)
 	jobs.InitializeJobs(log)
 	if cmd.CFG.WebServerAddress != "" {
 		go webserver.
@@ -67,6 +72,5 @@ func main() {
 			).
 			Serve()
 	}
-	cronInstance.Start()
-	<-make(chan any)
+	select {}
 }
