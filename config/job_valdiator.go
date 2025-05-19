@@ -7,7 +7,6 @@ import (
 	"github.com/docker/docker/api/types/events"
 	"github.com/sirupsen/logrus"
 
-	"github.com/FMotalleb/crontab-go/core/event"
 	"github.com/FMotalleb/crontab-go/core/utils"
 )
 
@@ -132,7 +131,7 @@ func (s *JobEvent) Validate(log *logrus.Entry) error {
 		err := fmt.Errorf("received a negative time in interval: `%v`", s.Interval)
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
-	} else if _, err := event.CronParser.Parse(s.Cron); s.Cron != "" && err != nil {
+	} else if _, err := DefaultCronParser.Parse(s.Cron); s.Cron != "" && err != nil {
 		log.WithError(err).Warn("Validation failed for JobEvent")
 		return err
 	} else if s.Docker != nil {
@@ -211,7 +210,7 @@ func dockerValidation(s *JobEvent, log *logrus.Entry) error {
 	if s.Docker.ErrorLimitPolicy == "" {
 		log.Info("no error policy was specified, using default policy (reconnect)")
 	}
-	if !utils.NewList("", event.GiveUp, event.Kill, event.Reconnect).Contains(s.Docker.ErrorLimitPolicy) {
+	if !utils.NewList("", ErrorPolGiveUp, ErrorPolKill, ErrorPolReconnect).Contains(s.Docker.ErrorLimitPolicy) {
 		err := fmt.Errorf("given error limit policy: %#v is not allowed, possible error policies are (give-up,kill,reconnect)", s.Docker.ErrorLimitPolicy)
 		log.WithError(err).Warn("Validation failed for docker error limit policy")
 		return err

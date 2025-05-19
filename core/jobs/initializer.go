@@ -4,7 +4,6 @@ package jobs
 import (
 	"context"
 
-	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
@@ -14,10 +13,10 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func initEventSignal(events []abstraction.Event, logger *logrus.Entry) abstraction.EventChannel {
+func initEventSignal(events []abstraction.EventGenerator, logger *logrus.Entry) abstraction.EventChannel {
 	signals := make([]<-chan []string, 0, len(events))
-	for _, sh := range events {
-		signals = append(signals, sh.BuildTickChannel())
+	for _, ev := range events {
+		signals = append(signals, ev.BuildTickChannel())
 	}
 	logger.Trace("Signals Built")
 	signal := utils.ZipChannels(signals...)
@@ -46,10 +45,10 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 	return tasks, doneHooks, failHooks
 }
 
-func initEvents(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) []abstraction.Event {
-	events := make([]abstraction.Event, 0, len(job.Events))
+func initEvents(job config.JobConfig, logger *logrus.Entry) []abstraction.EventGenerator {
+	events := make([]abstraction.EventGenerator, 0, len(job.Events))
 	for _, sh := range job.Events {
-		events = append(events, cfgcompiler.CompileEvent(&sh, cronInstance, logger))
+		events = append(events, cfgcompiler.CompileEvent(&sh, logger))
 	}
 	return events
 }

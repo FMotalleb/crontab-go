@@ -50,7 +50,8 @@ func main() {
 	log := logger.SetupLogger("Crontab-GO")
 	cronInstance := cron.New(cron.WithSeconds())
 	log.Info("Booting up")
-	jobs.InitializeJobs(log, cronInstance)
+	global.Put(cronInstance)
+	jobs.InitializeJobs(log)
 	if cmd.CFG.WebServerAddress != "" {
 		go webserver.
 			NewWebServer(

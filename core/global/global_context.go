@@ -66,13 +66,13 @@ func getTypename[T any](item T) string {
 	return reflect.TypeOf(item).String()
 }
 
-func PutIntoCtx[T any](item T) {
+func Put[T any](item T) {
 	name := getTypename(item)
 	println(name)
 	c.Context = context.WithValue(c.Context, ctxKey("typed", name), item)
 }
 
-func GetFromCtx[T any]() T {
+func Get[T any]() T {
 	var zero T // Default zero value for type T
 	name := reflect.TypeOf(zero).String()
 	println(name)

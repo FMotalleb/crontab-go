@@ -4,9 +4,22 @@ package event
 import (
 	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
+
+	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/core/global"
 )
 
-var CronParser = cron.NewParser(cron.SecondOptional | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+func init() {
+	registerGenerator(newCronGenerator)
+}
+
+func newCronGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+	if cfg.Cron != "" {
+		return NewCron(cfg.Cron, global.Get[*cron.Cron](), log)
+	}
+	return nil
+}
 
 type Cron struct {
 	cronSchedule string
@@ -15,8 +28,8 @@ type Cron struct {
 	entry        *cron.EntryID
 }
 
-func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
-	return Cron{
+func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) abstraction.EventGenerator {
+	cron := &Cron{
 		cronSchedule: schedule,
 		cron:         c,
 		logger: logger.
@@ -27,15 +40,16 @@ func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) Cron {
 				},
 			),
 	}
+	return cron
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Cron) BuildTickChannel() <-chan []string {
+func (c *Cron) BuildTickChannel() <-chan abstraction.Event {
 	if c.entry != nil {
 		c.logger.Fatal("already built the ticker channel")
 	}
-	notifyChan := make(chan []string)
-	schedule, err := CronParser.Parse(c.cronSchedule)
+	notifyChan := make(chan abstraction.Event)
+	schedule, err := config.DefaultCronParser.Parse(c.cronSchedule)
 	if err != nil {
 		c.logger.Warnln("cannot initialize cron: ", err)
 	} else {
@@ -55,7 +69,7 @@ func (c *Cron) BuildTickChannel() <-chan []string {
 type cronJob struct {
 	logger    *logrus.Entry
 	scheduler string
-	notify    chan<- []string
+	notify    chan<- abstraction.Event
 }
 
 func (j *cronJob) Run() {

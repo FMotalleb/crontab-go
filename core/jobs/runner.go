@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/robfig/cron/v3"
 	"github.com/sirupsen/logrus"
 
 	"github.com/FMotalleb/crontab-go/abstraction"
@@ -15,7 +14,7 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
-func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
+func InitializeJobs(log *logrus.Entry) {
 	for _, job := range cmd.CFG.Jobs {
 		if job.Disabled {
 			log.Warnf("job %s is disabled", job.Name)
@@ -38,7 +37,7 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 			log.Panicf("failed to validate job (%s): %v", job.Name, err)
 		}
 
-		signal := buildSignal(*job, cronInstance, logger)
+		signal := buildSignal(*job, logger)
 		signal = global.CTX().CountSignals(c, "events", signal, "amount of events dispatched for this job", prometheus.Labels{})
 		tasks, doneHooks, failHooks := initTasks(*job, logger)
 		logger.Trace("Tasks initialized")
@@ -49,8 +48,8 @@ func InitializeJobs(log *logrus.Entry, cronInstance *cron.Cron) {
 	log.Debugln("Jobs Are Ready")
 }
 
-func buildSignal(job config.JobConfig, cronInstance *cron.Cron, logger *logrus.Entry) abstraction.EventChannel {
-	events := initEvents(job, cronInstance, logger)
+func buildSignal(job config.JobConfig, logger *logrus.Entry) abstraction.EventChannel {
+	events := initEvents(job, logger)
 	logger.Trace("Events initialized")
 
 	signal := initEventSignal(events, logger)

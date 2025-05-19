@@ -1,9 +1,18 @@
 // Package abstraction must contain only interfaces and abstract layers of modules
 package abstraction
 
-type EventChannel = <-chan []string
+import (
+	"github.com/sirupsen/logrus"
 
-// Event is an object that can be executed using a execute method and stopped using cancel method
-type Event interface {
-	BuildTickChannel() EventChannel
+	"github.com/FMotalleb/crontab-go/config"
+)
+
+type EventGenerator interface {
+	BuildTickChannel() <-chan Event
 }
+
+type (
+	GeneratorMaker func(*logrus.Entry, config.JobEvent) EventGenerator
+	Event          = []string
+	EventChannel   = <-chan Event
+)

@@ -12,10 +12,34 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
+	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/utils"
 )
 
 // TODO[epic=events] add watch method (probably after fs watcher is implemented)
+
+func init() {
+	registerGenerator(newLogListenerGenerator)
+}
+
+func newLogListenerGenerator(log *logrus.Entry, cfg config.JobEvent) abstraction.EventGenerator {
+	if cfg.LogFile != "" {
+		e, err := NewLogFile(
+			cfg.LogFile,
+			cfg.LogLineBreaker,
+			cfg.LogMatcher,
+			cfg.LogCheckCycle,
+			log,
+		)
+		if err != nil {
+			log.Error("Error creating LogFile: ", err)
+			return nil
+		}
+		return e
+	}
+	return nil
+}
 
 // LogFile represents a log file that triggers an event when its content changes.
 type LogFile struct {
