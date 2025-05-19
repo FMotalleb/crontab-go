@@ -21,9 +21,9 @@ func init() {
 func NewCommand(
 	logger *logrus.Entry,
 	task *config.Task,
-) abstraction.Executable {
+) (abstraction.Executable, bool) {
 	if task.Command == "" {
-		return nil
+		return nil, false
 	}
 	log := logger.WithField("command", task.Command)
 	cmd := &Command{
@@ -36,7 +36,7 @@ func NewCommand(
 	cmd.SetRetryDelay(task.RetryDelay)
 	cmd.SetTimeout(task.Timeout)
 	cmd.SetMetaName(fmt.Sprintf("cmd: %s", task.Command))
-	return cmd
+	return cmd, true
 }
 
 type Command struct {
@@ -88,7 +88,7 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 				"is-local": conn.Local,
 			},
 		)
-		connection := connection.CompileConnection(&conn, log)
+		connection := connection.Get(&conn, log)
 		cmdCtx, cancel := c.ApplyTimeout(ctx)
 		c.SetCancel(cancel)
 

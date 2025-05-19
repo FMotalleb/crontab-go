@@ -13,8 +13,8 @@ import (
 var tg = generator.New[*config.Task, abstraction.Executable]()
 
 func Build(ctx context.Context, log *logrus.Entry, cfg *config.Task) abstraction.Executable {
-	exe := tg.Get(log, cfg)
-	if exe == nil {
+	exe, ok := tg.Get(log, cfg)
+	if !ok {
 		log.Panic("did not received any executable action from given task", cfg)
 	}
 	onDone := []abstraction.Executable{}

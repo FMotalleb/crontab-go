@@ -23,7 +23,7 @@ func init() {
 	eg.Register(newLogListenerGenerator)
 }
 
-func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.LogFile != "" {
 		e, err := NewLogFile(
 			cfg.LogFile,
@@ -33,12 +33,12 @@ func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstractio
 			log,
 		)
 		if err != nil {
-			log.Error("Error creating LogFile: ", err)
-			return nil
+			log.Error("Error creating LogFileListener: ", err)
+			return nil, false
 		}
-		return e
+		return e, true
 	}
-	return nil
+	return nil, false
 }
 
 // LogFile represents a log file that triggers an event when its content changes.

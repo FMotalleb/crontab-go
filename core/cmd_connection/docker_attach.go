@@ -15,6 +15,10 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
+func init() {
+	cg.Register(NewDockerAttachConnection)
+}
+
 type DockerAttachConnection struct {
 	conn        *config.TaskConnection
 	log         *logrus.Entry
@@ -31,8 +35,11 @@ type DockerAttachConnection struct {
 // - conn: A TaskConnection instance containing the connection configuration.
 // Returns:
 // - A new instance of DockerAttachConnection implementing the CmdConnection interface.
-func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
-	return &DockerAttachConnection{
+func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if conn.ContainerName == "" {
+		return nil, false
+	}
+	res := &DockerAttachConnection{
 		conn: conn,
 		log: log.WithFields(
 			logrus.Fields{
@@ -41,6 +48,7 @@ func NewDockerAttachConnection(log *logrus.Entry, conn *config.TaskConnection) a
 			},
 		),
 	}
+	return res, true
 }
 
 // Prepare sets up the DockerAttachConnection for executing a task.

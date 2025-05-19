@@ -17,9 +17,9 @@ func init() {
 	tg.Register(NewGet)
 }
 
-func NewGet(logger *logrus.Entry, task *config.Task) abstraction.Executable {
+func NewGet(logger *logrus.Entry, task *config.Task) (abstraction.Executable, bool) {
 	if task.Get == "" {
-		return nil
+		return nil, false
 	}
 	get := &Get{
 		address: task.Get,
@@ -35,7 +35,7 @@ func NewGet(logger *logrus.Entry, task *config.Task) abstraction.Executable {
 	get.SetRetryDelay(task.RetryDelay)
 	get.SetTimeout(task.Timeout)
 	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
-	return get
+	return get, true
 }
 
 type Get struct {

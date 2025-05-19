@@ -11,5 +11,8 @@ import (
 var eg = generator.New[*config.JobEvent, abstraction.EventGenerator]()
 
 func Build(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
-	return eg.Get(log, cfg)
+	if i, ok := eg.Get(log, cfg); ok {
+		return i
+	}
+	return nil
 }

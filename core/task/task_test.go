@@ -36,7 +36,7 @@ func TestCompileTask_GetTask(t *testing.T) {
 		Get: "test",
 	}
 	exe := task.Build(ctx, log, taskConfig)
-	assert.NotEqual(t, exe, nil)
+	assert.NotEqual(t, nil, exe)
 }
 
 func TestCompileTask_CommandTask(t *testing.T) {

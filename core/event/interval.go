@@ -13,11 +13,11 @@ func init() {
 	eg.Register(newIntervalGenerator)
 }
 
-func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.Interval != 0 {
-		return NewInterval(cfg.Interval, log)
+		return NewInterval(cfg.Interval, log), true
 	}
-	return nil
+	return nil, false
 }
 
 type Interval struct {

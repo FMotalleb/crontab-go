@@ -21,13 +21,13 @@ func init() {
 	eg.Register(newDockerGenerator)
 }
 
-func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.Docker != nil {
 		d := cfg.Docker
 		con := utils.FirstNonZeroForced(d.Connection,
 			"unix:///var/run/docker.sock",
 		)
-		return NewDockerEvent(
+		e := NewDockerEvent(
 			con,
 			d.Name,
 			d.Image,
@@ -38,8 +38,9 @@ func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.Eve
 			utils.FirstNonZeroForced(d.ErrorThrottle, time.Second*5),
 			log,
 		)
+		return e, true
 	}
-	return nil
+	return nil, false
 }
 
 type DockerEvent struct {

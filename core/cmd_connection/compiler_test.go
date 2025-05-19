@@ -20,7 +20,7 @@ func TestCompileConnection_NoValidConnectionType(t *testing.T) {
 	// var capturedError string
 
 	// Act
-	result := connection.CompileConnection(conn, log.WithField("test", "TestCompileConnection_NoValidConnectionType"))
+	result := connection.Get(conn, log.WithField("test", "TestCompileConnection_NoValidConnectionType"))
 
 	// Assert
 	assert.Equal(t, nil, result, "Expected nil result when no valid connection type is found")
@@ -33,7 +33,7 @@ func TestCompileConnection_LocalConnection(t *testing.T) {
 	log, _ := mocklogger.HijackOutput(logger.New())
 
 	// Act
-	result := connection.CompileConnection(conn, log.WithField("test", "test"))
+	result := connection.Get(conn, log.WithField("test", "test"))
 	_, ok := result.(*connection.Local)
 	// Assert
 	assert.True(t, ok, "Expected LocalCMDConn when Local connection type is found")
@@ -45,7 +45,7 @@ func TestCompileConnection_DockerAttachConnection(t *testing.T) {
 	log, _ := mocklogger.HijackOutput(logger.New())
 
 	// Act
-	result := connection.CompileConnection(conn, log.WithField("test", "test"))
+	result := connection.Get(conn, log.WithField("test", "test"))
 	_, ok := result.(*connection.DockerAttachConnection)
 	// Assert
 	assert.True(t, ok, "Expected DockerAttachConnection when ContainerName is provided and ImageName is empty")
@@ -57,7 +57,7 @@ func TestCompileConnection_DockerCreateConnection(t *testing.T) {
 	log, _ := mocklogger.HijackOutput(logger.New())
 
 	// Act
-	result := connection.CompileConnection(conn, log.WithField("test", "test"))
+	result := connection.Get(conn, log.WithField("test", "test"))
 	_, ok := result.(*connection.DockerCreateConnection)
 	// Assert
 	assert.True(t, ok, "Expected DockerAttachConnection when ContainerName is provided and ImageName is empty")

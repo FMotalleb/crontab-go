@@ -11,11 +11,11 @@ func init() {
 	eg.Register(newInitGenerator)
 }
 
-func newInitGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+func newInitGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.OnInit {
-		return &Init{}
+		return &Init{}, true
 	}
-	return nil
+	return nil, false
 }
 
 type Init struct{}

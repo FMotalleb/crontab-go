@@ -2,43 +2,30 @@
 package generator
 
 import (
-	"reflect"
-
 	"github.com/sirupsen/logrus"
 )
 
-type Func[I any, O any] = func(*logrus.Entry, I) O
+type Func[I any, O any] = func(*logrus.Entry, I) (O, bool)
 
 type Core[I any, O any] struct {
 	generators []Func[I, O]
 }
 
 func New[I any, O any]() *Core[I, O] {
-	generators := make([]Func[I, O], 0)
-	return &Core[I, O]{generators: generators}
+	return &Core[I, O]{generators: []Func[I, O]{}}
 }
 
 func (g *Core[I, O]) Register(generator Func[I, O]) {
 	g.generators = append(g.generators, generator)
 }
 
-func (g *Core[I, O]) Get(log *logrus.Entry, input I) O {
+func (g *Core[I, O]) Get(log *logrus.Entry, input I) (O, bool) {
 	for _, generator := range g.generators {
-		item := generator(log, input)
-		if !isNilInterface(item) {
-			return item
+		item, ok := generator(log, input)
+		if ok {
+			return item, true
 		}
 	}
-	var zero O
-	return zero
-}
-
-func isNilInterface(val any) bool {
-	v := reflect.ValueOf(val)
-	switch v.Kind() {
-	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
-		return v.IsNil()
-	default:
-		return false
-	}
+	var empty O
+	return empty, false
 }

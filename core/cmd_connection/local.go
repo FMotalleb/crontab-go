@@ -17,6 +17,10 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
+func init() {
+	cg.Register(NewLocalCMDConn)
+}
+
 // Local represents a local command connection.
 type Local struct {
 	log *logrus.Entry
@@ -24,12 +28,16 @@ type Local struct {
 }
 
 // NewLocalCMDConn creates a new instance of Local command connection.
-func NewLocalCMDConn(log *logrus.Entry) abstraction.CmdConnection {
-	return &Local{
+func NewLocalCMDConn(log *logrus.Entry, cfg *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if !cfg.Local {
+		return nil, false
+	}
+	res := &Local{
 		log: log.WithField(
 			"connection", "local",
 		),
 	}
+	return res, true
 }
 
 // Prepare prepares the command for execution.

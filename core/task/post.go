@@ -19,9 +19,9 @@ func init() {
 	tg.Register(NewPost)
 }
 
-func NewPost(logger *logrus.Entry, task *config.Task) abstraction.Executable {
+func NewPost(logger *logrus.Entry, task *config.Task) (abstraction.Executable, bool) {
 	if task.Post == "" {
-		return nil
+		return nil, false
 	}
 	post := &Post{
 		address: task.Post,
@@ -38,7 +38,7 @@ func NewPost(logger *logrus.Entry, task *config.Task) abstraction.Executable {
 	post.SetRetryDelay(task.RetryDelay)
 	post.SetTimeout(task.Timeout)
 	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
-	return post
+	return post, true
 }
 
 type Post struct {

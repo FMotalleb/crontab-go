@@ -14,11 +14,11 @@ func init() {
 	eg.Register(newCronGenerator)
 }
 
-func newCronGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+func newCronGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.Cron != "" {
-		return NewCron(cfg.Cron, global.Get[*cron.Cron](), log)
+		return NewCron(cfg.Cron, global.Get[*cron.Cron](), log), true
 	}
-	return nil
+	return nil, false
 }
 
 type Cron struct {

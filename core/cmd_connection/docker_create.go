@@ -18,6 +18,10 @@ import (
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
+func init() {
+	cg.Register(NewDockerCreateConnection)
+}
+
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
 type DockerCreateConnection struct {
 	conn            *config.TaskConnection
@@ -35,8 +39,11 @@ type DockerCreateConnection struct {
 // - conn: A TaskConnection instance containing the connection configuration.
 // Returns:
 // - A new instance of DockerCreateConnection.
-func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) abstraction.CmdConnection {
-	return &DockerCreateConnection{
+func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) (abstraction.CmdConnection, bool) {
+	if conn.ImageName == "" {
+		return nil, false
+	}
+	res := &DockerCreateConnection{
 		conn: conn,
 		log: log.WithFields(
 			logrus.Fields{
@@ -45,6 +52,7 @@ func NewDockerCreateConnection(log *logrus.Entry, conn *config.TaskConnection) a
 			},
 		),
 	}
+	return res, true
 }
 
 // Prepare sets up the Docker container configuration based on the provided task.
