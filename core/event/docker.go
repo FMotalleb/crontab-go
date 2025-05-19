@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	registerGenerator(newDockerGenerator)
+	eg.Register(newDockerGenerator)
 }
 
 func newDockerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

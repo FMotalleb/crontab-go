@@ -20,7 +20,7 @@ import (
 // TODO[epic=events] add watch method (probably after fs watcher is implemented)
 
 func init() {
-	registerGenerator(newLogListenerGenerator)
+	eg.Register(newLogListenerGenerator)
 }
 
 func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

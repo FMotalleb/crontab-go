@@ -15,6 +15,32 @@ import (
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
+func init() {
+	tg.Register(NewPost)
+}
+
+func NewPost(logger *logrus.Entry, task *config.Task) abstraction.Executable {
+	if task.Post == "" {
+		return nil
+	}
+	post := &Post{
+		address: task.Post,
+		headers: &task.Headers,
+		data:    &task.Data,
+		log: logger.WithFields(
+			logrus.Fields{
+				"url":    task.Post,
+				"method": "post",
+			},
+		),
+	}
+	post.SetMaxRetry(task.Retries)
+	post.SetRetryDelay(task.RetryDelay)
+	post.SetTimeout(task.Timeout)
+	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
+	return post
+}
+
 type Post struct {
 	common.Hooked
 	common.Cancelable
@@ -106,23 +132,4 @@ func (p *Post) Execute(ctx context.Context) (e error) {
 
 	p.DoDoneHooks(ctx)
 	return nil
-}
-
-func NewPost(task *config.Task, logger *logrus.Entry) abstraction.Executable {
-	post := &Post{
-		address: task.Post,
-		headers: &task.Headers,
-		data:    &task.Data,
-		log: logger.WithFields(
-			logrus.Fields{
-				"url":    task.Post,
-				"method": "post",
-			},
-		),
-	}
-	post.SetMaxRetry(task.Retries)
-	post.SetRetryDelay(task.RetryDelay)
-	post.SetTimeout(task.Timeout)
-	post.SetMetaName(fmt.Sprintf("post: %s", task.Post))
-	return post
 }

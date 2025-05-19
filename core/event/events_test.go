@@ -24,7 +24,7 @@ func TestCompileEvent_IntervalZero(t *testing.T) {
 	prepareState()
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	event := event.EventGeneratorOf(log, sh)
+	event := event.Build(log, sh)
 	assert.Equal(t, event, nil)
 }
 
@@ -33,7 +33,7 @@ func TestCompileEvent_IntervalNonZero(t *testing.T) {
 	prepareState()
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
-	sch := event.EventGeneratorOf(log, sh)
+	sch := event.Build(log, sh)
 	_, ok := sch.(*event.Interval)
 	assert.Equal(t, ok, true)
 }
@@ -45,7 +45,7 @@ func TestCompileEvent_IntervalZeroWithCronSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := event.EventGeneratorOf(log, sh)
+	e := event.Build(log, sh)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron events, got %T", e)
 	}
@@ -58,7 +58,7 @@ func TestCompileEvent_IntervalZeroWithOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := event.EventGeneratorOf(log, sh)
+	e := event.Build(log, sh)
 	if _, ok := e.(*event.Init); !ok {
 		t.Errorf("Expected Init events, got %T", e)
 	}
@@ -71,7 +71,7 @@ func TestCompileEvent_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := event.EventGeneratorOf(log, sh)
+	e := event.Build(log, sh)
 	if e != nil {
 		t.Errorf("Expected nil, got %v", e)
 	}
@@ -84,7 +84,7 @@ func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
 	logger, _ := mocklogger.HijackOutput(logrus.New())
 	log := logrus.NewEntry(logger)
 
-	e := event.EventGeneratorOf(log, sh)
+	e := event.Build(log, sh)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron event, got %T", e)
 	}

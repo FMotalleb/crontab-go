@@ -5,20 +5,11 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/generator"
 )
 
-var generators = make([]abstraction.GeneratorMaker, 0)
+var eg = generator.New[*config.JobEvent, abstraction.EventGenerator]()
 
-func registerGenerator(maker abstraction.GeneratorMaker) {
-	generators = append(generators, maker)
-}
-
-func EventGeneratorOf(log *logrus.Entry, config *config.JobEvent) abstraction.EventGenerator {
-	for _, maker := range generators {
-		generator := maker(log, config)
-		if generator != nil {
-			return generator
-		}
-	}
-	return nil
+func Build(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
+	return eg.Get(log, cfg)
 }

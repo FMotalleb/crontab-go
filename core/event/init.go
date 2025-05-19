@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	registerGenerator(newInitGenerator)
+	eg.Register(newInitGenerator)
 }
 
 func newInitGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

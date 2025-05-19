@@ -14,6 +14,31 @@ import (
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
+func init() {
+	tg.Register(NewCommand)
+}
+
+func NewCommand(
+	logger *logrus.Entry,
+	task *config.Task,
+) abstraction.Executable {
+	if task.Command == "" {
+		return nil
+	}
+	log := logger.WithField("command", task.Command)
+	cmd := &Command{
+		log: log.WithField(
+			"command", task.Command,
+		),
+		task: task,
+	}
+	cmd.SetMaxRetry(task.Retries)
+	cmd.SetRetryDelay(task.RetryDelay)
+	cmd.SetTimeout(task.Timeout)
+	cmd.SetMetaName(fmt.Sprintf("cmd: %s", task.Command))
+	return cmd
+}
+
 type Command struct {
 	common.Hooked
 	common.Cancelable
@@ -102,22 +127,4 @@ func (c *Command) Execute(ctx context.Context) (e error) {
 		log.Warn("command finished successfully but its hooks failed")
 	}
 	return nil
-}
-
-func NewCommand(
-	task *config.Task,
-	logger *logrus.Entry,
-) abstraction.Executable {
-	log := logger.WithField("command", task.Command)
-	cmd := &Command{
-		log: log.WithField(
-			"command", task.Command,
-		),
-		task: task,
-	}
-	cmd.SetMaxRetry(task.Retries)
-	cmd.SetRetryDelay(task.RetryDelay)
-	cmd.SetTimeout(task.Timeout)
-	cmd.SetMetaName(fmt.Sprintf("cmd: %s", task.Command))
-	return cmd
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	registerGenerator(newIntervalGenerator)
+	eg.Register(newIntervalGenerator)
 }
 
 func newIntervalGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

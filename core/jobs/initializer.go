@@ -8,8 +8,8 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	cfgcompiler "github.com/FMotalleb/crontab-go/config/compiler"
 	"github.com/FMotalleb/crontab-go/core/event"
+	"github.com/FMotalleb/crontab-go/core/task"
 	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
@@ -32,15 +32,15 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, job.Name)
 	for _, t := range job.Tasks {
-		tasks = append(tasks, cfgcompiler.CompileTask(ctx, &t, logger))
+		tasks = append(tasks, task.Build(ctx, logger, &t))
 	}
 	logger.Trace("Compiled Tasks")
 	for _, t := range job.Hooks.Done {
-		doneHooks = append(doneHooks, cfgcompiler.CompileTask(ctx, &t, logger))
+		doneHooks = append(doneHooks, task.Build(ctx, logger, &t))
 	}
 	logger.Trace("Compiled Hooks.Done")
 	for _, t := range job.Hooks.Failed {
-		failHooks = append(failHooks, cfgcompiler.CompileTask(ctx, &t, logger))
+		failHooks = append(failHooks, task.Build(ctx, logger, &t))
 	}
 	logger.Trace("Compiled Hooks.Fail")
 	return tasks, doneHooks, failHooks
@@ -49,7 +49,7 @@ func initTasks(job config.JobConfig, logger *logrus.Entry) ([]abstraction.Execut
 func initEvents(job config.JobConfig, logger *logrus.Entry) []abstraction.EventGenerator {
 	events := make([]abstraction.EventGenerator, 0, len(job.Events))
 	for _, sh := range job.Events {
-		events = append(events, event.EventGeneratorOf(logger, &sh))
+		events = append(events, event.Build(logger, &sh))
 	}
 	return events
 }

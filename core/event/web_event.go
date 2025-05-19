@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	registerGenerator(newWebEventGenerator)
+	eg.Register(newWebEventGenerator)
 }
 
 func newWebEventGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

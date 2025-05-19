@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	registerGenerator(newCronGenerator)
+	eg.Register(newCronGenerator)
 }
 
 func newCronGenerator(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {

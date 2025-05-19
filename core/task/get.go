@@ -13,6 +13,31 @@ import (
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
+func init() {
+	tg.Register(NewGet)
+}
+
+func NewGet(logger *logrus.Entry, task *config.Task) abstraction.Executable {
+	if task.Get == "" {
+		return nil
+	}
+	get := &Get{
+		address: task.Get,
+		headers: &task.Headers,
+		log: logger.WithFields(
+			logrus.Fields{
+				"url":    task.Get,
+				"method": "get",
+			},
+		),
+	}
+	get.SetMaxRetry(task.Retries)
+	get.SetRetryDelay(task.RetryDelay)
+	get.SetTimeout(task.Timeout)
+	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
+	return get
+}
+
 type Get struct {
 	common.Hooked
 	common.Cancelable
@@ -87,22 +112,4 @@ func (g *Get) Execute(ctx context.Context) (e error) {
 	}
 	g.DoDoneHooks(ctx)
 	return nil
-}
-
-func NewGet(task *config.Task, logger *logrus.Entry) abstraction.Executable {
-	get := &Get{
-		address: task.Get,
-		headers: &task.Headers,
-		log: logger.WithFields(
-			logrus.Fields{
-				"url":    task.Get,
-				"method": "get",
-			},
-		),
-	}
-	get.SetMaxRetry(task.Retries)
-	get.SetRetryDelay(task.RetryDelay)
-	get.SetTimeout(task.Timeout)
-	get.SetMetaName(fmt.Sprintf("get: %s", task.Get))
-	return get
 }
