@@ -1,5 +1,5 @@
-// Package cmdutils contain helper methods for cmd executors
-package cmdutils
+// Package command contain helper methods for cmd executors
+package command
 
 import (
 	"context"

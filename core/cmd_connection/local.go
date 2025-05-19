@@ -12,7 +12,7 @@ import (
 
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
-	cmdutils "github.com/FMotalleb/crontab-go/core/cmd_connection/cmd_utils"
+	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
@@ -44,7 +44,7 @@ func NewLocalCMDConn(log *logrus.Entry, cfg *config.TaskConnection) (abstraction
 // It sets up the command with the provided context, task, and environment.
 // It returns an error if the preparation fails.
 func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
-	cmdCtx := cmdutils.NewCtx(ctx, task.Env, l.log)
+	cmdCtx := command.NewCtx(ctx, task.Env, l.log)
 	workingDir := task.WorkingDirectory
 	if workingDir == "" {
 		var e error
