@@ -36,7 +36,9 @@ jobs:
           name: coverage-${{ matrix.os }}
           path: coverage.*
 
-      - run: go tool goreleaser release 
+      - run: |
+          go install github.com/goreleaser/goreleaser@latest 
+          goreleaser release 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ runner.os == 'Linux' }}

@@ -32,7 +32,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: go tool goreleaser release 
+      - run: |
+          go install github.com/goreleaser/goreleaser@latest 
+          goreleaser release 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

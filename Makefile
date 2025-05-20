@@ -4,7 +4,7 @@ SHELL := /bin/bash
 
 .PHONY: all
 all: ## build pipeline
-all: mod gen build spell lint test
+all: mod gen install build spell lint test
 
 .PHONY: precommit
 precommit: ## validate the branch before commit
@@ -39,10 +39,15 @@ gen: ## go generate
 
 .PHONY: build
 build: ## goreleaser build
-	go tool goreleaser build --clean --single-target --snapshot
+	goreleaser build --clean --single-target --snapshot
+
+.PHONY: install
+install: ## install goreleaser 
+	go install github.com/goreleaser/goreleaser@latest
 
 .PHONY: spell
 spell: ## misspell
+
 	go tool misspell -error -locale=US -w **.md
 
 .PHONY: lint
