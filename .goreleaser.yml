@@ -10,8 +10,28 @@ builds:
       - darwin
       - linux
       - windows
+    ldflags: "-s -w"
     goarch:
       - amd64
+
+  - id: slim
+    main: ./cmd/crontab-go
+    goos:
+      - linux
+    goarch:
+      - amd64
+    ldflags: "-s -w"
+    binary: crontab-go
+  - id: static
+    main: ./cmd/crontab-go
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    ldflags: "-s -w -extldflags '-static'"
+    binary: crontab-go
 
 dockers:
   - image_templates:

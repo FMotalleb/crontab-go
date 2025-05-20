@@ -20,5 +20,5 @@ func Validate(log *logrus.Entry, usr string, grp string) error {
 }
 
 // SetUser NOOP
-func SetUser(log *logrus.Entry, _ *exec.Cmd, _ string, _ string) {
+func SetUser(_ *logrus.Entry, _ *exec.Cmd, _ string, _ string) {
 }
