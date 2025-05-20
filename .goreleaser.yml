@@ -36,8 +36,8 @@ builds:
 
 dockers:
   - image_templates:
-      - "fmotalleb/crontab-go:{{ .Version }}-static"
-      - "fmotalleb/crontab-go:latest-static"
+      - "ghcr.io/fmotalleb/crontab-go:{{ .Version }}-static"
+      - "ghcr.io/fmotalleb/crontab-go:latest-static"
     dockerfile: Dockerfile
     goos: linux
     goarch: amd64
@@ -48,8 +48,8 @@ dockers:
     use: buildx
 
   - image_templates:
-      - "fmotalleb/crontab-go:{{ .Version }}-slim"
-      - "fmotalleb/crontab-go:latest-slim"
+      - "ghcr.io/fmotalleb/crontab-go:{{ .Version }}-slim"
+      - "ghcr.io/fmotalleb/crontab-go:latest-slim"
     dockerfile: Dockerfile
     goos: linux
     goarch: amd64
@@ -69,7 +69,6 @@ release:
     owner: FMotalleb
     name: crontab-go
   name_template: "{{.Version}}"
-
   prerelease: auto
   mode: append
 
