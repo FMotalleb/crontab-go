@@ -4,7 +4,8 @@ before:
   hooks:
     - go mod download
 builds:
-  - env:
+  - id: default
+    env:
       - CGO_ENABLED=0
     goos:
       - darwin
@@ -21,6 +22,7 @@ builds:
       - amd64
     ldflags: "-s -w"
     binary: crontab-go
+    skip: "archive"
   - id: static
     goos:
       - linux
@@ -30,6 +32,7 @@ builds:
       - CGO_ENABLED=0
     ldflags: "-s -w -extldflags '-static'"
     binary: crontab-go
+    skip: "archive"
 
 dockers:
   - image_templates:
@@ -56,12 +59,19 @@ dockers:
       - "--target=slim"
     use: buildx
 
+archives:
+  - id: default
+    builds:
+      - default
+
 release:
   github:
     owner: FMotalleb
     name: crontab-go
   name_template: "{{.Version}}"
+
   prerelease: auto
   mode: append
+
 changelog:
   disable: true
