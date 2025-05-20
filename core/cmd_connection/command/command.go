@@ -72,11 +72,18 @@ func (ctx Ctx) envReshape() []string {
 
 func (ctx Ctx) getShell() string {
 	shell, _ := ctx.applyEventTemplate(ctx.getEnv()["SHELL"])
+	if shell == "" {
+		shell = "/bin/sh"
+	}
 	return shell
 }
 
 func (ctx Ctx) getShellArg() string {
-	return ctx.getEnv()["SHELL_ARGS"]
+	shellArgs, _ := ctx.applyEventTemplate(ctx.getEnv()["SHELL_ARGS"])
+	if shellArgs == "" {
+		shellArgs = "-c"
+	}
+	return shellArgs
 }
 
 // BuildExecuteParams prepares shell, args and environment for command execution.
@@ -84,7 +91,9 @@ func (ctx Ctx) BuildExecuteParams(command string) (string, []string, []string) {
 	envs := ctx.envReshape()
 	shell := ctx.getShell()
 	shellArgs := utils.EscapedSplit(ctx.getShellArg(), ':')
-
+	for i, v := range shellArgs {
+		shellArgs[i] = ctx.tryTemplate(v)
+	}
 	cmd, err := ctx.applyEventTemplate(command)
 	if err != nil {
 		ctx.logger.WithError(err).Warn("Failed to apply event template to command")
