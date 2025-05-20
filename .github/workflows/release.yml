@@ -9,9 +9,6 @@ on:
 permissions:
   contents: read
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: fmotalleb/crontab-go
 
 jobs:
   goreleaser:
@@ -32,7 +29,7 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
-          registry: ${{ env.REGISTRY}}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: go install github.com/goreleaser/goreleaser/v2@latest
@@ -45,30 +42,3 @@ jobs:
         with:
           name: dist
           path: dist
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-      - name: Build and push Docker image Slim (bookworm-slim)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-slim
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-slim
-          target: "slim"
-          labels: ${{ steps.meta.outputs.labels }}
-      - name: Build and push Docker image Static (distroless)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-static
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-static
-          labels: ${{ steps.meta.outputs.labels }}
-          target: "static"

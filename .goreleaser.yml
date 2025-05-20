@@ -18,20 +18,33 @@ archives:
         format: zip
 dockers:
   - image_templates:
-      - "ghcr.io/golang-templates/seed:latest"
-      - "ghcr.io/golang-templates/seed:{{ .Major }}"
-      - "ghcr.io/golang-templates/seed:{{ .Major }}.{{ .Minor }}"
-      - "ghcr.io/golang-templates/seed:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "fmotalleb/crontab-go:{{ .Version }}-static"
+      - "fmotalleb/crontab-go:latest-static"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+    ids:
+      - static
     build_flag_templates:
-      - "--pull"
-      # OCI annotations: https://github.com/opencontainers/image-spec/blob/main/annotations.md
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.name={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--target=static"
+    use: buildx
+
+  - image_templates:
+      - "fmotalleb/crontab-go:{{ .Version }}-slim"
+      - "fmotalleb/crontab-go:latest-slim"
+    dockerfile: Dockerfile
+    goos: linux
+    goarch: amd64
+    ids:
+      - slim
+    build_flag_templates:
+      - "--target=slim"
+    use: buildx
+
 release:
   github:
+    owner: FMotalleb
+    name: crontab-go
   name_template: "{{.Version}}"
   prerelease: auto
   mode: append
