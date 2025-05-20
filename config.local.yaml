@@ -3,7 +3,8 @@
 jobs:
   - name: echo
     tasks:
-      - command: echo "{{ . | toJSON }}"
+      - command: |
+          echo "env: {{ env COLE }}"
         env:
           SHELL: /bin/bash
           COLE: test

@@ -18,9 +18,7 @@ func buildFuncMap() template.FuncMap {
 		"b64enc": func(s string) string {
 			return base64.StdEncoding.EncodeToString([]byte(s))
 		},
-		"sum": func(a int, b int) int {
-			return a + b
-		},
+		"sum":       sum,
 		"b64dec":    b64dec,
 		"toUpper":   strings.ToUpper,
 		"toLower":   strings.ToLower,
@@ -40,6 +38,59 @@ func buildFuncMap() template.FuncMap {
 	}
 
 	return result
+}
+
+func normalizeNumber(input any) float64 {
+	switch v := input.(type) {
+	case int:
+		return float64(v)
+	case int32:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case float32:
+		return float64(v)
+	case float64:
+		return v
+	default:
+		// Unsupported type
+		panic(fmt.Errorf("unsupported type for normalization: %T", v))
+	}
+}
+
+func sum(a any, b any) any {
+	switch a := a.(type) {
+	case int:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case int8:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case int16:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case int32:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case int64:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uint:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uint8:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uint16:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uint32:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uint64:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case uintptr:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case float32:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case float64:
+		return normalizeNumber(a) + normalizeNumber(b)
+	case string:
+		return a + b.(string)
+	default:
+		panic(fmt.Errorf("unsupported type for sum: %T", a))
+	}
 }
 
 func EvaluateTemplate(text string, vars any) (string, error) {
