@@ -36,8 +36,7 @@ jobs:
           name: coverage-${{ matrix.os }}
           path: coverage.*
 
-      - run: |
-          make build
+      - run: make build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ runner.os == 'Linux' }}
