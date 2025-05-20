@@ -37,7 +37,7 @@ jobs:
           path: coverage.*
 
       - run: |
-          go install github.com/goreleaser/goreleaser@latest 
+          go install github.com/goreleaser/goreleaser/v2@latest 
           goreleaser release 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
