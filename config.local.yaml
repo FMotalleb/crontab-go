@@ -3,14 +3,14 @@
 jobs:
   - name: echo
     tasks:
-      - command: echo "$CRONTAB_GO_EVENT_ARGUMENTS"
+      - command: echo "{{ . | toJSON }}"
         env:
           SHELL: /bin/bash
           COLE: test
     events:
       # - cron: "0 * * * * *"
-      # - interval: 5s
-      # - on-init: true
+      - interval: 5s
+      - on-init: true
       # - web-event: test
-      - docker:
-          image: nginx
+      # - docker:
+      #     image: nginx

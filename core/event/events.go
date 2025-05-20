@@ -43,8 +43,10 @@ func NewErrMetaData(emitter string, err error) *MetaData {
 }
 
 func (m *MetaData) GetData() map[string]any {
+	result := m.Extra
 	if m.Extra == nil {
-		m.Extra = make(map[string]any)
+		result = make(map[string]any)
 	}
-	return m.Extra
+	result["emitter"] = m.Emitter
+	return result
 }
