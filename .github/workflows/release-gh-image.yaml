@@ -10,8 +10,10 @@
 name: Publish Container to Github
 
 on:
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
+  workflow_dispatch:
+
 
 env:
   REGISTRY: ghcr.io
