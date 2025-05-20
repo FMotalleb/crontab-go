@@ -15,7 +15,6 @@ builds:
       - amd64
 
   - id: slim
-    main: ./cmd/crontab-go
     goos:
       - linux
     goarch:
@@ -23,7 +22,6 @@ builds:
     ldflags: "-s -w"
     binary: crontab-go
   - id: static
-    main: ./cmd/crontab-go
     goos:
       - linux
     goarch:
