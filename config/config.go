@@ -27,8 +27,6 @@ type Config struct {
 	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password,omitempty"`
 	WebServerMetrics  bool   `mapstructure:"webserver_metrics" json:"webserver_metrics,omitempty"`
 
-	ShellArgCompatibility ShellArgCompatibilityMode `mapstructure:"shell_arg_compatibility" json:"shell_arg_compatibility,omitempty"`
-
 	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
 }
 
@@ -110,15 +108,6 @@ type TaskConnection struct {
 	Volumes          []string `mapstructure:"volumes" json:"volumes,omitempty"`
 	Networks         []string `mapstructure:"networks" json:"networks,omitempty"`
 }
-
-type ShellArgCompatibilityMode string
-
-const (
-	DefaultShellArgCompatibility ShellArgCompatibilityMode = EventArgOmit
-	EventArgOmit                 ShellArgCompatibilityMode = "none"
-	EventArgPassingAsArgs        ShellArgCompatibilityMode = "arg"
-	EventArgPassingAsEnviron     ShellArgCompatibilityMode = "env"
-)
 
 type ErrorLimitPolicy string
 

@@ -6,6 +6,10 @@ type EventGenerator interface {
 }
 
 type (
-	Event        = []string
-	EventChannel = <-chan Event
+	EventChannel     = <-chan Event
+	EventEmitChannel = chan Event
 )
+
+type Event interface {
+	GetData() map[string]any
+}

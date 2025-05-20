@@ -15,7 +15,7 @@ import (
 )
 
 func initEventSignal(events []abstraction.EventGenerator, logger *logrus.Entry) abstraction.EventChannel {
-	signals := make([]<-chan []string, 0, len(events))
+	signals := make([]abstraction.EventChannel, 0, len(events))
 	for _, ev := range events {
 		signals = append(signals, ev.BuildTickChannel())
 	}

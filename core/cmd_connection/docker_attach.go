@@ -12,7 +12,6 @@ import (
 	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
-	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 func init() {
@@ -67,8 +66,7 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 		d.log.Debug("No explicit docker connection specified, using default: `unix:///var/run/docker.sock`")
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
 	}
-	params := ctx.Value(ctxutils.EventData).([]string)
-	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command, params)
+	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command)
 	cmd := append(
 		[]string{shell},
 		shellArgs...,

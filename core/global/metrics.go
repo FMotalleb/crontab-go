@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
+	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/core/concurrency"
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
@@ -49,9 +50,9 @@ func (c *Context) MetricCounter(
 	return c.MetricCounter(ctx, name, help, labels)
 }
 
-func (c *Context) CountSignals(ctx context.Context, name string, signal <-chan []string, help string, labels prometheus.Labels) <-chan []string {
+func (c *Context) CountSignals(ctx context.Context, name string, signal abstraction.EventChannel, help string, labels prometheus.Labels) abstraction.EventChannel {
 	counter := c.MetricCounter(ctx, name, help, labels)
-	out := make(chan []string)
+	out := make(abstraction.EventEmitChannel)
 	go func() {
 		for c := range signal {
 			counter.Set(counter.Get() + 1)

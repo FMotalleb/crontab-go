@@ -184,12 +184,6 @@ func setupEnv() {
 		),
 		"Cannot bind shell_args env variable: %s",
 	)
-	warnOnErr(
-		viper.BindEnv(
-			"shell_arg_compatibility",
-		),
-		"Cannot bind shell_arg_compatibility env variable: %s",
-	)
 
 	viper.AutomaticEnv()
 }

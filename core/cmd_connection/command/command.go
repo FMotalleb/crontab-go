@@ -9,9 +9,10 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/FMotalleb/crontab-go/config"
+	"github.com/FMotalleb/crontab-go/abstraction"
 	"github.com/FMotalleb/crontab-go/core/utils"
 	"github.com/FMotalleb/crontab-go/ctxutils"
+	"github.com/FMotalleb/crontab-go/template"
 )
 
 type Ctx struct {
@@ -53,8 +54,6 @@ func (ctx *Ctx) init(taskEnviron map[string]string) {
 			ctx.logger.Info("you've used `SHELL` env variable in command environments, overriding the global shell with:", val)
 		case "shell_args":
 			ctx.logger.Info("you've used `SHELL_ARGS` env variable in command environments, overriding the global shell_args with: ", val)
-		case "shell_arg_compatibility":
-			ctx.logger.Info("you've used `SHELL_ARG_COMPATIBILITY` env variable in command environments, overriding the global shell_arg_compatibility with: ", val)
 		}
 	}
 }
@@ -85,58 +84,70 @@ func (ctx *Ctx) envReshape() []string {
 	env := ctx.envGetAll()
 	var result []string
 	for key, val := range env {
-		result = append(result, fmt.Sprintf("%s=%s", strings.ToUpper(key), val))
+		fKey := ctx.tryTemplate(ctx.logger, key)
+		fVal := ctx.tryTemplate(ctx.logger, val)
+		result = append(result, fmt.Sprintf("%s=%s", strings.ToUpper(fKey), fVal))
 	}
 	return result
 }
 
 func (ctx *Ctx) getShell() string {
-	return ctx.envGet("SHELL")
+	shell := ctx.envGet("SHELL")
+	var err error
+	if shell, err = ctx.applyEventTemplate(ctx.logger, shell); err != nil {
+		ctx.logger.WithError(err).Warn("Failed to apply event template to shell")
+	}
+	return shell
 }
 
 func (ctx *Ctx) getShellArg() string {
 	return ctx.envGet("SHELL_ARGS")
 }
 
-func (ctx *Ctx) getShellArgCompatibility() config.ShellArgCompatibilityMode {
-	result := config.ShellArgCompatibilityMode(ctx.envGet("SHELL_ARG_COMPATIBILITY"))
-	switch result {
-	case "":
-		return config.DefaultShellArgCompatibility
-	default:
-		return result
-	}
-}
-
-func (ctx *Ctx) BuildExecuteParams(command string, eventData []string) (shell string, cmd []string, env []string) {
+func (ctx *Ctx) BuildExecuteParams(command string) (shell string, cmd []string, env []string) {
 	environments := ctx.envReshape()
+	var err error
 	shell = ctx.getShell()
 	shellArgs := utils.EscapedSplit(ctx.getShellArg(), ':')
-	shellArgs = append(shellArgs, command)
-	switch ctx.getShellArgCompatibility() {
-	case config.EventArgOmit:
-		ctx.logger.Debug("event arguments will not be passed to the command")
-	case config.EventArgPassingAsArgs:
-		shellArgs = append(shellArgs, eventData...)
-	case config.EventArgPassingAsEnviron:
-		environments = append(
-			environments,
-			"CRONTAB_GO_EVENT_ARGUMENTS="+collectEventForEnv(eventData),
-		)
-	default:
-		ctx.logger.Warn("event argument passing mode is not supported, using default mode (omitting)")
+
+	c := command
+	if c, err = ctx.applyEventTemplate(ctx.logger, c); err != nil {
+		ctx.logger.WithError(err).Warn("Failed to apply event template to shell")
 	}
+	shellArgs = append(shellArgs, c)
+
 	return shell, shellArgs, environments
 }
 
-func collectEventForEnv(eventData []string) string {
-	builder := &strings.Builder{}
-	for i, part := range eventData {
-		builder.WriteString(strings.ReplaceAll(part, ":", "\\:"))
-		if i < len(eventData)-1 {
-			builder.WriteRune(':')
-		}
+func (ctx *Ctx) applyEventTemplate(
+	log *logrus.Entry,
+	src string,
+) (string, error) {
+	if event, ok := ctx.Value(ctxutils.EventData).(abstraction.Event); ok {
+		data := event.GetData()
+		return applyTemplate(log, src, data)
 	}
+	log.Warn("Event not found in context")
+	return src, nil
+}
 
-	return builder.String()
+func (ctx *Ctx) tryTemplate(
+	log *logrus.Entry,
+	src string,
+) string {
+	res, _ := ctx.applyEventTemplate(log, src)
+	return res
+}
+
+func applyTemplate(
+	log *logrus.Entry,
+	src string,
+	data map[string]any,
+) (string, error) {
+	res, err := template.EvaluateTemplate(src, data)
+	if err == nil {
+		return res, nil
+	}
+	log.WithError(err).Warn("Failed to apply template")
+	return src, err
 }

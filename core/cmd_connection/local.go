@@ -14,7 +14,6 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	credential "github.com/FMotalleb/crontab-go/core/os_credential"
-	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 func init() {
@@ -54,8 +53,7 @@ func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
 		}
 	}
 
-	event := ctx.Value(ctxutils.EventData).([]string)
-	shell, commandArg, environ := cmdCtx.BuildExecuteParams(task.Command, event)
+	shell, commandArg, environ := cmdCtx.BuildExecuteParams(task.Command)
 	l.cmd = exec.CommandContext(
 		ctx,
 		shell,
