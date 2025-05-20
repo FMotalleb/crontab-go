@@ -40,17 +40,23 @@ func NewInterval(schedule time.Duration, logger *logrus.Entry) abstraction.Event
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Interval) BuildTickChannel() <-chan []string {
+func (c *Interval) BuildTickChannel() abstraction.EventChannel {
 	if c.ticker != nil {
 		c.logger.Fatal("already built the ticker channel")
 	}
-	notifyChan := make(chan []string)
+	notifyChan := make(abstraction.EventEmitChannel)
 	c.ticker = time.NewTicker(c.duration)
 	go func() {
 		// c.notifyChan <- false
 
 		for i := range c.ticker.C {
-			notifyChan <- []string{"interval", c.duration.String(), i.Format(time.RFC3339)}
+			notifyChan <- NewMetaData(
+				"interval",
+				map[string]any{
+					"interval": c.duration.String(),
+					"time":     i.Format(time.RFC3339),
+				},
+			)
 		}
 	}()
 

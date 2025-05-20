@@ -20,3 +20,33 @@ func Build(log *logrus.Entry, cfg *config.JobEvent) abstraction.EventGenerator {
 	log.WithError(err).Warn("event.Build: generator not found")
 	return nil
 }
+
+type MetaData struct {
+	Emitter string
+	Extra   map[string]any
+}
+
+func NewMetaData(emitter string, extra map[string]any) *MetaData {
+	return &MetaData{
+		Emitter: emitter,
+		Extra:   extra,
+	}
+}
+
+func NewErrMetaData(emitter string, err error) *MetaData {
+	return &MetaData{
+		Emitter: emitter,
+		Extra: map[string]any{
+			"error": err.Error(),
+		},
+	}
+}
+
+func (m *MetaData) GetData() map[string]any {
+	result := m.Extra
+	if m.Extra == nil {
+		result = make(map[string]any)
+	}
+	result["emitter"] = m.Emitter
+	return result
+}

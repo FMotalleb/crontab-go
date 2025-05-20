@@ -14,7 +14,6 @@ import (
 	"github.com/FMotalleb/crontab-go/config"
 	"github.com/FMotalleb/crontab-go/core/cmd_connection/command"
 	"github.com/FMotalleb/crontab-go/core/utils"
-	"github.com/FMotalleb/crontab-go/ctxutils"
 	"github.com/FMotalleb/crontab-go/helpers"
 )
 
@@ -69,8 +68,7 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 		d.conn.DockerConnection = "unix:///var/run/docker.sock"
 	}
 
-	params := ctx.Value(ctxutils.EventData).([]string)
-	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command, params)
+	shell, shellArgs, environments := cmdCtx.BuildExecuteParams(task.Command)
 	cmd := append(
 		[]string{shell},
 		shellArgs...,

@@ -30,11 +30,15 @@ func NewWebEventListener(event string) abstraction.EventGenerator {
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (w *WebEventListener) BuildTickChannel() <-chan []string {
-	notifyChan := make(chan []string)
+func (w *WebEventListener) BuildTickChannel() abstraction.EventChannel {
+	notifyChan := make(abstraction.EventEmitChannel)
 	global.CTX().AddEventListener(
 		w.event, func() {
-			notifyChan <- []string{"web", w.event}
+			notifyChan <- NewMetaData(
+				"web",
+				map[string]any{
+					"event": w.event,
+				})
 		},
 	)
 	return notifyChan

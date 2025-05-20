@@ -44,7 +44,7 @@ func NewCron(schedule string, c *cron.Cron, logger *logrus.Entry) abstraction.Ev
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Cron) BuildTickChannel() <-chan abstraction.Event {
+func (c *Cron) BuildTickChannel() abstraction.EventChannel {
 	if c.entry != nil {
 		c.logger.Fatal("already built the ticker channel")
 	}
@@ -74,5 +74,10 @@ type cronJob struct {
 
 func (j *cronJob) Run() {
 	j.logger.Debugln("cron tick received")
-	j.notify <- []string{"cron", j.scheduler}
+	j.notify <- NewMetaData(
+		"cron",
+		map[string]any{
+			"schedule": j.scheduler,
+		},
+	)
 }

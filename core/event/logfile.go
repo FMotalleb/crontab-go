@@ -3,7 +3,6 @@ package event
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"math"
 	"os"
@@ -26,7 +25,7 @@ func init() {
 
 func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstraction.EventGenerator, bool) {
 	if cfg.LogFile != "" {
-		e, err := NewLogFile(
+		listener, err := NewLogFile(
 			cfg.LogFile,
 			cfg.LogLineBreaker,
 			cfg.LogMatcher,
@@ -37,7 +36,7 @@ func newLogListenerGenerator(log *logrus.Entry, cfg *config.JobEvent) (abstracti
 			log.Error("Error creating LogFileListener: ", err)
 			return nil, false
 		}
-		return e, true
+		return listener, true
 	}
 	return nil, false
 }
@@ -82,8 +81,8 @@ func NewLogFile(filePath string, lineBreaker string, matcherStr string, checkCyc
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (lf *LogFile) BuildTickChannel() <-chan []string {
-	notifyChan := make(chan []string)
+func (lf *LogFile) BuildTickChannel() abstraction.EventChannel {
+	notifyChan := make(abstraction.EventEmitChannel)
 	go func() {
 		// Use bufio to read file line by line
 		file, err := os.Open(lf.filePath)
@@ -109,14 +108,18 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 				return
 			}
 			for _, line := range strings.Split(data, lf.lineBreaker) {
-				eventData := []string{"log-file", lf.filePath, line}
 				matches := lf.matcher.FindStringSubmatch(line)
 				if matches != nil {
 					names := lf.matcher.SubexpNames()
 
-					eventData = append(eventData, reshapeRegxpMatch(names, matches)...)
-
-					notifyChan <- eventData
+					notifyChan <- NewMetaData(
+						"log-file",
+						map[string]any{
+							"file":   lf.filePath,
+							"line":   line,
+							"groups": reshapeRegxpMatch(names, matches),
+						},
+					)
 				}
 			}
 			time.Sleep(lf.checkCycle)
@@ -125,16 +128,14 @@ func (lf *LogFile) BuildTickChannel() <-chan []string {
 	return notifyChan
 }
 
-func reshapeRegxpMatch(keys []string, matches []string) []string {
-	if len(keys) == 0 || len(matches) == 0 {
-		return matches
-	}
-	result := make([]string, 0, len(keys))
+func reshapeRegxpMatch(keys []string, matches []string) map[string]string {
+	result := make(map[string]string)
+
 	for i, key := range keys {
 		if key != "" {
-			result = append(result, fmt.Sprintf("%s=%s", key, matches[i]))
+			result[key] = matches[i]
 		} else if i == 0 {
-			result = append(result, "match="+matches[i])
+			result["0"] = matches[i]
 		}
 	}
 	return result

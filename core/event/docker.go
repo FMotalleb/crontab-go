@@ -2,9 +2,7 @@ package event
 
 import (
 	"context"
-	"fmt"
 	"regexp"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/events"
@@ -80,8 +78,8 @@ func NewDockerEvent(
 }
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (de *DockerEvent) BuildTickChannel() <-chan []string {
-	notifyChan := make(chan []string)
+func (de *DockerEvent) BuildTickChannel() abstraction.EventChannel {
+	notifyChan := make(abstraction.EventEmitChannel)
 
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(de.connection),
@@ -128,7 +126,15 @@ func (de *DockerEvent) BuildTickChannel() <-chan []string {
 			case event := <-msg:
 				de.log.Trace("received an event from docker: ", event)
 				if de.matches(&event) {
-					notifyChan <- []string{"docker", event.Scope, string(event.Action), event.Actor.ID, strings.Join(reshapeAttrib(event.Actor.Attributes), ",")}
+					notifyChan <- NewMetaData(
+						"docker",
+						map[string]any{
+							"scope":      event.Scope,
+							"action":     event.Action,
+							"actor":      event.Actor.ID,
+							"attributes": event.Actor.Attributes,
+						},
+					)
 				}
 				errCount.Set(0)
 			}
@@ -162,14 +168,6 @@ func reshapeLabelMatcher(labels map[string]string) map[string]regexp.Regexp {
 	res := make(map[string]regexp.Regexp)
 	for k, v := range labels {
 		res[k] = *regexp.MustCompile(v)
-	}
-	return res
-}
-
-func reshapeAttrib(input map[string]string) []string {
-	res := make([]string, 0, len(input))
-	for k, v := range input {
-		res = append(res, fmt.Sprintf("%s=%s", k, v))
 	}
 	return res
 }

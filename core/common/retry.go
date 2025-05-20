@@ -9,13 +9,19 @@ import (
 	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
+type RetryCount int64
+
+func WithRetryCount(ctx context.Context, count int64) context.Context {
+	return context.WithValue(ctx, ctxutils.RetryCountKey, RetryCount(count))
+}
+
 type Retry struct {
-	maxRetries int64
+	maxRetries RetryCount
 	retryDelay time.Duration
 }
 
 func (r *Retry) SetMaxRetry(retries int64) {
-	r.maxRetries = retries
+	r.maxRetries = RetryCount(retries)
 }
 
 func (r *Retry) SetRetryDelay(retryDelay time.Duration) {
@@ -33,8 +39,8 @@ func (r *Retry) WaitForRetry(ctx context.Context) error {
 	return nil
 }
 
-func GetRetry(ctx context.Context) int64 {
-	if result, ok := ctx.Value(ctxutils.RetryCountKey).(int64); ok {
+func GetRetry(ctx context.Context) RetryCount {
+	if result, ok := ctx.Value(ctxutils.RetryCountKey).(RetryCount); ok {
 		return result
 	}
 	return 0

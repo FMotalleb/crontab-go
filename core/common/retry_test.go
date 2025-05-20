@@ -1,13 +1,10 @@
 package common
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/alecthomas/assert/v2"
-
-	"github.com/FMotalleb/crontab-go/ctxutils"
 )
 
 func TestSetMaxRetry(t *testing.T) {
@@ -25,7 +22,7 @@ func TestSetRetryDelay(t *testing.T) {
 
 func TestWaitForRetry(t *testing.T) {
 	r := &Retry{maxRetries: 3, retryDelay: 1 * time.Second}
-	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(2))
+	ctx := WithRetryCount(t.Context(), 2)
 
 	start := time.Now()
 	err := r.WaitForRetry(ctx)
@@ -36,14 +33,14 @@ func TestWaitForRetry(t *testing.T) {
 
 func TestWaitForRetryMaxExceeded(t *testing.T) {
 	r := &Retry{maxRetries: 3, retryDelay: 1 * time.Second}
-	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(5))
+	ctx := WithRetryCount(t.Context(), 5)
 
 	err := r.WaitForRetry(ctx)
 	assert.Error(t, err)
 }
 
 func TestIncreaseRetry(t *testing.T) {
-	ctx := context.WithValue(t.Context(), ctxutils.RetryCountKey, uint(2))
+	ctx := WithRetryCount(t.Context(), 2)
 	newCtx := IncreaseRetry(ctx)
 	assert.Equal(t, 3, GetRetry(newCtx))
 }

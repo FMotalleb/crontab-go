@@ -21,11 +21,11 @@ func newInitGenerator(_ *logrus.Entry, cfg *config.JobEvent) (abstraction.EventG
 type Init struct{}
 
 // BuildTickChannel implements abstraction.Scheduler.
-func (c *Init) BuildTickChannel() <-chan []string {
-	notifyChan := make(chan []string)
+func (c *Init) BuildTickChannel() abstraction.EventChannel {
+	notifyChan := make(abstraction.EventEmitChannel)
 
 	go func() {
-		notifyChan <- []string{"init"}
+		notifyChan <- NewMetaData("init", map[string]any{})
 		close(notifyChan)
 	}()
 

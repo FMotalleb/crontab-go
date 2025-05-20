@@ -13,7 +13,7 @@ import (
 func taskHandler(
 	c context.Context,
 	logger *logrus.Entry,
-	signal <-chan []string,
+	signal abstraction.EventChannel,
 	tasks []abstraction.Executable,
 	doneHooks []abstraction.Executable,
 	failHooks []abstraction.Executable,

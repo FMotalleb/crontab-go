@@ -10,7 +10,8 @@
             "request": "launch",
             "mode": "auto",
             "program": ".",
-            "env": {},
+            // "env": {},
+            "envFile": "${workspaceFolder}/.env",
             "args": [
                 "-c",
                 "config.local.yaml"
