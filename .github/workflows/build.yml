@@ -37,8 +37,7 @@ jobs:
           path: coverage.*
 
       - run: |
-          go install github.com/goreleaser/goreleaser/v2@latest 
-          goreleaser release 
+          make build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ runner.os == 'Linux' }}
