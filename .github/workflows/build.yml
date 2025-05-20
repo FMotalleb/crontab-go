@@ -36,7 +36,10 @@ jobs:
           name: coverage-${{ matrix.os }}
           path: coverage.*
 
-      - run: go tool goreleaser release --clean --snapshot
+      - run: go install github.com/goreleaser/goreleaser/v2@latest
+      - run: goreleaser release 
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ runner.os == 'Linux' }}
 
       - name: Upload dist
