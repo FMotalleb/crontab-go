@@ -75,6 +75,7 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 	d.execCFG = &container.ExecOptions{
 		AttachStdout: true,
 		AttachStderr: true,
+		Tty:          true,
 		Privileged:   true,
 		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
@@ -128,7 +129,8 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output
-	_, err = io.Copy(writer, resp.Reader)
+	wrote, err := io.Copy(writer, resp.Reader)
+	d.log.Debugf("wrote %d bytes to stdout", wrote)
 	if err != nil {
 		return nil, err
 	}

@@ -88,7 +88,7 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 		Cmd:          cmd,
 		Image:        d.conn.ImageName,
 		Volumes:      volumes,
-		Entrypoint:   []string{},
+		Entrypoint:   []string{"/bin/sh", "-c"},
 		Shell:        []string{},
 	}
 	d.hostConfig = &container.HostConfig{
@@ -204,7 +204,8 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 
 	writer := bytes.NewBuffer([]byte{})
 	// Print the command output
-	_, err = io.Copy(writer, resp)
+	wrote, err := io.Copy(writer, resp)
+	d.log.Debugf("wrote %d bytes to stdout", wrote)
 	if err != nil {
 		return writer.Bytes(), err
 	}
