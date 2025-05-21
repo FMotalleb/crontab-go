@@ -41,3 +41,4 @@ vendor/
 .envrc
 *.log
 crontab-go
+__*
