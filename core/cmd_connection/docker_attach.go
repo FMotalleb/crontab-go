@@ -80,6 +80,7 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
 		User:         task.UserName,
+		Detach:       false,
 		Cmd:          cmd,
 	}
 	return nil

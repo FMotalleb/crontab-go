@@ -9,7 +9,7 @@ jobs:
           SHELL: /bin/sh
           COLE: test
         connections:
-          - container: "sharp_black"
+          - image: "library/alpine"
 
     events:
       # - cron: "0 * * * * *"

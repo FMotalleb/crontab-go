@@ -88,8 +88,8 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 		Cmd:          cmd,
 		Image:        d.conn.ImageName,
 		Volumes:      volumes,
-		Entrypoint:   []string{"/bin/sh", "-c"},
-		Shell:        []string{},
+		Entrypoint:   []string{"/bin/sh"},
+		Shell:        []string{"/bin/sh", "-c"},
 	}
 	d.hostConfig = &container.HostConfig{
 		Binds: d.conn.Volumes,
