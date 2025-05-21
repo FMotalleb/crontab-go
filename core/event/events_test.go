@@ -1,6 +1,7 @@
 package event_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -87,5 +88,68 @@ func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
 	e := event.Build(log, sh)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron event, got %T", e)
+	}
+}
+
+func TestNewMetaData(t *testing.T) {
+	extra := map[string]any{"key1": "value1"}
+	m := event.NewMetaData("emitter1", extra)
+	assert.Equal(t, "emitter1", m.Emitter)
+	assert.Equal(t, extra, m.Extra)
+}
+
+func TestNewErrMetaData(t *testing.T) {
+	err := errors.New("something went wrong")
+	m := event.NewErrMetaData("emitter2", err)
+	assert.Equal(t, "emitter2", m.Emitter)
+	expectedExtra := map[string]any{"error": "something went wrong"}
+	assert.Equal(t, expectedExtra, m.Extra)
+}
+
+func TestGetData(t *testing.T) {
+	tests := []struct {
+		name     string
+		emitter  string
+		extra    map[string]any
+		expected map[string]any
+	}{
+		{
+			name:    "nil extra map",
+			emitter: "e1",
+			extra:   nil,
+			expected: map[string]any{
+				"emitter": "e1",
+			},
+		},
+		{
+			name:    "empty extra map",
+			emitter: "e2",
+			extra:   map[string]any{},
+			expected: map[string]any{
+				"emitter": "e2",
+			},
+		},
+		{
+			name:    "non-empty extra map",
+			emitter: "e3",
+			extra: map[string]any{
+				"foo": "bar",
+			},
+			expected: map[string]any{
+				"foo":     "bar",
+				"emitter": "e3",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := &event.MetaData{
+				Emitter: tt.emitter,
+				Extra:   tt.extra,
+			}
+			data := m.GetData()
+			assert.Equal(t, tt.expected, data)
+		})
 	}
 }
