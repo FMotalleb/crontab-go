@@ -4,13 +4,16 @@ jobs:
   - name: echo
     tasks:
       - command: |
-          echo "env: {{ env COLE }}"
+          echo "env: {{ env "COLE" }}"
         env:
-          SHELL: /bin/bash
+          SHELL: /bin/sh
           COLE: test
+        connections:
+          - container: "sharp_black"
+
     events:
       # - cron: "0 * * * * *"
-      - interval: 5s
+      # - interval: 5s
       - on-init: true
       # - web-event: test
       # - docker:
