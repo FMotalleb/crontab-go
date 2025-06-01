@@ -10,8 +10,8 @@ tool (
 
 require (
 	github.com/alecthomas/assert/v2 v2.11.0
-	github.com/docker/docker v28.1.1+incompatible
-	github.com/gin-gonic/gin v1.10.0
+	github.com/docker/docker v28.2.2+incompatible
+	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -56,6 +56,8 @@ require (
 	github.com/chavacava/garif v0.1.0 // indirect
 	github.com/ckaznocha/intrange v0.3.0 // indirect
 	github.com/client9/misspell v0.3.4 // indirect
+	github.com/containerd/errdefs v1.0.0 // indirect
+	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/curioswitch/go-reassign v0.3.0 // indirect
 	github.com/daixiang0/gci v0.13.5 // indirect
