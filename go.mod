@@ -10,7 +10,7 @@ tool (
 
 require (
 	github.com/alecthomas/assert/v2 v2.11.0
-	github.com/docker/docker v28.3.0+incompatible
+	github.com/docker/docker v28.3.1+incompatible
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/prometheus/client_golang v1.22.0
