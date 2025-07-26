@@ -93,6 +93,7 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 func (d *DockerAttachConnection) Connect() error {
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(d.conn.DockerConnection),
+		client.WithAPIVersionNegotiation(),
 	)
 	if err != nil {
 		return err

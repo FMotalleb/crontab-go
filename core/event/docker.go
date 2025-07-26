@@ -83,6 +83,7 @@ func (de *DockerEvent) BuildTickChannel() abstraction.EventChannel {
 
 	cli, err := client.NewClientWithOpts(
 		client.WithHost(de.connection),
+		client.WithAPIVersionNegotiation(),
 	)
 	if err != nil {
 		de.log.Warn("failed to connect to docker: ", err)
