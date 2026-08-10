@@ -4,6 +4,7 @@ package task
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -56,13 +57,14 @@ func (c Command) Do(ctx context.Context) (e error) {
 		zap.Time("start", time.Now()),
 	)
 	defer func() {
-		err := recover()
-		if err != nil {
-			if err, ok := err.(error); ok {
-				log.Warn("recovering command execution from a fatal error", zap.Error(err))
-				return
+		if r := recover(); r != nil {
+			if err, ok := r.(error); ok {
+				log.Error("panic recovered", zap.Error(err))
+				e = err
+			} else {
+				log.Error("panic recovered", zap.Any("error", r))
+				e = fmt.Errorf("panic: %v", r)
 			}
-			log.Warn("a non-error panic accord", zap.Any("error", err))
 		}
 	}()
 	connections := c.task.Connections
@@ -79,6 +81,9 @@ func (c Command) Do(ctx context.Context) (e error) {
 			zap.Any("is-local", conn.Local),
 		)
 		connection := connection.Get(&conn, l)
+		if connection == nil {
+			return errors.New("no matching connection found for task connection")
+		}
 		cmdCtx, cancel := c.ApplyTimeout(ctx)
 		c.SetCancel(cancel)
 

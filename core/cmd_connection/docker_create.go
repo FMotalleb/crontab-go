@@ -73,7 +73,11 @@ func (d *DockerCreateConnection) Prepare(ctx context.Context, task *config.Task)
 	)
 	volumes := make(map[string]struct{})
 	for _, volume := range d.conn.Volumes {
-		inContainer := utils.EscapedSplit(volume, ':')[1]
+		parts := utils.EscapedSplit(volume, ':')
+		if len(parts) < 2 {
+			continue
+		}
+		inContainer := parts[1]
 		volumes[inContainer] = struct{}{}
 	}
 	// Create an exec configuration

@@ -30,11 +30,11 @@ func EscapedSplit(s string, sep rune) []string {
 			pushBuff(part)
 		}
 	}
+	if escaped {
+		pushBuff(escapedCharacter)
+	}
 	if len(buffer) > 0 {
 		result = append(result, string(buffer))
-	}
-	if escaped {
-		panic("escaped character at the end of string")
 	}
 	return result
 }

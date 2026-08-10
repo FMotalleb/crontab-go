@@ -101,6 +101,19 @@ func validateFields(t *Task, log *zap.Logger) error {
 }
 
 func validateCredential(t *Task, log *zap.Logger) error {
+	// Only validate host credentials for tasks that execute locally
+	if len(t.Connections) > 0 {
+		hasLocal := false
+		for _, c := range t.Connections {
+			if c.Local {
+				hasLocal = true
+				break
+			}
+		}
+		if !hasLocal {
+			return nil
+		}
+	}
 	if err := credential.Validate(log, t.UserName, t.GroupName); err != nil {
 		log.Warn("Be careful when using credentials, in local mode you can't use credentials unless running as root", zap.Error(err))
 	}

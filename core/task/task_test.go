@@ -3,6 +3,7 @@ package task_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/alecthomas/assert/v2"
 	"go.uber.org/zap"
@@ -72,4 +73,34 @@ func TestCompileTask_WithHooks(t *testing.T) {
 	}
 	exe := task.Build(ctx, zap.NewNop(), taskConfig)
 	assert.NotEqual(t, exe, nil)
+}
+
+func TestGetTask_Execute_NoPanic(t *testing.T) {
+	ctx := t.Context()
+	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
+	taskConfig := config.Task{
+		Get:        "http://localhost:1/nonexistent",
+		Timeout:    100 * time.Millisecond,
+		Retries:    1,
+		RetryDelay: 10 * time.Millisecond,
+	}
+	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NotEqual(t, nil, exe)
+	err := exe.Execute(ctx)
+	assert.NotEqual(t, nil, err)
+}
+
+func TestPostTask_Execute_NoPanic(t *testing.T) {
+	ctx := t.Context()
+	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
+	taskConfig := config.Task{
+		Post:       "http://localhost:1/nonexistent",
+		Timeout:    100 * time.Millisecond,
+		Retries:    1,
+		RetryDelay: 10 * time.Millisecond,
+	}
+	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NotEqual(t, nil, exe)
+	err := exe.Execute(ctx)
+	assert.NotEqual(t, nil, err)
 }

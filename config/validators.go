@@ -34,7 +34,7 @@ func validateWebserverConfig(cfg *Config) error {
 		log.Warn("no webserver address specified")
 		return nil
 	}
-	if cfg.WebServerAddress != "" && cfg.WebServerPort == 0 {
+	if cfg.WebServerPort == 0 {
 		return fmt.Errorf("address: %s:%d is not a valid address", cfg.WebServerAddress, cfg.WebServerPort)
 	}
 	if len(cfg.WebServerPassword) < 8 {

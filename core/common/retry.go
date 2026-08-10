@@ -3,7 +3,6 @@ package common
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
@@ -88,7 +87,6 @@ func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error
 	case RetryFibonacci:
 		backoff = retry.NewFibonacci(r.retryDelay)
 	default:
-		panic(errors.New("unknown retry delay modifier"))
 	}
 	if r.maxDelay != 0 {
 		backoff = retry.WithCappedDuration(r.maxDelay, backoff)

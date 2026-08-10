@@ -51,13 +51,13 @@ func SetUser(log *zap.Logger, proc *exec.Cmd, usr string, grp string) {
 	setUID(proc, uid, gid)
 }
 
-func lookupGID(grp string, log *zap.Logger) (gid uint32, err error) {
+func lookupGID(grp string, _ *zap.Logger) (gid uint32, err error) {
 	if grp == "" {
 		return 0, nil
 	}
 	g, err := osUser.LookupGroup(grp)
 	if err != nil {
-		log.Panic("cannot find group", zap.String("group", grp), zap.Error(err))
+		return 0, fmt.Errorf("cannot find group `%s`: %w", grp, err)
 	}
 	gidU, err := strconv.ParseUint(g.Gid, 10, 32)
 	if err != nil {
@@ -66,13 +66,13 @@ func lookupGID(grp string, log *zap.Logger) (gid uint32, err error) {
 	return uint32(gidU), nil
 }
 
-func lookupUIDAndGID(usr string, log *zap.Logger) (uid uint32, gid uint32, err error) {
+func lookupUIDAndGID(usr string, _ *zap.Logger) (uid uint32, gid uint32, err error) {
 	if usr == "" {
 		return 0, 0, nil
 	}
 	u, err := osUser.Lookup(usr)
 	if err != nil {
-		log.Panic("cannot get uid and gid of user", zap.String("user", usr), zap.Error(err))
+		return 0, 0, fmt.Errorf("cannot get uid and gid of user `%s`: %w", usr, err)
 	}
 	uidU, err := strconv.ParseUint(u.Uid, 10, 32)
 	if err != nil {

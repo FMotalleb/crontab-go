@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -36,6 +37,7 @@ func NewPost(logger *zap.Logger, task *config.Task) (abstraction.Executable, boo
 	post.ConfigRetryFrom(task)
 	post.SetTimeout(task.Timeout)
 	post.SetMetaName("post: " + task.Post)
+	post.Action = post
 	return post, true
 }
 
@@ -58,13 +60,14 @@ func (p *Post) Do(ctx context.Context) (e error) {
 		zap.Time("start", time.Now()),
 	)
 	defer func() {
-		err := recover()
-		if err != nil {
-			if err, ok := err.(error); ok {
-				log.Warn("recovering command execution from a fatal error", zap.Error(err))
-				return
+		if r := recover(); r != nil {
+			if err, ok := r.(error); ok {
+				log.Error("panic recovered", zap.Error(err))
+				e = err
+			} else {
+				log.Error("panic recovered", zap.Any("error", r))
+				e = fmt.Errorf("panic: %v", r)
 			}
-			log.Warn("a non-error panic accord", zap.Any("error", err))
 		}
 	}()
 
