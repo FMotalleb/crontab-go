@@ -8,7 +8,7 @@
 | 04-concurrency-and-shutdown | **Done** | `59037da` | 04.1/04.2/04.4/04.6 done |
 | 05-refactoring-and-dedup | **Done** | `c13a397` | 5.2/5.4/5.6/5.8 done |
 | 06-dead-code-and-minor | **Done** | `53b4663` | 6.1/6.3 done |
-| 07-opentelemetry-observability | **Partial** | `c8725d0` | 07.1-07.4/07.8 done; tracing spans + metrics bridge + logging bridge remaining |
+| 07-opentelemetry-observability | **Done** | `c8725d0`, `d1aa7cb`, `5dda3c2`, `5994db3` | 07.1-07.8 complete |
 
 ## 01-correctness-bugs — Done
 
@@ -62,3 +62,14 @@ Deferred (need discussion / broader change):
 
 - [x] 3.2 Deterministic priority-based selection via `RegisterWithPriority`
 - [x] 3.3 Nil-safe registry: `Build`/`Get` return `(O, error)` instead of nil/panic
+
+## 07-opentelemetry-observability — Partial
+
+- [x] 07.1 Add `Observability`/`ObservabilitySignal` config structs + schema
+- [x] 07.2 Add OTel SDK + HTTP exporter dependencies
+- [x] 07.3 Create `core/observability` package with Setup/Shutdown
+- [x] 07.4 Wire observability into `cmd/root.go`
+- [x] 07.8 Update `schema.json` with Observability definitions
+- [x] 07.5 Add tracing spans to task_handler + task Do methods
+- [ ] 07.6 Bridge Prometheus metrics to OTel counters
+- [ ] 07.7 Bridge zap logging to OTLP via otelzap

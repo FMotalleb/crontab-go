@@ -2,6 +2,31 @@
 #TODO: unix/tcp socket controller
 #TODO: prometheus exporter
 
+# OpenTelemetry observability configuration (tracing, metrics, logging export).
+# All fields are optional; absent signal = disabled.
+# Can also be configured via env vars: OTEL_TRACING_URL, OTEL_METRICS_URL, OTEL_LOG_URL, etc.
+# observability:
+#   service-name: "crontab-go"
+#   tracing:
+#     protocol: http           # http | grpc
+#     url: "http://collector:4318"
+#     insecure: true           # true=plaintext, false=TLS
+#     headers:
+#       Authorization: "Bearer <token>"
+#   metrics:
+#     protocol: http
+#     url: "http://collector:4318"
+#     insecure: true
+#     interval: 60s            # push cadence for the periodic reader
+#     headers:
+#       Authorization: "Bearer <token>"
+#   log:
+#     protocol: http
+#     url: "http://collector:4318"
+#     insecure: true
+#     headers:
+#       Authorization: "Bearer <token>"
+
 jobs:
   # Jobs can be assigned a unique name, which will be included in log messages for easier debugging.
   - name: Test Job

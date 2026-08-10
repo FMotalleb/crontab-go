@@ -1,5 +1,23 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fmotalleb/crontab-go/main/schema.json
 
+# OpenTelemetry observability (optional).
+# Can also be configured via env vars: OTEL_TRACING_URL, OTEL_METRICS_URL, OTEL_LOG_URL, etc.
+# observability:
+#   service-name: "crontab-go"
+#   tracing:
+#     protocol: http
+#     url: "http://collector:4318"
+#     insecure: true
+#   metrics:
+#     protocol: http
+#     url: "http://collector:4318"
+#     insecure: true
+#     interval: 60s
+#   log:
+#     protocol: http
+#     url: "http://collector:4318"
+#     insecure: true
+
 jobs:
   - name: Test Job
     description: Sample of a single job

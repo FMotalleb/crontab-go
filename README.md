@@ -28,6 +28,8 @@ Cronjob-go is a powerful, lightweight, and highly configurable Golang applicatio
 
 4. **Logging and Monitoring**: The application provides comprehensive logging and monitoring capabilities, allowing you to track the execution of your scheduled tasks and quickly identify and resolve any issues that may arise.
 
+5. **OpenTelemetry Observability**: Built-in support for OTLP export of traces, metrics, and logs. Configure via YAML (`observability:` block) or env vars (`OTEL_TRACING_URL`, `OTEL_METRICS_URL`, `OTEL_LOG_URL`). Prometheus `/metrics` endpoint remains available alongside OTLP push metrics.
+
 **Use Cases:**
 
 - **Automated Backups**: Schedule regular backups of your application data or logs to ensure data integrity and disaster recovery.
@@ -49,6 +51,44 @@ This section outlines the configuration options available for the application.
 - **Log File:** Logs can be saved to a file by setting the `LOG_FILE` environment variable.
 - **StdOut:** Outputting logs to standard output can be disabled by setting `LOG_STDOUT=false`.
 - **Log Level:** The default log level is `info`. You can adjust the level from most verbose to least verbose: `trace`, `debug`, `info`, `warn`, `fatal`, `panic` using the `LOG_LEVEL` environment variable.
+
+**OpenTelemetry Observability:**
+
+Crontab-go supports exporting traces, metrics, and logs to an OTLP-compatible collector (e.g. OpenTelemetry Collector). Each signal is independently configured and optional.
+
+Environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `OTEL_TRACING_URL` | OTLP tracing endpoint (e.g. `http://collector:4318`) |
+| `OTEL_METRICS_URL` | OTLP metrics endpoint |
+| `OTEL_LOG_URL` | OTLP logging endpoint |
+| `OTEL_TRACING_HEADERS` | Custom headers as JSON (e.g. `{"Authorization":"Bearer ..."}`) |
+| `OTEL_METRICS_HEADERS` | Custom headers as JSON |
+| `OTEL_LOG_HEADERS` | Custom headers as JSON |
+| `OTEL_TRACING_INSECURE` | Use plaintext instead of TLS |
+| `OTEL_METRICS_INSECURE` | Use plaintext instead of TLS |
+| `OTEL_LOG_INSECURE` | Use plaintext instead of TLS |
+| `OTEL_SERVICE_NAME` | Service name resource attribute (default: `crontab-go`) |
+
+Example YAML config:
+
+```yaml
+observability:
+  service-name: "crontab-go"
+  tracing:
+    url: "http://collector:4318"
+    insecure: true
+  metrics:
+    url: "http://collector:4318"
+    insecure: true
+    interval: 60s
+  log:
+    url: "http://collector:4318"
+    insecure: true
+```
+
+All three signals are non-fatal: if a collector is unreachable at startup, the corresponding signal is disabled with a warning. The Prometheus `/metrics` endpoint continues to work independently of OTLP metrics export.
 
 **Shell:**
 
