@@ -40,7 +40,6 @@ func newLogListenerGenerator(log *zap.Logger, cfg *config.JobEvent) (abstraction
 
 	listener, err := NewLogFile(
 		cfg.LogFile,
-		cfg.LogLineBreaker,
 		cfg.LogMatcher,
 		cfg.LogCheckCycle,
 		log,
@@ -56,14 +55,12 @@ func newLogListenerGenerator(log *zap.Logger, cfg *config.JobEvent) (abstraction
 type LogFile struct {
 	logger       *zap.Logger
 	filePath     string
-	lineBreaker  string
 	matcher      *regexp.Regexp
 	checkCycle   time.Duration
 	metricLabels prometheus.Labels
 }
 
-func NewLogFile(filePath, lineBreaker, matcherStr string, checkCycle time.Duration, logger *zap.Logger) (*LogFile, error) {
-	lineBreaker = cmp.Or(lineBreaker, "\n")
+func NewLogFile(filePath, matcherStr string, checkCycle time.Duration, logger *zap.Logger) (*LogFile, error) {
 	matcherStr = cmp.Or(matcherStr, ".")
 	checkCycle = cmp.Or(checkCycle, time.Second)
 
@@ -72,10 +69,9 @@ func NewLogFile(filePath, lineBreaker, matcherStr string, checkCycle time.Durati
 		return nil, fmt.Errorf("invalid log matcher: %w", err)
 	}
 	metricLabels := prometheus.Labels{
-		"file":         filePath,
-		"line_breaker": lineBreaker,
-		"matcher":      matcherStr,
-		"check_cycle":  checkCycle.String(),
+		"file":        filePath,
+		"matcher":     matcherStr,
+		"check_cycle": checkCycle.String(),
 	}
 	global.RegisterCounter(
 		LogEventsMetricName,
@@ -86,12 +82,10 @@ func NewLogFile(filePath, lineBreaker, matcherStr string, checkCycle time.Durati
 		logger: logger.With(
 			zap.String("scheduler", "log_file"),
 			zap.String("file", filePath),
-			zap.String("line_breaker", lineBreaker),
 			zap.String("matcher", matcherStr),
 			zap.Duration("check_cycle", checkCycle),
 		),
 		filePath:     filePath,
-		lineBreaker:  lineBreaker,
 		matcher:      matcher,
 		checkCycle:   checkCycle,
 		metricLabels: metricLabels,

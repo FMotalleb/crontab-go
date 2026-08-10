@@ -149,14 +149,6 @@
             "5h30m15s"
           ]
         },
-        "log-line-breaker": {
-          "type": "string",
-          "examples": [
-            "\\n",
-            "\\r\\n"
-          ],
-          "description": "split log data by this string, defaults to `\\n`"
-        },
         "log-matcher": {
           "type": "string",
           "examples": [

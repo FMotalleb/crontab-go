@@ -7,10 +7,6 @@ import (
 
 // Config represents the configuration for the crontab application.
 type Config struct {
-	// Command executor configs
-	Shell     string   `mapstructure:"shell" json:"shell,omitempty"`
-	ShellArgs []string `mapstructure:"shell_args" json:"shell_args,omitempty"`
-
 	// Web-server config
 	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address,omitempty"`
 	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port,omitempty"`
@@ -43,7 +39,6 @@ type JobEvent struct {
 
 	LogFile        string        `mapstructure:"log-file" json:"log-file,omitempty"`
 	LogCheckCycle  time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
-	LogLineBreaker string        `mapstructure:"log-line-breaker" json:"log-line-breaker,omitempty"`
 	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
