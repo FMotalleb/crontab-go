@@ -5,6 +5,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"github.com/fmotalleb/go-tools/concurrency"
 
@@ -33,6 +36,7 @@ func IncMetric(name string, help string, labels prometheus.Labels) {
 				} else {
 					vec.With(labels).Inc()
 				}
+				otelInc(namespace+"."+name, labels)
 				return m
 			}
 			keys := make([]string, 0, len(labels))
@@ -50,6 +54,7 @@ func IncMetric(name string, help string, labels prometheus.Labels) {
 			counter := vec.With(labels)
 			counter.Inc()
 			m[name] = vec
+			otelInc(namespace+"."+name, labels)
 			return m
 		})
 }
@@ -80,6 +85,38 @@ func RegisterCounter(name string, help string, labels prometheus.Labels) {
 			m[name] = vec
 			return m
 		})
+}
+
+type otelCounterEntry struct {
+	counter metric.Int64Counter
+}
+
+var otelCounters = concurrency.NewLockedValue(make(map[string]*otelCounterEntry, 0))
+
+func otelInc(name string, labels prometheus.Labels) {
+	otelCounters.Operate(
+		func(m map[string]*otelCounterEntry) map[string]*otelCounterEntry {
+			if c, ok := m[name]; ok {
+				c.counter.Add(context.Background(), 1, metric.WithAttributes(labelsToAttrs(labels)...))
+				return m
+			}
+			meter := otel.GetMeterProvider().Meter("crontab-go")
+			counter, err := meter.Int64Counter(name)
+			if err != nil {
+				return m
+			}
+			counter.Add(context.Background(), 1, metric.WithAttributes(labelsToAttrs(labels)...))
+			m[name] = &otelCounterEntry{counter: counter}
+			return m
+		})
+}
+
+func labelsToAttrs(labels prometheus.Labels) []attribute.KeyValue {
+	attrs := make([]attribute.KeyValue, 0, len(labels))
+	for k, v := range labels {
+		attrs = append(attrs, attribute.String(k, v))
+	}
+	return attrs
 }
 
 func CountSignals(signal abstraction.EventDispatcher, name string, help string, labels prometheus.Labels) {
