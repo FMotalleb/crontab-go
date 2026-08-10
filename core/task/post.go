@@ -74,6 +74,7 @@ func (p *Post) Do(ctx context.Context) (e error) {
 	var localCtx context.Context
 	var cancel context.CancelFunc
 	localCtx, cancel = p.ApplyTimeout(ctx)
+	defer cancel()
 	p.SetCancel(cancel)
 
 	client := &http.Client{}

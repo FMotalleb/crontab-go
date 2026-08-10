@@ -8,6 +8,7 @@ import (
 
 	"github.com/fmotalleb/crontab-go/abstraction"
 	"github.com/fmotalleb/crontab-go/ctxutils"
+	"github.com/fmotalleb/crontab-go/core/global"
 )
 
 func taskHandler(
@@ -35,6 +36,11 @@ func executeTask(
 	failHooks []abstraction.Executable,
 	lock sync.Locker,
 ) {
+	defer func() {
+		if r := recover(); r != nil {
+			global.Logger("task_handler").Error("task panicked", zap.Any("recover", r))
+		}
+	}()
 	lock.Lock()
 	defer lock.Unlock()
 	ctx := context.WithValue(c, ctxutils.TaskKey, task)

@@ -3,77 +3,37 @@ package concurrency
 
 import (
 	"errors"
-	"sync"
-
-	"github.com/fmotalleb/go-tools/concurrency"
 )
 
 // ConcurrentPool implements a simple semaphore-like structure to limit
 // the number of concurrent goroutines working together.
 type ConcurrentPool struct {
-	lockerLock sync.Locker
-	available  uint                           // total capacity of the pool
-	used       *concurrency.LockedValue[uint] // number of slots currently in use
-	changeChan chan interface{}               // channel for signaling changes in the pool's state
+	sem chan struct{}
 }
 
 // NewConcurrentPool creates a new ConcurrentPool with the specified capacity.
-// It panics if the capacity is 0.
+// It returns an error if the capacity is 0.
 func NewConcurrentPool(capacity uint) (*ConcurrentPool, error) {
 	if capacity == 0 {
-		return nil, errors.New("capacity value of a concurrent poll cannot be 0")
+		return nil, errors.New("capacity value of a concurrent pool cannot be 0")
 	}
-	return &ConcurrentPool{
-		lockerLock: new(sync.Mutex),
-		available:  capacity,
-		used:       concurrency.NewLockedValue[uint](0),
-		changeChan: make(chan interface{}),
-	}, nil
+	return &ConcurrentPool{sem: make(chan struct{}, capacity)}, nil
 }
 
-// Lock acquires a lock from the pool, waiting if necessary until a slot becomes available.
-// It increments the used count using the reserveSlot method.
+// Lock acquires a slot from the pool, waiting if necessary until one becomes available.
 func (p *ConcurrentPool) Lock() {
-	p.lockerLock.Lock()
-	defer p.lockerLock.Unlock()
-	if p.available > p.get() {
-		p.increase()
-		return
-	}
-	for range p.changeChan {
-		if p.available > p.get() {
-			p.increase()
-			break
-		}
-	}
+	p.sem <- struct{}{}
 }
 
-// Unlock releases a lock, making a slot available for other goroutines.
-// It decrements the used count and sends a signal on the changeChan to notify waiting goroutines.
+// Unlock releases a slot, making it available for other goroutines.
 func (p *ConcurrentPool) Unlock() {
-	if p.get() == 0 {
+	select {
+	case <-p.sem:
+	default:
 		panic(errors.New("unlock called on a totally free pool"))
 	}
-	p.decrease()
-	go func() { p.changeChan <- false }()
 }
 
 func (p *ConcurrentPool) get() uint {
-	return p.used.Get()
-}
-
-func (p *ConcurrentPool) increase() {
-	p.used.Operate(
-		func(current uint) uint {
-			return (current + 1)
-		},
-	)
-}
-
-func (p *ConcurrentPool) decrease() {
-	p.used.Operate(
-		func(current uint) uint {
-			return (current - 1)
-		},
-	)
+	return uint(len(p.sem))
 }

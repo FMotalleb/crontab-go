@@ -67,6 +67,7 @@ func (g *Get) Do(ctx context.Context) (e error) {
 	}()
 
 	localCtx, cancel := g.ApplyTimeout(ctx)
+	defer cancel()
 	g.SetCancel(cancel)
 
 	client := &http.Client{}
