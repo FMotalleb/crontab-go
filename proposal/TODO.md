@@ -7,7 +7,7 @@
 | 03-extensibility | Not started | — | |
 | 04-concurrency-and-shutdown | **Done** | `59037da` | 04.1/04.2/04.4/04.6 done |
 | 05-refactoring-and-dedup | **Done** | `c13a397` | 5.2/5.4/5.6/5.8 done |
-| 06-dead-code-and-minor | Not started | — | |
+| 06-dead-code-and-minor | **Done** | `53b4663` | 6.1/6.3 done |
 | 07-opentelemetry-observability | Not started | — | Spec only; large feature |
 
 ## 01-correctness-bugs — Done
@@ -49,3 +49,11 @@ Deferred (need discussion / broader change):
 - [x] 5.4 Extract `doHTTP` helper for GET/POST dedup
 - [x] 5.6 Fix infinite busy-loops in `DockerCreate.Execute`
 - [x] 5.8 Sort env keys for deterministic ordering
+
+## 06-dead-code-and-minor — Done
+
+- [x] 6.1 Remove dead `helpers.WarnOnErr`, `helpers.IsOk`, `ctxutils.LoggerKey`, `ctxutils.ScopeKey`
+- [x] 6.3 Delete commented-out `retry_test.go`
+- [x] 6.3 Rename `job_valdiator.go` → `job_validator.go`
+- [x] 6.3 Remove stale legacy build tag in `windows_credential.go`
+- [x] 6.3 Collapse `meta/github.go` to consts
