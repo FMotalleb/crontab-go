@@ -10,6 +10,7 @@ This directory documents code-review findings and concrete change/refactor propo
 | [04-concurrency-and-shutdown.md](04-concurrency-and-shutdown.md) | Goroutine leaks, shutdown behavior, panic safety | High |
 | [05-refactoring-and-dedup.md](05-refactoring-and-dedup.md) | Code deduplication and structural refactors | Low/Medium |
 | [06-dead-code-and-minor.md](06-dead-code-and-minor.md) | Dead code and minor cleanups | Low |
+| [07-opentelemetry-observability.md](07-opentelemetry-observability.md) | OpenTelemetry tracing + metrics push + log export (HTTP/gRPC, TLS, custom headers) | Medium |
 
 ## Top recommendations (highest impact)
 
