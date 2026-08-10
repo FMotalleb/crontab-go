@@ -11,6 +11,7 @@ import (
 
 	"github.com/fmotalleb/go-tools/log"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/fmotalleb/crontab-go/ctxutils"
 )
@@ -96,4 +97,18 @@ func Get[T any]() T {
 
 func Logger(name string) *zap.Logger {
 	return log.Of(c()).Named(name)
+}
+
+// AttachOTelCore tees an otelzap core onto the global logger, enabling
+// log records to be exported via OTLP alongside the console sink.
+func AttachOTelCore(otelCore zapcore.Core) {
+	ctx := c()
+	ctx.mu.Lock()
+	defer ctx.mu.Unlock()
+	existing := log.Of(ctx)
+	combined := zapcore.NewTee(existing.Core(), otelCore)
+	replaced := existing.WithOptions(zap.WrapCore(func(_ zapcore.Core) zapcore.Core {
+		return combined
+	}))
+	ctx.Context = log.WithLogger(ctx.Context, replaced)
 }

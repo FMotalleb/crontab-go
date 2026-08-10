@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
@@ -21,6 +22,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/fmotalleb/crontab-go/config"
 )
@@ -28,11 +30,17 @@ import (
 // ShutdownFunc is called to flush pending telemetry data.
 type ShutdownFunc func(context.Context) error
 
+// SetupResult holds the shutdown function and an optional otelzap core for logging bridge.
+type SetupResult struct {
+	Shutdown ShutdownFunc
+	LogCore  zapcore.Core
+}
+
 // Setup initializes OpenTelemetry providers from config.
-// Returns a shutdown function; provider startup is non-fatal (logs warning on failure).
-func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (ShutdownFunc, error) {
+// Returns a shutdown function and optional otelzap core; provider startup is non-fatal (logs warning on failure).
+func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (SetupResult, error) {
 	if cfg == nil {
-		return noopShutdown, nil
+		return SetupResult{Shutdown: noopShutdown}, nil
 	}
 
 	svcName := cfg.ServiceName
@@ -48,7 +56,7 @@ func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (
 		),
 	)
 	if err != nil {
-		return noopShutdown, fmt.Errorf("create otel resource: %w", err)
+		return SetupResult{Shutdown: noopShutdown}, fmt.Errorf("create otel resource: %w", err)
 	}
 
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
@@ -56,7 +64,10 @@ func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (
 		propagation.Baggage{},
 	))
 
-	var shutdownFuncs []ShutdownFunc
+	var (
+		shutdownFuncs []ShutdownFunc
+		logCore       zapcore.Core
+	)
 
 	if cfg.Tracing != nil && cfg.Tracing.URL != "" {
 		sd, setupErr := setupTracing(ctx, cfg.Tracing, res, logger)
@@ -77,15 +88,19 @@ func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (
 	}
 
 	if cfg.Log != nil && cfg.Log.URL != "" {
-		sd, setupErr := setupLogExport(ctx, cfg.Log, res, logger)
+		sd, core, setupErr := setupLogExport(ctx, cfg.Log, res, svcName, logger)
 		if setupErr != nil {
 			logger.Warn("log export setup failed, OTLP logging disabled", zap.Error(setupErr))
 		} else {
 			shutdownFuncs = append(shutdownFuncs, sd)
+			logCore = core
 		}
 	}
 
-	return combinedShutdown(shutdownFuncs), nil
+	return SetupResult{
+		Shutdown: combinedShutdown(shutdownFuncs),
+		LogCore:  logCore,
+	}, nil
 }
 
 func combinedShutdown(funcs []ShutdownFunc) ShutdownFunc {
@@ -202,7 +217,7 @@ func setupMetrics(ctx context.Context, sig *config.ObservabilitySignal, res *res
 	return mp.Shutdown, nil
 }
 
-func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, logger *zap.Logger) (ShutdownFunc, error) {
+func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, svcName string, logger *zap.Logger) (ShutdownFunc, zapcore.Core, error) {
 	host, path := parseEndpoint(sig.URL)
 	if path == "" {
 		path = "/v1/logs"
@@ -220,7 +235,7 @@ func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *r
 
 	exp, err := otlploghttp.New(ctx, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("log exporter: %w", err)
+		return nil, nil, fmt.Errorf("log exporter: %w", err)
 	}
 
 	lp := log.NewLoggerProvider(
@@ -228,6 +243,10 @@ func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *r
 		log.WithResource(res),
 	)
 	global.SetLoggerProvider(lp)
+
+	otelzapCore := otelzap.NewCore(svcName,
+		otelzap.WithLoggerProvider(lp),
+	)
 	logger.Info("OTLP logging enabled", zap.String("url", sig.URL))
-	return lp.Shutdown, nil
+	return lp.Shutdown, otelzapCore, nil
 }

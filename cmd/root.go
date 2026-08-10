@@ -51,11 +51,14 @@ within your containerized applications.`,
 		l := global.Logger("cron")
 		l.Info("Booting up")
 
-		otelShutdown, otelErr := observability.Setup(global.CTX(), CFG.Observability, l)
+		otelResult, otelErr := observability.Setup(global.CTX(), CFG.Observability, l)
 		if otelErr != nil {
 			l.Warn("observability setup error", zap.Error(otelErr))
 		}
-		defer otelShutdown(context.Background()) //nolint:errcheck
+		if otelResult.LogCore != nil {
+			global.AttachOTelCore(otelResult.LogCore)
+		}
+		defer otelResult.Shutdown(context.Background()) //nolint:errcheck
 
 		jobs.InitializeJobs(CFG.Jobs)
 		if CFG.WebServerAddress != "" {
