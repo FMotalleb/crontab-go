@@ -88,36 +88,36 @@ func (c Command) Do(ctx context.Context) (e error) {
 			l := log.With(
 				zap.Any("is-local", conn.Local),
 			)
-			cmdConn, err := connection.Get(&conn, l)
-			if err != nil {
-				return err
+			cmdConn, connErr := connection.Get(&conn, l)
+			if connErr != nil {
+				return connErr
 			}
 			cmdCtx, cancel := c.ApplyTimeout(ctx)
 			defer cancel()
 			c.SetCancel(cancel)
 
-			if err := cmdConn.Prepare(cmdCtx, c.task); err != nil {
-				l.Error("cannot prepare command", zap.Error(err))
+			if prepErr := cmdConn.Prepare(cmdCtx, c.task); prepErr != nil {
+				l.Error("cannot prepare command", zap.Error(prepErr))
 				helpers.WarnOnErrIgnored(
 					l,
 					cmdConn.Disconnect,
 					"Cannot disconnect the command's connection",
 				)
-				return errors.Join(errors.New("failed to prepare"), err)
+				return errors.Join(errors.New("failed to prepare"), prepErr)
 			}
 
-			if err := cmdConn.Connect(); err != nil {
-				l.Error("error when tried to connect, exiting current remote", zap.Error(err))
-				return errors.Join(errors.New("failed to connect"), err)
+			if connErr = cmdConn.Connect(); connErr != nil {
+				l.Error("error when tried to connect, exiting current remote", zap.Error(connErr))
+				return errors.Join(errors.New("failed to connect"), connErr)
 			}
-			ans, err := cmdConn.Execute()
-			if err != nil {
-				l.Error("failed to run command", zap.Error(err))
-				return errors.Join(errors.New("failed to execute command"), err)
+			ans, execErr := cmdConn.Execute()
+			if execErr != nil {
+				l.Error("failed to run command", zap.Error(execErr))
+				return errors.Join(errors.New("failed to execute command"), execErr)
 			}
-			l.Info("command finished", zap.ByteString("result", ans), zap.Error(err))
-			if err := cmdConn.Disconnect(); err != nil {
-				l.Warn("error when tried to disconnect", zap.Error(err))
+			l.Info("command finished", zap.ByteString("result", ans), zap.Error(execErr))
+			if discErr := cmdConn.Disconnect(); discErr != nil {
+				l.Warn("error when tried to disconnect", zap.Error(discErr))
 				return nil
 			}
 			return nil

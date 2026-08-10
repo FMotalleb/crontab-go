@@ -150,7 +150,7 @@ func initConfig() {
 		CFG.Validate(),
 		"Failed to initialize config file: %s",
 	)
-	defaulter.ApplyDefaults(CFG, CFG)
+	_ = defaulter.ApplyDefaults(CFG, CFG)
 }
 
 func setupEnv() {
