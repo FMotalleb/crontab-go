@@ -39,9 +39,9 @@ type JobEvent struct {
 	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
 	Docker   *DockerEvent  `mapstructure:"docker" json:"docker,omitempty"`
 
-	LogFile        string        `mapstructure:"log-file" json:"log-file,omitempty"`
-	LogCheckCycle  time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
-	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
+	LogFile       string        `mapstructure:"log-file" json:"log-file,omitempty"`
+	LogCheckCycle time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
+	LogMatcher    string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
 // DockerEvent represents a Docker event configuration.

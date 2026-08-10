@@ -9,8 +9,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
-	"github.com/fmotalleb/crontab-go/ctxutils"
 	"github.com/fmotalleb/crontab-go/core/global"
+	"github.com/fmotalleb/crontab-go/ctxutils"
 )
 
 var tracer = otel.Tracer("crontab-go/task_handler")

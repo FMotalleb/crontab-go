@@ -58,7 +58,7 @@ within your containerized applications.`,
 		if otelResult.LogCore != nil {
 			global.AttachOTelCore(otelResult.LogCore)
 		}
-		defer otelResult.Shutdown(context.Background()) //nolint:errcheck
+		defer otelResult.Shutdown(context.Background()) //nolint:errcheck // shutdown is best-effort
 
 		jobs.InitializeJobs(CFG.Jobs)
 		if CFG.WebServerAddress != "" {
