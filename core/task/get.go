@@ -11,7 +11,6 @@ import (
 	"github.com/fmotalleb/crontab-go/abstraction"
 	"github.com/fmotalleb/crontab-go/config"
 	"github.com/fmotalleb/crontab-go/core/common"
-	"github.com/fmotalleb/crontab-go/helpers"
 )
 
 func init() {
@@ -48,7 +47,7 @@ type Get struct {
 	log     *zap.Logger
 }
 
-// Execute implements abstraction.Executable.
+// Do implements common.Action.
 func (g *Get) Do(ctx context.Context) (e error) {
 	ctx = populateVars(ctx, g.task)
 	log := g.log.With(
@@ -70,36 +69,10 @@ func (g *Get) Do(ctx context.Context) (e error) {
 	defer cancel()
 	g.SetCancel(cancel)
 
-	client := &http.Client{}
 	req, err := http.NewRequestWithContext(localCtx, http.MethodGet, g.address, nil)
-	log.Debug("sending get http request")
 	if err != nil {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	for key, val := range *g.headers {
-		req.Header.Add(key, val)
-	}
-	res, err := client.Do(req)
-	if res != nil {
-		if res.Body != nil {
-			defer helpers.WarnOnErrIgnored(
-				log,
-				res.Body.Close,
-				"cannot close response body",
-			)
-		}
-		log = log.With(zap.Int("status", res.StatusCode))
-		log.Info("received response with status", zap.String("status", res.Status))
-
-		if log.Level() >= zap.DebugLevel {
-			ans, respErr := logHTTPResponse(res)
-			log.Debug("fetched data", zap.String("response", ans), zap.Error(respErr))
-		}
-	}
-	if err != nil || (res != nil && res.StatusCode >= 400) {
-		log.Warn("request failed", zap.Error(err))
-		return err
-	}
-	return nil
+	return doHTTP(&http.Client{}, req, g.headers, log)
 }

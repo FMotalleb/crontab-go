@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -162,10 +163,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			exec.ID,
 			container.StartOptions{},
 		)
-
 		if err == nil {
 			break
 		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		d.log.Warn("container start failed, retrying", zap.Error(err))
+		time.Sleep(time.Second)
 	}
 
 	d.log.Debug("container started", zap.Any("container", exec))
@@ -176,13 +181,15 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			exec.ID,
 			false,
 		)
-
 		if err == nil {
 			break
 		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		d.log.Warn("container stats failed, retrying", zap.Error(err))
+		time.Sleep(time.Second)
 	}
-
-	d.log.Debug("container started", zap.Any("container", exec))
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerLogs(
 		ctx,
