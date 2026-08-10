@@ -1,6 +1,4 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fmotalleb/crontab-go/main/schema.json
-#TODO: unix/tcp socket controller
-#TODO: prometheus exporter
 
 # OpenTelemetry observability configuration (tracing, metrics, logging export).
 # All fields are optional; absent signal = disabled.
