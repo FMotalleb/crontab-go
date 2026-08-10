@@ -3,7 +3,7 @@
 | Doc | Status | Commit | Notes |
 |---|---|---|---|
 | 01-correctness-bugs | **Done** | `2f58ab6` | All 7 items implemented |
-| 02-config-simplification | **In progress** | — | Research done; 02.1/02.7/02.9 items selected |
+| 02-config-simplification | **Done** | `96c09e3`, `af2f818` | 02.1/02.7/02.9 done; rest deferred |
 | 03-extensibility | Not started | — | |
 | 04-concurrency-and-shutdown | Not started | — | |
 | 05-refactoring-and-dedup | Not started | — | |
@@ -24,9 +24,9 @@
 
 Selected items (low-risk, high-clarity wins):
 
-- [ ] 02.1 Remove dead `shell`/`shell_args` fields + viper defaults + BindEnv (`config.go:11-12`, `root.go:119-126, 192-203`)
-- [ ] 02.7 Make `log-line-breaker` effective or remove (`logfile.go:137` hard-codes `\n`)
-- [ ] 02.9 Delete dead `abstraction.Validatable` interface (`abstraction/validatable.go`)
+- [x] 02.1 Remove dead `shell`/`shell_args` fields + viper defaults + BindEnv (`config.go:11-12`, `root.go:119-126, 192-203`)
+- [x] 02.7 Make `log-line-breaker` effective or remove (`logfile.go:137` hard-codes `\n`)
+- [x] 02.9 Delete dead `abstraction.Validatable` interface (`abstraction/validatable.go`)
 
 Deferred (need discussion / broader change):
 - 02.2 json/mapstructure tag drift — touches parser output semantics
