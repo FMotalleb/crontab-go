@@ -50,7 +50,7 @@ func InitializeJobs(jobs []*config.JobConfig) {
 		tasks, doneHooks, failHooks := initTasks(*job, logger.Named("Task"))
 		logger.Debug("Tasks initialized")
 
-		taskHandler(logger.Named("TaskRunner"), signal, tasks, doneHooks, failHooks, lock)
+		taskHandler(logger.Named("TaskRunner"), signal, tasks, doneHooks, failHooks, lock, job.Name)
 		buildSignal(signal, *job, logger.Named("SignalGen"))
 
 		logger.Debug("EventLoop initialized")

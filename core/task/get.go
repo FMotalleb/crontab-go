@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -50,6 +52,13 @@ type Get struct {
 // Do implements common.Action.
 func (g *Get) Do(ctx context.Context) (e error) {
 	ctx = populateVars(ctx, g.task)
+	_, span := taskTracer.Start(ctx, "http.get",
+		trace.WithAttributes(
+			attribute.String("url.full", g.address),
+			attribute.String("http.request.method", "GET"),
+		),
+	)
+	defer span.End()
 	log := g.log.With(
 		zap.Time("start", time.Now()),
 	)

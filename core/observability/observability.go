@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -18,6 +19,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/config"
@@ -99,6 +101,21 @@ func combinedShutdown(funcs []ShutdownFunc) ShutdownFunc {
 }
 
 func noopShutdown(_ context.Context) error { return nil }
+
+// Tracer returns a named tracer from the global provider.
+func Tracer(name string) trace.Tracer {
+	return otel.Tracer(name)
+}
+
+// StartSpan starts a span from context. No-op if OTel is not configured.
+func StartSpan(ctx context.Context, name string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	return otel.Tracer("crontab-go").Start(ctx, name, opts...)
+}
+
+// SpanAttr is a convenience for attribute.String.
+func SpanAttr(key, val string) attribute.KeyValue {
+	return attribute.String(key, val)
+}
 
 func parseEndpoint(rawURL string) (host, path string) {
 	u, err := url.Parse(rawURL)

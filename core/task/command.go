@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -50,8 +51,10 @@ type Command struct {
 	log  *zap.Logger
 }
 
-// Execute implements common.RetryHooked.
+// Do implements common.Action.
 func (c Command) Do(ctx context.Context) (e error) {
+	ctx, span := taskTracer.Start(ctx, "cmd:"+c.task.Command)
+	defer span.End()
 	ctx = populateVars(ctx, c.task)
 	log := c.log.With(
 		zap.Time("start", time.Now()),
@@ -60,9 +63,13 @@ func (c Command) Do(ctx context.Context) (e error) {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
 				log.Error("panic recovered", zap.Error(err))
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				e = err
 			} else {
 				log.Error("panic recovered", zap.Any("error", r))
+				span.RecordError(fmt.Errorf("panic: %v", r))
+				span.SetStatus(codes.Error, fmt.Sprintf("panic: %v", r))
 				e = fmt.Errorf("panic: %v", r)
 			}
 		}
