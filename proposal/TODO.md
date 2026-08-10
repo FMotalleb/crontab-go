@@ -5,7 +5,7 @@
 | 01-correctness-bugs | **Done** | `2f58ab6` | All 7 items implemented |
 | 02-config-simplification | **Done** | `96c09e3`, `af2f818` | 02.1/02.7/02.9 done; rest deferred |
 | 03-extensibility | Not started | — | |
-| 04-concurrency-and-shutdown | Not started | — | |
+| 04-concurrency-and-shutdown | **Done** | `59037da` | 04.1/04.2/04.4/04.6 done |
 | 05-refactoring-and-dedup | Not started | — | |
 | 06-dead-code-and-minor | Not started | — | |
 | 07-opentelemetry-observability | Not started | — | Spec only; large feature |
@@ -35,3 +35,10 @@ Deferred (need discussion / broader change):
 - 02.5 Connection semantics — touches proposals 03
 - 02.6 Logging env translation — touches go-tools internals
 - 02.8 Duplicate validation — touches proposals 03
+
+## 04-concurrency-and-shutdown — Done
+
+- [x] 04.1 Replace `ConcurrentPool` with buffered-channel semaphore
+- [x] 04.2 Add `recover()` to task goroutines in `task_handler`
+- [x] 04.4 Fix Docker shutdown busy-spin (done in 01.4)
+- [x] 04.6 Add `defer cancel()` in task `Do` methods
