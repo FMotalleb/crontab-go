@@ -42,3 +42,4 @@ vendor/
 *.log
 crontab-go
 __*
+.opencode/
