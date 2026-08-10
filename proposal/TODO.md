@@ -4,11 +4,11 @@
 |---|---|---|---|
 | 01-correctness-bugs | **Done** | `2f58ab6` | All 7 items implemented |
 | 02-config-simplification | **Done** | `96c09e3`, `af2f818` | 02.1/02.7/02.9 done; rest deferred |
-| 03-extensibility | Not started | — | |
+| 03-extensibility | **Done** | `4729b14` | 3.2/3.3 done |
 | 04-concurrency-and-shutdown | **Done** | `59037da` | 04.1/04.2/04.4/04.6 done |
 | 05-refactoring-and-dedup | **Done** | `c13a397` | 5.2/5.4/5.6/5.8 done |
 | 06-dead-code-and-minor | **Done** | `53b4663` | 6.1/6.3 done |
-| 07-opentelemetry-observability | Not started | — | Spec only; large feature |
+| 07-opentelemetry-observability | **Partial** | `c8725d0` | 07.1-07.4/07.8 done; tracing spans + metrics bridge + logging bridge remaining |
 
 ## 01-correctness-bugs — Done
 
@@ -57,3 +57,8 @@ Deferred (need discussion / broader change):
 - [x] 6.3 Rename `job_valdiator.go` → `job_validator.go`
 - [x] 6.3 Remove stale legacy build tag in `windows_credential.go`
 - [x] 6.3 Collapse `meta/github.go` to consts
+
+## 03-extensibility — Done
+
+- [x] 3.2 Deterministic priority-based selection via `RegisterWithPriority`
+- [x] 3.3 Nil-safe registry: `Build`/`Get` return `(O, error)` instead of nil/panic
