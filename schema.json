@@ -15,6 +15,26 @@
         "variables": {
           "type": "object",
           "additionalProperties": true
+        },
+        "webserver_listen_address": {
+          "type": "string",
+          "description": "Web server listen address."
+        },
+        "webserver_port": {
+          "type": "integer",
+          "description": "Web server listen port."
+        },
+        "webserver_metrics": {
+          "type": "boolean",
+          "description": "Enable Prometheus /metrics endpoint."
+        },
+        "observability": {
+          "$ref": "#/definitions/Observability",
+          "description": "OpenTelemetry observability configuration (tracing, metrics, logging)."
+        },
+        "observability": {
+          "$ref": "#/definitions/Observability",
+          "description": "OpenTelemetry configuration for tracing, metrics, and logging export."
         }
       },
       "required": [
@@ -460,6 +480,110 @@
       "additionalProperties": true,
       "properties": {},
       "title": "Map"
+    },
+    "Observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "service-name": {
+          "type": "string",
+          "description": "OpenTelemetry service name. Defaults to 'crontab-go'."
+        },
+        "tracing": {
+          "$ref": "#/definitions/ObservabilitySignal",
+          "description": "OTLP tracing exporter configuration."
+        },
+        "metrics": {
+          "$ref": "#/definitions/ObservabilitySignal",
+          "description": "OTLP metrics exporter configuration."
+        },
+        "log": {
+          "$ref": "#/definitions/ObservabilitySignal",
+          "description": "OTLP log exporter configuration."
+        }
+      },
+      "title": "Observability"
+    },
+    "ObservabilitySignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": ["http", "grpc"],
+          "description": "Transport protocol. Defaults to http."
+        },
+        "url": {
+          "type": "string",
+          "description": "OTLP endpoint URL (e.g. http://collector:4318)."
+        },
+        "insecure": {
+          "type": "boolean",
+          "description": "Use plaintext instead of TLS. Defaults to false."
+        },
+        "interval": {
+          "type": "string",
+          "description": "Push cadence for periodic metric reader. Defaults to 60s.",
+          "examples": ["10s", "60s", "5m"]
+        },
+        "headers": {
+          "$ref": "#/definitions/Map",
+          "description": "Custom headers for the OTLP exporter (e.g. Authorization)."
+        }
+      },
+      "title": "ObservabilitySignal"
+    },
+    "Observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "service-name": {
+          "type": "string",
+          "description": "OTLP service.name resource attribute (default: crontab-go)."
+        },
+        "tracing": {
+          "$ref": "#/definitions/ObservabilitySignal"
+        },
+        "metrics": {
+          "$ref": "#/definitions/ObservabilitySignal"
+        },
+        "log": {
+          "$ref": "#/definitions/ObservabilitySignal"
+        }
+      },
+      "title": "Observability"
+    },
+    "ObservabilitySignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "enum": ["http", "grpc"],
+          "description": "Transport protocol: http or grpc."
+        },
+        "url": {
+          "type": "string",
+          "description": "OTLP endpoint URL (e.g. http://collector:4318)."
+        },
+        "insecure": {
+          "type": "boolean",
+          "description": "Use plaintext instead of TLS (default: false)."
+        },
+        "interval": {
+          "type": "string",
+          "description": "Push interval for periodic reader (metrics only, default: 60s).",
+          "examples": ["10s", "60s", "5m"]
+        },
+        "headers": {
+          "type": "object",
+          "description": "Custom HTTP headers (e.g. Authorization: Bearer ...).",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "ObservabilitySignal"
     }
   }
 }

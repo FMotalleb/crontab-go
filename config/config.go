@@ -15,6 +15,8 @@ type Config struct {
 	WebServerMetrics  bool   `mapstructure:"webserver_metrics" json:"webserver_metrics,omitempty"`
 
 	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
+
+	Observability *Observability `mapstructure:"observability" json:"observability,omitempty"`
 }
 
 // JobConfig represents the configuration for a specific job.
@@ -112,3 +114,20 @@ const (
 	ErrorPolGiveUp    ErrorLimitPolicy = "give-up"
 	ErrorPolReconnect ErrorLimitPolicy = "reconnect"
 )
+
+// Observability configures OpenTelemetry tracing, metrics, and logging export.
+type Observability struct {
+	ServiceName string               `mapstructure:"service-name" json:"service-name,omitempty"`
+	Tracing     *ObservabilitySignal `mapstructure:"tracing" json:"tracing,omitempty"`
+	Metrics     *ObservabilitySignal `mapstructure:"metrics" json:"metrics,omitempty"`
+	Log         *ObservabilitySignal `mapstructure:"log" json:"log,omitempty"`
+}
+
+// ObservabilitySignal configures a single OTLP signal (tracing, metrics, or logging).
+type ObservabilitySignal struct {
+	Protocol string            `mapstructure:"protocol" json:"protocol,omitempty"`
+	URL      string            `mapstructure:"url" json:"url,omitempty"`
+	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
+	Interval time.Duration     `mapstructure:"interval" json:"interval,omitempty"`
+	Headers  map[string]string `mapstructure:"headers" json:"headers,omitempty"`
+}

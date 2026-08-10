@@ -2,6 +2,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -13,11 +14,13 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/cmd/parser"
 	"github.com/fmotalleb/crontab-go/config"
 	"github.com/fmotalleb/crontab-go/core/global"
 	"github.com/fmotalleb/crontab-go/core/jobs"
+	"github.com/fmotalleb/crontab-go/core/observability"
 	"github.com/fmotalleb/crontab-go/core/webserver"
 )
 
@@ -47,6 +50,13 @@ within your containerized applications.`,
 		cronInstance.Start()
 		l := global.Logger("cron")
 		l.Info("Booting up")
+
+		otelShutdown, otelErr := observability.Setup(global.CTX(), CFG.Observability, l)
+		if otelErr != nil {
+			l.Warn("observability setup error", zap.Error(otelErr))
+		}
+		defer otelShutdown(context.Background()) //nolint:errcheck
+
 		jobs.InitializeJobs(CFG.Jobs)
 		if CFG.WebServerAddress != "" {
 			go webserver.
