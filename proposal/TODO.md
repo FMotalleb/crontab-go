@@ -6,7 +6,7 @@
 | 02-config-simplification | **Done** | `96c09e3`, `af2f818` | 02.1/02.7/02.9 done; rest deferred |
 | 03-extensibility | Not started | — | |
 | 04-concurrency-and-shutdown | **Done** | `59037da` | 04.1/04.2/04.4/04.6 done |
-| 05-refactoring-and-dedup | Not started | — | |
+| 05-refactoring-and-dedup | **Done** | `c13a397` | 5.2/5.4/5.6/5.8 done |
 | 06-dead-code-and-minor | Not started | — | |
 | 07-opentelemetry-observability | Not started | — | Spec only; large feature |
 
@@ -42,3 +42,10 @@ Deferred (need discussion / broader change):
 - [x] 04.2 Add `recover()` to task goroutines in `task_handler`
 - [x] 04.4 Fix Docker shutdown busy-spin (done in 01.4)
 - [x] 04.6 Add `defer cancel()` in task `Do` methods
+
+## 05-refactoring-and-dedup — Done
+
+- [x] 5.2 Drop redundant `Retry` from `Hooked` struct
+- [x] 5.4 Extract `doHTTP` helper for GET/POST dedup
+- [x] 5.6 Fix infinite busy-loops in `DockerCreate.Execute`
+- [x] 5.8 Sort env keys for deterministic ordering
