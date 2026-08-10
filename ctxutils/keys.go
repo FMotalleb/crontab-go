@@ -4,8 +4,6 @@ package ctxutils
 type ContextKey string
 
 var (
-	ScopeKey       = ContextKey("scope")
-	LoggerKey      = ContextKey("logger")
 	JobKey         = ContextKey("job")
 	TaskKey        = ContextKey("task")
 	EventListeners = ContextKey("event-listeners")
