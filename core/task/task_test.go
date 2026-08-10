@@ -17,12 +17,8 @@ func TestCompileTask_NonExistingTask(t *testing.T) {
 	ctx := t.Context()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, "test_job")
 	taskConfig := config.Task{}
-	assert.Panics(
-		t,
-		func() {
-			task.Build(ctx, zap.NewNop(), taskConfig)
-		},
-	)
+	_, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.Error(t, err)
 }
 
 func TestCompileTask_GetTask(t *testing.T) {
@@ -31,7 +27,8 @@ func TestCompileTask_GetTask(t *testing.T) {
 	taskConfig := config.Task{
 		Get: "test",
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, nil, exe)
 }
 
@@ -41,7 +38,8 @@ func TestCompileTask_CommandTask(t *testing.T) {
 	taskConfig := config.Task{
 		Command: "test",
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, exe, nil)
 }
 
@@ -51,7 +49,8 @@ func TestCompileTask_PostTask(t *testing.T) {
 	taskConfig := config.Task{
 		Post: "test",
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, exe, nil)
 }
 
@@ -71,7 +70,8 @@ func TestCompileTask_WithHooks(t *testing.T) {
 			},
 		},
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, exe, nil)
 }
 
@@ -84,9 +84,10 @@ func TestGetTask_Execute_NoPanic(t *testing.T) {
 		Retries:    1,
 		RetryDelay: 10 * time.Millisecond,
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, nil, exe)
-	err := exe.Execute(ctx)
+	err = exe.Execute(ctx)
 	assert.NotEqual(t, nil, err)
 }
 
@@ -99,8 +100,9 @@ func TestPostTask_Execute_NoPanic(t *testing.T) {
 		Retries:    1,
 		RetryDelay: 10 * time.Millisecond,
 	}
-	exe := task.Build(ctx, zap.NewNop(), taskConfig)
+	exe, err := task.Build(ctx, zap.NewNop(), taskConfig)
+	assert.NoError(t, err)
 	assert.NotEqual(t, nil, exe)
-	err := exe.Execute(ctx)
+	err = exe.Execute(ctx)
 	assert.NotEqual(t, nil, err)
 }

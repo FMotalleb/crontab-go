@@ -22,14 +22,15 @@ func prepareState() {
 func TestCompileEvent_IntervalZero(t *testing.T) {
 	sh := &config.JobEvent{Interval: 0}
 	prepareState()
-	event := event.Build(zap.NewNop(), sh)
-	assert.Equal(t, event, nil)
+	_, err := event.Build(zap.NewNop(), sh)
+	assert.Error(t, err)
 }
 
 func TestCompileEvent_IntervalNonZero(t *testing.T) {
 	sh := &config.JobEvent{Interval: 15}
 	prepareState()
-	sch := event.Build(zap.NewNop(), sh)
+	sch, err := event.Build(zap.NewNop(), sh)
+	assert.NoError(t, err)
 	_, ok := sch.(*event.Interval)
 	assert.Equal(t, ok, true)
 }
@@ -38,7 +39,8 @@ func TestCompileEvent_IntervalNonZero(t *testing.T) {
 func TestCompileEvent_IntervalZeroWithCronSet(t *testing.T) {
 	sh := &config.JobEvent{Cron: "0 * * * *", Interval: 0}
 	prepareState()
-	e := event.Build(zap.NewNop(), sh)
+	e, err := event.Build(zap.NewNop(), sh)
+	assert.NoError(t, err)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron events, got %T", e)
 	}
@@ -49,7 +51,8 @@ func TestCompileEvent_IntervalZeroWithOnInitSet(t *testing.T) {
 	sh := &config.JobEvent{OnInit: true, Interval: 0}
 	prepareState()
 
-	e := event.Build(zap.NewNop(), sh)
+	e, err := event.Build(zap.NewNop(), sh)
+	assert.NoError(t, err)
 	if _, ok := e.(*event.Init); !ok {
 		t.Errorf("Expected Init events, got %T", e)
 	}
@@ -60,10 +63,8 @@ func TestCompileEvent_IntervalZeroWithAllFieldsEmpty(t *testing.T) {
 	sh := &config.JobEvent{Interval: 0}
 	prepareState()
 
-	e := event.Build(zap.NewNop(), sh)
-	if e != nil {
-		t.Errorf("Expected nil, got %v", e)
-	}
+	_, err := event.Build(zap.NewNop(), sh)
+	assert.Error(t, err)
 }
 
 // TestCompileEvent_IntervalZeroWithCronAndOnInitSet tests CompileEvent with Interval zero, Cron expression, and OnInit set.
@@ -71,7 +72,8 @@ func TestCompileEvent_IntervalZeroWithCronAndOnInitSet(t *testing.T) {
 	sh := &config.JobEvent{Cron: "0 * * * *", OnInit: true, Interval: 0}
 	prepareState()
 
-	e := event.Build(zap.NewNop(), sh)
+	e, err := event.Build(zap.NewNop(), sh)
+	assert.NoError(t, err)
 	if _, ok := e.(*event.Cron); !ok {
 		t.Errorf("Expected Cron event, got %T", e)
 	}

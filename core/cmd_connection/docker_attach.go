@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	cg.Register(NewDockerAttachConnection)
+	cg.RegisterWithPriority(NewDockerAttachConnection, 20)
 }
 
 type DockerAttachConnection struct {

@@ -81,35 +81,35 @@ func (c Command) Do(ctx context.Context) (e error) {
 			l := log.With(
 				zap.Any("is-local", conn.Local),
 			)
-			connection := connection.Get(&conn, l)
-			if connection == nil {
-				return errors.New("no matching connection found for task connection")
+			cmdConn, err := connection.Get(&conn, l)
+			if err != nil {
+				return err
 			}
 			cmdCtx, cancel := c.ApplyTimeout(ctx)
 			defer cancel()
 			c.SetCancel(cancel)
 
-			if err := connection.Prepare(cmdCtx, c.task); err != nil {
+			if err := cmdConn.Prepare(cmdCtx, c.task); err != nil {
 				l.Error("cannot prepare command", zap.Error(err))
 				helpers.WarnOnErrIgnored(
 					l,
-					connection.Disconnect,
+					cmdConn.Disconnect,
 					"Cannot disconnect the command's connection",
 				)
 				return errors.Join(errors.New("failed to prepare"), err)
 			}
 
-			if err := connection.Connect(); err != nil {
+			if err := cmdConn.Connect(); err != nil {
 				l.Error("error when tried to connect, exiting current remote", zap.Error(err))
 				return errors.Join(errors.New("failed to connect"), err)
 			}
-			ans, err := connection.Execute()
+			ans, err := cmdConn.Execute()
 			if err != nil {
 				l.Error("failed to run command", zap.Error(err))
 				return errors.Join(errors.New("failed to execute command"), err)
 			}
 			l.Info("command finished", zap.ByteString("result", ans), zap.Error(err))
-			if err := connection.Disconnect(); err != nil {
+			if err := cmdConn.Disconnect(); err != nil {
 				l.Warn("error when tried to disconnect", zap.Error(err))
 				return nil
 			}

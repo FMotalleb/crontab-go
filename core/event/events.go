@@ -13,13 +13,11 @@ import (
 
 var eg = generator.New[*config.JobEvent, abstraction.EventGenerator]()
 
-func Build(log *zap.Logger, cfg *config.JobEvent) abstraction.EventGenerator {
+func Build(log *zap.Logger, cfg *config.JobEvent) (abstraction.EventGenerator, error) {
 	if g, ok := eg.Get(log, cfg); ok {
-		return g
+		return g, nil
 	}
-	err := fmt.Errorf("no event generator matched %+v", *cfg)
-	log.Warn("event.Build: generator not found", zap.Error(err))
-	return nil
+	return nil, fmt.Errorf("no event generator matched %+v", *cfg)
 }
 
 type MetaData struct {

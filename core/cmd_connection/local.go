@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	cg.Register(NewLocalCMDConn)
+	cg.RegisterWithPriority(NewLocalCMDConn, 10)
 }
 
 // Local represents a local command connection.

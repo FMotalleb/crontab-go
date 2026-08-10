@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	cg.Register(NewDockerCreateConnection)
+	cg.RegisterWithPriority(NewDockerCreateConnection, 30)
 }
 
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
