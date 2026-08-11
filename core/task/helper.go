@@ -1,9 +1,7 @@
 package task
 
 import (
-	"bytes"
 	"context"
-	"net/http"
 
 	"github.com/fmotalleb/go-tools/log"
 	"github.com/fmotalleb/go-tools/template"
@@ -12,12 +10,6 @@ import (
 	"github.com/fmotalleb/crontab-go/config"
 	"github.com/fmotalleb/crontab-go/ctxutils"
 )
-
-func logHTTPResponse(r *http.Response) (string, error) {
-	result := bytes.NewBuffer([]byte{})
-	err := r.Write(result)
-	return result.String(), err
-}
 
 func populateVars(ctx context.Context, task *config.Task) context.Context {
 	var ok bool

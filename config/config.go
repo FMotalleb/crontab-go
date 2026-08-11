@@ -65,10 +65,11 @@ type JobHooks struct {
 // Task represents the configuration for a task within a job.
 type Task struct {
 	// Http Requests
-	Post    string            `mapstructure:"post" json:"post,omitempty"`
-	Get     string            `mapstructure:"get" json:"get,omitempty"`
-	Headers map[string]string `mapstructure:"headers" json:"headers,omitempty"`
-	Data    any               `mapstructure:"data" json:"data,omitempty"`
+	Post     string            `mapstructure:"post" json:"post,omitempty"`
+	Get      string            `mapstructure:"get" json:"get,omitempty"`
+	Headers  map[string]string `mapstructure:"headers" json:"headers,omitempty"`
+	Data     any               `mapstructure:"data" json:"data,omitempty"`
+	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
 
 	// Command params
 	Command          string            `mapstructure:"command" json:"command,omitempty"`

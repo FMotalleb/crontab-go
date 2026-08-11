@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/otel/codes"
@@ -110,12 +111,15 @@ func (c Command) Do(ctx context.Context) (e error) {
 				l.Error("error when tried to connect, exiting current remote", zap.Error(connErr))
 				return errors.Join(errors.New("failed to connect"), connErr)
 			}
-			ans, execErr := cmdConn.Execute()
+			prefix := outputPrefix(jobName(ctx), c.task.Command)
+			stdout := NewPrefixWriter(os.Stdout, prefix)
+			stderr := NewPrefixWriter(os.Stderr, prefix)
+			execErr := cmdConn.Execute(stdout, stderr)
 			if execErr != nil {
 				l.Error("failed to run command", zap.Error(execErr))
 				return errors.Join(errors.New("failed to execute command"), execErr)
 			}
-			l.Info("command finished", zap.ByteString("result", ans), zap.Error(execErr))
+			l.Info("command finished")
 			if discErr := cmdConn.Disconnect(); discErr != nil {
 				l.Warn("error when tried to disconnect", zap.Error(discErr))
 				return nil

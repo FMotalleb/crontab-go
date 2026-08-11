@@ -105,6 +105,10 @@ All three signals are non-fatal: if a collector is unreachable at startup, the c
 >
 > `# yaml-language-server: $schema=https://github.com/fmotalleb/crontab-go/raw/main/schema.json`
 
+**Task Output:**
+
+Command and HTTP request (get/post) outputs are streamed directly to stdout/stderr (never buffered in memory), with a docker-style per-line prefix `<job-name>:<hash> | ` where the hash is derived from the task's main parameter (command, get URL, or post URL). For get/post requests, set `insecure: true` on the task to skip TLS certificate verification (useful for self-signed certificates).
+
 ## Getting Started
 
 To get started with Cronjob-go, simply download the binary for your platform and configure your scheduled tasks using the provided YAML format. The application's documentation includes detailed instructions on installation, configuration, and usage, making it easy to integrate into your existing Docker-based infrastructure.

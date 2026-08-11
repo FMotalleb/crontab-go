@@ -64,6 +64,8 @@ jobs:
       #   # headers of request `map[string]string`
       #   headers:
       #     - "Accepts": "Application/Json"
+      #   # Skip TLS certificate verification (useful for self-signed certs)
+      #   insecure: true
 
       # # A simple post request example
       # - post: https://example.com/post
@@ -73,6 +75,8 @@ jobs:
       #   # Body of post request (can be a json object)
       #   data:
       #     key: value
+      #   # Skip TLS certificate verification (useful for self-signed certs)
+      #   insecure: true
     events:
       - on-init: true
       # events can be defined using either a cron expression or an interval, but not both simultaneously.

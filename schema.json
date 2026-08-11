@@ -410,6 +410,10 @@
           "$ref": "#/definitions/Data",
           "description": "A Data object that defines the data to be sent with the request."
         },
+        "insecure": {
+          "type": "boolean",
+          "description": "Skip TLS certificate verification for get/post requests. Defaults to false."
+        },
         "connections": {
           "type": "array",
           "items": {

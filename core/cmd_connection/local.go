@@ -1,12 +1,11 @@
 package connection
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
-	"strings"
 
 	"go.uber.org/zap"
 
@@ -87,22 +86,19 @@ func (l *Local) Disconnect() error {
 	return nil
 }
 
-// Execute executes the command and returns the output.
-// It captures the command's standard output and standard error.
-// It returns the output and an error, if any.
-func (l *Local) Execute() ([]byte, error) {
-	var res bytes.Buffer
-	l.cmd.Stdout = &res
-	l.cmd.Stderr = &res
+// Execute executes the command and streams its stdout and stderr to the provided writers.
+func (l *Local) Execute(stdout, stderr io.Writer) error {
+	l.cmd.Stdout = stdout
+	l.cmd.Stderr = stderr
 	log := l.log.Named("execute")
 	if err := l.cmd.Start(); err != nil {
 		log.Warn("failed to start the command", zap.Error(err))
-		return []byte{}, err
-	} else if err := l.cmd.Wait(); err != nil {
-		output := res.Bytes()
-		log.Warn("command execution failed", zap.String("output", strings.TrimSpace(res.String())), zap.Error(err))
-		return output, err
+		return err
 	}
-	l.log.Debug("command output", zap.String("output", strings.TrimSpace(res.String())))
-	return res.Bytes(), nil
+	if err := l.cmd.Wait(); err != nil {
+		log.Warn("command execution failed", zap.Error(err))
+		return err
+	}
+	log.Debug("command output flushed")
+	return nil
 }

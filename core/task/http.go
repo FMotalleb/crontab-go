@@ -1,6 +1,8 @@
 package task
 
 import (
+	"crypto/tls"
+	"io"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -8,7 +10,17 @@ import (
 	"github.com/fmotalleb/crontab-go/helpers"
 )
 
-func doHTTP(client *http.Client, req *http.Request, headers *map[string]string, log *zap.Logger) error {
+// newHTTPClient builds an http.Client, optionally skipping TLS certificate verification.
+func newHTTPClient(insecure bool) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	if insecure {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec // explicit user opt-in
+	}
+	return &http.Client{Transport: transport}
+}
+
+// doHTTP sends the request, streams the response body to out, and returns any error.
+func doHTTP(client *http.Client, req *http.Request, headers *map[string]string, out io.Writer, log *zap.Logger) error {
 	for key, val := range *headers {
 		req.Header.Add(key, val)
 	}
@@ -22,16 +34,23 @@ func doHTTP(client *http.Client, req *http.Request, headers *map[string]string, 
 				"cannot close response body",
 			)
 		}
-		log = log.With(zap.Int("status", res.StatusCode))
-		log.Info("received response with status", zap.String("status", res.Status))
-		if log.Level() >= zap.DebugLevel {
-			ans, respErr := logHTTPResponse(res)
-			log.Debug("fetched data", zap.String("response", ans), zap.Error(respErr))
+		log.Info("received response with status", zap.Int("status", res.StatusCode))
+		if out != nil {
+			if _, cpErr := io.Copy(out, res.Body); cpErr != nil {
+				log.Warn("failed to stream response body", zap.Error(cpErr))
+			}
 		}
 	}
 	if err != nil || (res != nil && res.StatusCode >= 400) {
-		log.Warn("request failed", zap.Error(err))
+		log.Warn("request failed", zap.Error(err), zap.Int("status", statusCodeOf(res)))
 		return err
 	}
 	return nil
+}
+
+func statusCodeOf(res *http.Response) int {
+	if res == nil {
+		return 0
+	}
+	return res.StatusCode
 }

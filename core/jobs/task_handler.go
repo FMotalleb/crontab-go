@@ -54,6 +54,7 @@ func executeTask(
 	lock.Lock()
 	defer lock.Unlock()
 	ctx = context.WithValue(ctx, ctxutils.TaskKey, task)
+	ctx = context.WithValue(ctx, ctxutils.JobKey, jobName)
 	err := task.Execute(ctx)
 	if err != nil {
 		span.RecordError(err)

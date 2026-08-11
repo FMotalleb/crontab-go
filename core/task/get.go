@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
@@ -83,5 +84,6 @@ func (g *Get) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	return doHTTP(&http.Client{}, req, g.headers, log)
+	prefix := outputPrefix(jobName(ctx), g.address)
+	return doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stdout, prefix), log)
 }

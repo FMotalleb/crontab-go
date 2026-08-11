@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"time"
@@ -123,11 +122,9 @@ func (d *DockerCreateConnection) Connect() error {
 	return nil
 }
 
-// Execute creates, starts, and logs the output of the Docker container.
-// Returns:
-// - A byte slice containing the command output.
-// - An error if the execution fails, otherwise nil.
-func (d *DockerCreateConnection) Execute() ([]byte, error) {
+// Execute creates, starts, and streams the output of the Docker container.
+// Returns an error if any step fails.
+func (d *DockerCreateConnection) Execute(stdout, _ io.Writer) error {
 	ctx := d.ctx
 	// Create the exec instance
 
@@ -140,7 +137,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		d.conn.ContainerName,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	d.log.Debug("container created", zap.Any("response", exec), zap.Strings("warnings", exec.Warnings))
@@ -167,7 +164,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			break
 		}
 		if ctx.Err() != nil {
-			return nil, ctx.Err()
+			return ctx.Err()
 		}
 		d.log.Warn("container start failed, retrying", zap.Error(err))
 		time.Sleep(time.Second)
@@ -185,7 +182,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			break
 		}
 		if ctx.Err() != nil {
-			return nil, ctx.Err()
+			return ctx.Err()
 		}
 		d.log.Warn("container stats failed, retrying", zap.Error(err))
 		time.Sleep(time.Second)
@@ -202,7 +199,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer helpers.WarnOnErrIgnored(
 		d.log,
@@ -212,15 +209,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		"cannot close the container's logs",
 	)
 
-	writer := bytes.NewBuffer([]byte{})
-	// Print the command output
-	wrote, err := io.Copy(writer, resp)
+	// Stream the command output
+	wrote, err := io.Copy(stdout, resp)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))
-		return writer.Bytes(), err
+		return err
 	}
-	return writer.Bytes(), nil
+	return nil
 }
 
 // Disconnect closes the connection to the Docker daemon.

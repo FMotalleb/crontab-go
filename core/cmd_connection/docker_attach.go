@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -101,17 +100,14 @@ func (d *DockerAttachConnection) Connect() error {
 	return nil
 }
 
-// Execute runs the command in the Docker container and captures the output.
-// It creates an exec instance, attaches to it, and reads the command output.
-// Returns:
-// - A byte slice containing the command output.
-// - An error if the execution fails, otherwise nil.
-func (d *DockerAttachConnection) Execute() ([]byte, error) {
+// Execute runs the command in the Docker container and streams its output to the provided writer.
+// It creates an exec instance and attaches to it.
+func (d *DockerAttachConnection) Execute(stdout, _ io.Writer) error {
 	cid := d.conn.ContainerName
 	if cid == "" {
 		label := d.conn.ContainerLabel
 		if label == "" {
-			return nil, errors.New("neither container name nor label provided")
+			return errors.New("neither container name nor label provided")
 		}
 
 		args := filters.NewArgs()
@@ -121,15 +117,15 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 			Filters: args,
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if len(containers) == 0 {
-			return nil, fmt.Errorf("no container found with label %q", label)
+			return fmt.Errorf("no container found with label %q", label)
 		}
 
 		if len(containers) != 1 {
-			return nil, fmt.Errorf("more than one container found with label %q", label)
+			return fmt.Errorf("more than one container found with label %q", label)
 		}
 		cid = containers[0].ID
 	}
@@ -137,7 +133,7 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	// Create the exec instance
 	exec, err := d.cli.ContainerExecCreate(d.ctx, cid, *d.execCFG)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Attach to the exec instance
@@ -149,21 +145,20 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 		},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer func() {
 		resp.Close()
 	}()
 
-	writer := bytes.NewBuffer([]byte{})
-	// Print the command output
-	wrote, err := io.Copy(writer, resp.Reader)
+	// Stream the command output
+	wrote, err := io.Copy(stdout, resp.Reader)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))
-		return writer.Bytes(), err
+		return err
 	}
-	return writer.Bytes(), nil
+	return nil
 }
 
 // Disconnect closes the connection to the Docker daemon.
