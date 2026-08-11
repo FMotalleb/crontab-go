@@ -2,6 +2,10 @@
 
 YAML-configured crontab replacement for Docker environments. Single Go module `github.com/fmotalleb/crontab-go`, Go 1.26, generic-heavy modern stdlib.
 
+## Workflow (always)
+- Always **review code after changing it**: re-read the diff, then run `go build`/`go vet`, `go test ./...`, and `go tool golangci-lint run ./...` before finishing.
+- Always **commit changes after applying them** (stage only intended files; match the repo's conventional-commit style).
+
 ## Commands (all verified)
 - `make ci` — full CI gate, matches `.github/workflows/build.yml`: `go mod tidy` → `go generate` → install goreleaser → `goreleaser build --snapshot` → `misspell -w` → `golangci-lint run --fix` → `go test -race` → `govulncheck` → `git diff` clean check.
 - `make all` = `mod gen install build spell lint test`; `make precommit` = `all vuln`; `make ci` = `precommit diff`.
