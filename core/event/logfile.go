@@ -147,7 +147,7 @@ func (lf *LogFile) processNewLines(ctx context.Context, reader *bufio.Reader, ed
 				"line":   line,
 				"groups": reshapeRegexpMatch(lf.matcher.SubexpNames(), matches),
 			})
-			ed.Emit(ctx, event)
+			emitWithSpan(ed, ctx, event)
 			global.IncMetric(
 				LogEventsMetricName,
 				LogEventsMetricHelp,

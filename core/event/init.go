@@ -38,7 +38,7 @@ type Init struct{}
 // BuildTickChannel implements abstraction.Scheduler.
 func (c *Init) BuildTickChannel(ed abstraction.EventDispatcher) {
 	ctx := context.Background()
-	ed.Emit(ctx, NewMetaData("init", map[string]any{}))
+	emitWithSpan(ed, ctx, NewMetaData("init", map[string]any{}))
 	global.IncMetric(
 		InitEventsMetricName,
 		InitEventsMetricHelp,

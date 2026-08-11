@@ -60,7 +60,7 @@ func (w *WebEventListener) BuildTickChannel(ed abstraction.EventDispatcher) {
 				WebEventsMetricHelp,
 				prometheus.Labels{"event_name": w.event},
 			)
-			ed.Emit(ctx, event)
+			emitWithSpan(ed, ctx, event)
 		},
 	)
 	<-ctx.Done()
