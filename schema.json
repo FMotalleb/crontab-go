@@ -16,7 +16,7 @@
           "type": "object",
           "additionalProperties": true
         },
-        "webserver_listen_address": {
+        "webserver_address": {
           "type": "string",
           "description": "Web server listen address."
         },

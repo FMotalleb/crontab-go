@@ -8,7 +8,7 @@ import (
 // Config represents the configuration for the crontab application.
 type Config struct {
 	// Web-server config
-	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address,omitempty"`
+	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_address,omitempty"`
 	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port,omitempty"`
 	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username,omitempty"`
 	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password,omitempty"`
