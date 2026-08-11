@@ -5,8 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -50,8 +54,12 @@ type Command struct {
 	log  *zap.Logger
 }
 
-// Execute implements common.RetryHooked.
-func (c Command) Do(ctx context.Context) (e error) {
+// Do implements common.Action.
+func (c *Command) Do(ctx context.Context) (e error) {
+	ctx, span := taskTracer.Start(ctx, "task.command",
+		trace.WithAttributes(attribute.String("command.hash", shortHash(c.task.Command))),
+	)
+	defer span.End()
 	ctx = populateVars(ctx, c.task)
 	log := c.log.With(
 		zap.Time("start", time.Now()),
@@ -60,9 +68,13 @@ func (c Command) Do(ctx context.Context) (e error) {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
 				log.Error("panic recovered", zap.Error(err))
+				span.RecordError(err)
+				span.SetStatus(codes.Error, err.Error())
 				e = err
 			} else {
 				log.Error("panic recovered", zap.Any("error", r))
+				span.RecordError(fmt.Errorf("panic: %v", r))
+				span.SetStatus(codes.Error, fmt.Sprintf("panic: %v", r))
 				e = fmt.Errorf("panic: %v", r)
 			}
 		}
@@ -77,40 +89,49 @@ func (c Command) Do(ctx context.Context) (e error) {
 		log.Debug("no explicit Connection provided using local task connection by default")
 	}
 	for _, conn := range connections {
-		l := log.With(
-			zap.Any("is-local", conn.Local),
-		)
-		connection := connection.Get(&conn, l)
-		if connection == nil {
-			return errors.New("no matching connection found for task connection")
-		}
-		cmdCtx, cancel := c.ApplyTimeout(ctx)
-		c.SetCancel(cancel)
-
-		if err := connection.Prepare(cmdCtx, c.task); err != nil {
-			l.Error("cannot prepare command", zap.Error(err))
-			helpers.WarnOnErrIgnored(
-				l,
-				connection.Disconnect,
-				"Cannot disconnect the command's connection",
+		if err := func() error {
+			l := log.With(
+				zap.Any("is-local", conn.Local),
 			)
-			return errors.Join(errors.New("failed to prepare"), err)
-		}
+			cmdConn, connErr := connection.Get(&conn, l)
+			if connErr != nil {
+				return connErr
+			}
+			cmdCtx, cancel := c.ApplyTimeout(ctx)
+			defer cancel()
+			c.SetCancel(cancel)
 
-		if err := connection.Connect(); err != nil {
-			l.Error("error when tried to connect, exiting current remote", zap.Error(err))
-			return errors.Join(errors.New("failed to connect"), err)
-		}
-		ans, err := connection.Execute()
-		if err != nil {
-			l.Error("failed to run command", zap.Error(err))
-			return errors.Join(errors.New("failed to execute command"), err)
-		}
-		l.Info("command finished", zap.ByteString("result", ans), zap.Error(err))
-		if err := connection.Disconnect(); err != nil {
-			l.Warn("error when tried to disconnect", zap.Error(err))
-			// return errors.Join(errors.New("failed to execute command"), err)
-			continue
+			if prepErr := cmdConn.Prepare(cmdCtx, c.task); prepErr != nil {
+				l.Error("cannot prepare command", zap.Error(prepErr))
+				helpers.WarnOnErrIgnored(
+					l,
+					cmdConn.Disconnect,
+					"Cannot disconnect the command's connection",
+				)
+				return errors.Join(errors.New("failed to prepare"), prepErr)
+			}
+
+			if connErr = cmdConn.Connect(); connErr != nil {
+				l.Error("error when tried to connect, exiting current remote", zap.Error(connErr))
+				return errors.Join(errors.New("failed to connect"), connErr)
+			}
+			defer helpers.WarnOnErrIgnored(
+				l,
+				cmdConn.Disconnect,
+				"error when tried to disconnect",
+			)
+			prefix := outputPrefix(jobName(ctx), c.task.Command)
+			stdout := NewPrefixWriter(os.Stdout, prefix)
+			stderr := NewPrefixWriter(os.Stderr, prefix)
+			execErr := cmdConn.Execute(stdout, stderr)
+			if execErr != nil {
+				l.Error("failed to run command", zap.Error(execErr))
+				return errors.Join(errors.New("failed to execute command"), execErr)
+			}
+			l.Info("command finished")
+			return nil
+		}(); err != nil {
+			return err
 		}
 	}
 

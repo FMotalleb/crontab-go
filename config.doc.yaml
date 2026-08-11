@@ -1,6 +1,30 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fmotalleb/crontab-go/main/schema.json
-#TODO: unix/tcp socket controller
-#TODO: prometheus exporter
+
+# OpenTelemetry observability configuration (tracing, metrics, logging export).
+# All fields are optional; absent signal = disabled.
+# Can also be configured via env vars: OTEL_TRACING_URL, OTEL_METRICS_URL, OTEL_LOG_URL, etc.
+# observability:
+#   service-name: "crontab-go"
+#   # Extra resource attributes attached to every trace, metric, and log (OTLP log record) emitted.
+#   attributes:
+#     env: "production"
+#     region: "eu-west-1"
+#   tracing:
+#     url: "http://collector:4318"   # scheme picks transport: http|https, grpc|grpcs
+#     insecure: true                 # true=ignore TLS cert verification
+#     headers:
+#       Authorization: "Bearer <token>"
+#   metrics:
+#     url: "http://collector:4318"
+#     insecure: true
+#     interval: 60s            # push cadence for the periodic reader
+#     headers:
+#       Authorization: "Bearer <token>"
+#   log:
+#     url: "http://collector:4318"
+#     insecure: true
+#     headers:
+#       Authorization: "Bearer <token>"
 
 jobs:
   # Jobs can be assigned a unique name, which will be included in log messages for easier debugging.
@@ -44,6 +68,8 @@ jobs:
       #   # headers of request `map[string]string`
       #   headers:
       #     - "Accepts": "Application/Json"
+      #   # Skip TLS certificate verification (useful for self-signed certs)
+      #   insecure: true
 
       # # A simple post request example
       # - post: https://example.com/post
@@ -53,6 +79,8 @@ jobs:
       #   # Body of post request (can be a json object)
       #   data:
       #     key: value
+      #   # Skip TLS certificate verification (useful for self-signed certs)
+      #   insecure: true
     events:
       - on-init: true
       # events can be defined using either a cron expression or an interval, but not both simultaneously.

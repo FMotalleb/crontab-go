@@ -28,15 +28,27 @@ func initTasks(job config.JobConfig, logger *zap.Logger) ([]abstraction.Executab
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, ctxutils.JobKey, job.Name)
 	for _, t := range job.Tasks {
-		tasks = append(tasks, task.Build(ctx, logger, t))
+		exe, err := task.Build(ctx, logger, t)
+		if err != nil {
+			logger.Panic("failed to build task", zap.Error(err))
+		}
+		tasks = append(tasks, exe)
 	}
 	logger.Debug("Compiled Tasks")
 	for _, t := range job.Hooks.Done {
-		doneHooks = append(doneHooks, task.Build(ctx, logger, t))
+		exe, err := task.Build(ctx, logger, t)
+		if err != nil {
+			logger.Panic("failed to build done hook", zap.Error(err))
+		}
+		doneHooks = append(doneHooks, exe)
 	}
 	logger.Debug("Compiled Hooks.Done")
 	for _, t := range job.Hooks.Failed {
-		failHooks = append(failHooks, task.Build(ctx, logger, t))
+		exe, err := task.Build(ctx, logger, t)
+		if err != nil {
+			logger.Panic("failed to build fail hook", zap.Error(err))
+		}
+		failHooks = append(failHooks, exe)
 	}
 	logger.Debug("Compiled Hooks.Fail")
 	return tasks, doneHooks, failHooks
@@ -45,7 +57,11 @@ func initTasks(job config.JobConfig, logger *zap.Logger) ([]abstraction.Executab
 func initEvents(job config.JobConfig, logger *zap.Logger) []abstraction.EventGenerator {
 	events := make([]abstraction.EventGenerator, 0, len(job.Events))
 	for _, sh := range job.Events {
-		events = append(events, event.Build(logger, &sh))
+		ev, err := event.Build(logger, &sh)
+		if err != nil {
+			logger.Panic("failed to build event", zap.Error(err))
+		}
+		events = append(events, ev)
 	}
 	return events
 }

@@ -8,9 +8,11 @@ import (
 	"os/signal"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/fmotalleb/go-tools/log"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/fmotalleb/crontab-go/ctxutils"
 )
@@ -51,17 +53,49 @@ func newGlobalContext() *Context {
 	}
 }
 
+// Value returns the value associated with key from the embedded context,
+// synchronizing the read against writers that replace it under the mutex.
+func (c *Context) Value(key any) any {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Context.Value(key)
+}
+
+// Done returns the embedded context's done channel, synchronized with the
+// writers that replace the embedded context under the mutex.
+func (c *Context) Done() <-chan struct{} {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Context.Done()
+}
+
+// Err returns the embedded context's error, synchronized with the writers
+// that replace the embedded context under the mutex.
+func (c *Context) Err() error {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Context.Err()
+}
+
+// Deadline returns the embedded context's deadline, synchronized with the
+// writers that replace the embedded context under the mutex.
+func (c *Context) Deadline() (time.Time, bool) {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Context.Deadline()
+}
+
 func (c *Context) EventListeners() EventListenerMap {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	listeners := c.Value(ctxutils.EventListeners)
+	listeners := c.Context.Value(ctxutils.EventListeners)
 	return listeners.(EventListenerMap)
 }
 
 func (c *Context) AddEventListener(event string, listener func(map[string]any)) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	listeners := c.Value(ctxutils.EventListeners).(EventListenerMap)
+	listeners := c.Context.Value(ctxutils.EventListeners).(EventListenerMap)
 	listeners[event] = append(listeners[event], listener)
 	c.Context = context.WithValue(c.Context, ctxutils.EventListeners, listeners)
 }
@@ -81,7 +115,10 @@ func Put[T any](item T) {
 func Get[T any]() T {
 	var zero T // Default zero value for type T
 	name := reflect.TypeOf(zero).String()
-	value := c().Value(ctxKey("typed", name))
+	ctx := c()
+	ctx.mu.RLock()
+	value := ctx.Context.Value(ctxKey("typed", name))
+	ctx.mu.RUnlock()
 	if value == nil {
 		return zero
 	}
@@ -95,5 +132,23 @@ func Get[T any]() T {
 }
 
 func Logger(name string) *zap.Logger {
-	return log.Of(c()).Named(name)
+	ctx := c()
+	ctx.mu.RLock()
+	logger := log.Of(ctx.Context).Named(name)
+	ctx.mu.RUnlock()
+	return logger
+}
+
+// AttachOTelCore tees an otelzap core onto the global logger, enabling
+// log records to be exported via OTLP alongside the console sink.
+func AttachOTelCore(otelCore zapcore.Core) {
+	ctx := c()
+	ctx.mu.Lock()
+	defer ctx.mu.Unlock()
+	existing := log.Of(ctx.Context)
+	combined := zapcore.NewTee(existing.Core(), otelCore)
+	replaced := existing.WithOptions(zap.WrapCore(func(_ zapcore.Core) zapcore.Core {
+		return combined
+	}))
+	ctx.Context = log.WithLogger(ctx.Context, replaced)
 }

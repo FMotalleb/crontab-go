@@ -2,9 +2,9 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"runtime"
 
 	"github.com/fmotalleb/go-tools/defaulter"
 	"github.com/fmotalleb/go-tools/env"
@@ -14,11 +14,13 @@ import (
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/cmd/parser"
 	"github.com/fmotalleb/crontab-go/config"
 	"github.com/fmotalleb/crontab-go/core/global"
 	"github.com/fmotalleb/crontab-go/core/jobs"
+	"github.com/fmotalleb/crontab-go/core/observability"
 	"github.com/fmotalleb/crontab-go/core/webserver"
 )
 
@@ -48,6 +50,16 @@ within your containerized applications.`,
 		cronInstance.Start()
 		l := global.Logger("cron")
 		l.Info("Booting up")
+
+		otelResult, otelErr := observability.Setup(global.CTX(), CFG.Observability, l)
+		if otelErr != nil {
+			l.Warn("observability setup error", zap.Error(otelErr))
+		}
+		if otelResult.LogCore != nil {
+			global.AttachOTelCore(otelResult.LogCore)
+		}
+		defer otelResult.Shutdown(context.Background()) //nolint:errcheck // shutdown is best-effort
+
 		jobs.InitializeJobs(CFG.Jobs)
 		if CFG.WebServerAddress != "" {
 			go webserver.
@@ -117,14 +129,6 @@ func panicOnErr(err error, message string) {
 }
 
 func initConfig() {
-	if runtime.GOOS == "windows" {
-		viper.SetDefault("shell", "C:\\WINDOWS\\system32\\cmd.exe")
-		viper.SetDefault("shell_args", "/c")
-	} else {
-		viper.SetDefault("shell", "/bin/sh")
-		viper.SetDefault("shell_args", "-c")
-	}
-
 	setupEnv()
 
 	if cfgFile != "" {
@@ -146,7 +150,7 @@ func initConfig() {
 		CFG.Validate(),
 		"Failed to initialize config file: %s",
 	)
-	defaulter.ApplyDefaults(CFG, CFG)
+	_ = defaulter.ApplyDefaults(CFG, CFG)
 }
 
 func setupEnv() {
@@ -187,19 +191,6 @@ func setupEnv() {
 			"username",
 		),
 		"Cannot bind webserver_username env variable: %s",
-	)
-
-	warnOnErr(
-		viper.BindEnv(
-			"shell",
-		),
-		"Cannot bind shell env variable: %s",
-	)
-	warnOnErr(
-		viper.BindEnv(
-			"shell_args",
-		),
-		"Cannot bind shell_args env variable: %s",
 	)
 
 	viper.AutomaticEnv()

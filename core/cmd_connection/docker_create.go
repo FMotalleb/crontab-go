@@ -1,13 +1,14 @@
 package connection
 
 import (
-	"bytes"
 	"context"
 	"io"
+	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -18,7 +19,7 @@ import (
 )
 
 func init() {
-	cg.Register(NewDockerCreateConnection)
+	cg.RegisterWithPriority(NewDockerCreateConnection, 30)
 }
 
 // DockerCreateConnection is a struct that manages the creation and execution of Docker containers.
@@ -122,11 +123,9 @@ func (d *DockerCreateConnection) Connect() error {
 	return nil
 }
 
-// Execute creates, starts, and logs the output of the Docker container.
-// Returns:
-// - A byte slice containing the command output.
-// - An error if the execution fails, otherwise nil.
-func (d *DockerCreateConnection) Execute() ([]byte, error) {
+// Execute creates, starts, and streams the output of the Docker container.
+// Returns an error if any step fails.
+func (d *DockerCreateConnection) Execute(stdout, stderr io.Writer) error {
 	ctx := d.ctx
 	// Create the exec instance
 
@@ -139,7 +138,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		d.conn.ContainerName,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	d.log.Debug("container created", zap.Any("response", exec), zap.Strings("warnings", exec.Warnings))
@@ -162,10 +161,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			exec.ID,
 			container.StartOptions{},
 		)
-
 		if err == nil {
 			break
 		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		d.log.Warn("container start failed, retrying", zap.Error(err))
+		time.Sleep(time.Second)
 	}
 
 	d.log.Debug("container started", zap.Any("container", exec))
@@ -176,13 +179,15 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 			exec.ID,
 			false,
 		)
-
 		if err == nil {
 			break
 		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		d.log.Warn("container stats failed, retrying", zap.Error(err))
+		time.Sleep(time.Second)
 	}
-
-	d.log.Debug("container started", zap.Any("container", exec))
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerLogs(
 		ctx,
@@ -195,7 +200,7 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer helpers.WarnOnErrIgnored(
 		d.log,
@@ -205,15 +210,14 @@ func (d *DockerCreateConnection) Execute() ([]byte, error) {
 		"cannot close the container's logs",
 	)
 
-	writer := bytes.NewBuffer([]byte{})
-	// Print the command output
-	wrote, err := io.Copy(writer, resp)
+	// Demultiplex the container log frames into separate stdout/stderr streams
+	wrote, err := stdcopy.StdCopy(stdout, stderr, resp)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))
-		return writer.Bytes(), err
+		return err
 	}
-	return writer.Bytes(), nil
+	return nil
 }
 
 // Disconnect closes the connection to the Docker daemon.

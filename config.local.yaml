@@ -1,6 +1,22 @@
 # yaml-language-server: $schema=schema.json
 # This is my local test file shared across multiple systems as i test so don't use this file as a reference
 
+observability:
+  service-name: "crontab-go"
+  tracing:
+    url: "http://127.0.0.1:4318"
+    headers:
+      Authorization: "Bearer secret-token"
+  metrics:
+    url: "http://127.0.0.1:4318"
+    interval: 60s
+    headers:
+      Authorization: "Bearer secret-token"
+  log:
+    url: "http://127.0.0.1:4318"
+    headers:
+      Authorization: "Bearer secret-token"
+
 jobs:
   - name: echo
     concurrency: 3
@@ -15,14 +31,14 @@ jobs:
         retry-mode: fibonacci
         vars:
           name: '{{ now | date "2006-01-02_15-04-05" }}'
-        connections:
-          - label: "connection.selector"
+        # connections:
+        #   - label: "connection.selector"
 
     events:
       # - cron: "0 * * * * *"
       # - interval: 5s
       - on-init: true
       - web-event: test
-      - docker:
-          image: nginx
-          name: "(webserver|app|application)"
+      # - docker:
+      #     image: nginx
+      #     name: "(webserver|app|application)"

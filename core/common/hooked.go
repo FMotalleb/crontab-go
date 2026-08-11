@@ -10,7 +10,6 @@ import (
 )
 
 type Hooked struct {
-	Retry
 	metaName  string
 	doneHooks []abstraction.Executable
 	failHooks []abstraction.Executable

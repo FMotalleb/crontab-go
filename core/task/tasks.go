@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"errors"
 
 	"go.uber.org/zap"
 
@@ -12,20 +13,28 @@ import (
 
 var tg = generator.New[*config.Task, abstraction.Executable]()
 
-func Build(ctx context.Context, log *zap.Logger, cfg config.Task) abstraction.Executable {
+func Build(ctx context.Context, log *zap.Logger, cfg config.Task) (abstraction.Executable, error) {
 	exe, ok := tg.Get(log, &cfg)
 	if !ok {
-		log.Panic("did not received any executable action from given task", zap.Any("config", cfg))
+		return nil, errors.New("no executable action matched for task")
 	}
 	onDone := []abstraction.Executable{}
 	for _, d := range cfg.OnDone {
-		onDone = append(onDone, Build(ctx, log, d))
+		h, err := Build(ctx, log, d)
+		if err != nil {
+			return nil, err
+		}
+		onDone = append(onDone, h)
 	}
 	exe.SetDoneHooks(ctx, onDone)
 	onFail := []abstraction.Executable{}
 	for _, d := range cfg.OnFail {
-		onFail = append(onFail, Build(ctx, log, d))
+		h, err := Build(ctx, log, d)
+		if err != nil {
+			return nil, err
+		}
+		onFail = append(onFail, h)
 	}
 	exe.SetFailHooks(ctx, onFail)
-	return exe
+	return exe, nil
 }

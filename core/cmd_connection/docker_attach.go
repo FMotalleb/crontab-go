@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	cg.Register(NewDockerAttachConnection)
+	cg.RegisterWithPriority(NewDockerAttachConnection, 20)
 }
 
 type DockerAttachConnection struct {
@@ -74,7 +74,6 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 	d.execCFG = &container.ExecOptions{
 		AttachStdout: true,
 		AttachStderr: true,
-		Tty:          true,
 		Privileged:   true,
 		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
@@ -101,17 +100,14 @@ func (d *DockerAttachConnection) Connect() error {
 	return nil
 }
 
-// Execute runs the command in the Docker container and captures the output.
-// It creates an exec instance, attaches to it, and reads the command output.
-// Returns:
-// - A byte slice containing the command output.
-// - An error if the execution fails, otherwise nil.
-func (d *DockerAttachConnection) Execute() ([]byte, error) {
+// Execute runs the command in the Docker container and streams its output to the provided writer.
+// It creates an exec instance and attaches to it.
+func (d *DockerAttachConnection) Execute(stdout, stderr io.Writer) error {
 	cid := d.conn.ContainerName
 	if cid == "" {
 		label := d.conn.ContainerLabel
 		if label == "" {
-			return nil, errors.New("neither container name nor label provided")
+			return errors.New("neither container name nor label provided")
 		}
 
 		args := filters.NewArgs()
@@ -121,15 +117,15 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 			Filters: args,
 		})
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if len(containers) == 0 {
-			return nil, fmt.Errorf("no container found with label %q", label)
+			return fmt.Errorf("no container found with label %q", label)
 		}
 
 		if len(containers) != 1 {
-			return nil, fmt.Errorf("more than one container found with label %q", label)
+			return fmt.Errorf("more than one container found with label %q", label)
 		}
 		cid = containers[0].ID
 	}
@@ -137,33 +133,30 @@ func (d *DockerAttachConnection) Execute() ([]byte, error) {
 	// Create the exec instance
 	exec, err := d.cli.ContainerExecCreate(d.ctx, cid, *d.execCFG)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Attach to the exec instance
 	resp, err := d.cli.ContainerExecAttach(
 		d.ctx,
 		exec.ID,
-		container.ExecStartOptions{
-			Tty: true,
-		},
+		container.ExecStartOptions{},
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer func() {
 		resp.Close()
 	}()
 
-	writer := bytes.NewBuffer([]byte{})
-	// Print the command output
-	wrote, err := io.Copy(writer, resp.Reader)
+	// Demultiplex the exec frames into separate stdout/stderr streams
+	wrote, err := stdcopy.StdCopy(stdout, stderr, resp.Reader)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))
-		return writer.Bytes(), err
+		return err
 	}
-	return writer.Bytes(), nil
+	return nil
 }
 
 // Disconnect closes the connection to the Docker daemon.

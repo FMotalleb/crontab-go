@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/fmotalleb/go-tools/template"
@@ -70,10 +71,15 @@ func (ctx Ctx) getVars() map[string]string {
 
 func (ctx Ctx) envReshape() []string {
 	env := ctx.getEnv()
+	keys := make([]string, 0, len(env))
+	for key := range env {
+		keys = append(keys, key)
+	}
+	slices.Sort(keys)
 	result := make([]string, 0, len(env))
-	for key, val := range env {
+	for _, key := range keys {
 		k := strings.ToUpper(ctx.tryTemplate(key))
-		v := ctx.tryTemplate(val)
+		v := ctx.tryTemplate(env[key])
 		result = append(result, fmt.Sprintf("%s=%s", k, v))
 	}
 	return result

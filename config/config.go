@@ -7,18 +7,16 @@ import (
 
 // Config represents the configuration for the crontab application.
 type Config struct {
-	// Command executor configs
-	Shell     string   `mapstructure:"shell" json:"shell,omitempty"`
-	ShellArgs []string `mapstructure:"shell_args" json:"shell_args,omitempty"`
-
 	// Web-server config
-	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_listen_address,omitempty"`
+	WebServerAddress  string `mapstructure:"webserver_address" json:"webserver_address,omitempty"`
 	WebServerPort     uint   `mapstructure:"webserver_port" json:"webserver_port,omitempty"`
 	WebserverUsername string `mapstructure:"webserver_username" json:"webserver_username,omitempty"`
 	WebServerPassword string `mapstructure:"webserver_password" json:"webserver_password,omitempty"`
 	WebServerMetrics  bool   `mapstructure:"webserver_metrics" json:"webserver_metrics,omitempty"`
 
 	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
+
+	Observability *Observability `mapstructure:"observability" json:"observability,omitempty"`
 }
 
 // JobConfig represents the configuration for a specific job.
@@ -41,10 +39,9 @@ type JobEvent struct {
 	WebEvent string        `mapstructure:"web-event" json:"web-event,omitempty"`
 	Docker   *DockerEvent  `mapstructure:"docker" json:"docker,omitempty"`
 
-	LogFile        string        `mapstructure:"log-file" json:"log-file,omitempty"`
-	LogCheckCycle  time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
-	LogLineBreaker string        `mapstructure:"log-line-breaker" json:"log-line-breaker,omitempty"`
-	LogMatcher     string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
+	LogFile       string        `mapstructure:"log-file" json:"log-file,omitempty"`
+	LogCheckCycle time.Duration `mapstructure:"log-check-cycle" json:"log-check-cycle,omitempty"`
+	LogMatcher    string        `mapstructure:"log-matcher" json:"log-matcher,omitempty"`
 }
 
 // DockerEvent represents a Docker event configuration.
@@ -68,10 +65,11 @@ type JobHooks struct {
 // Task represents the configuration for a task within a job.
 type Task struct {
 	// Http Requests
-	Post    string            `mapstructure:"post" json:"post,omitempty"`
-	Get     string            `mapstructure:"get" json:"get,omitempty"`
-	Headers map[string]string `mapstructure:"headers" json:"headers,omitempty"`
-	Data    any               `mapstructure:"data" json:"data,omitempty"`
+	Post     string            `mapstructure:"post" json:"post,omitempty"`
+	Get      string            `mapstructure:"get" json:"get,omitempty"`
+	Headers  map[string]string `mapstructure:"headers" json:"headers,omitempty"`
+	Data     any               `mapstructure:"data" json:"data,omitempty"`
+	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
 
 	// Command params
 	Command          string            `mapstructure:"command" json:"command,omitempty"`
@@ -117,3 +115,21 @@ const (
 	ErrorPolGiveUp    ErrorLimitPolicy = "give-up"
 	ErrorPolReconnect ErrorLimitPolicy = "reconnect"
 )
+
+// Observability configures OpenTelemetry tracing, metrics, and logging export.
+type Observability struct {
+	ServiceName string               `mapstructure:"service-name" json:"service-name,omitempty"`
+	Attributes  map[string]string    `mapstructure:"attributes" json:"attributes,omitempty"`
+	Tracing     *ObservabilitySignal `mapstructure:"tracing" json:"tracing,omitempty"`
+	Metrics     *ObservabilitySignal `mapstructure:"metrics" json:"metrics,omitempty"`
+	Log         *ObservabilitySignal `mapstructure:"log" json:"log,omitempty"`
+}
+
+// ObservabilitySignal configures a single OTLP signal (tracing, metrics, or logging).
+// The transport (HTTP or gRPC) and TLS are derived from the URL scheme and the insecure flag.
+type ObservabilitySignal struct {
+	URL      string            `mapstructure:"url" json:"url,omitempty"`
+	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
+	Interval time.Duration     `mapstructure:"interval" json:"interval,omitempty"`
+	Headers  map[string]string `mapstructure:"headers" json:"headers,omitempty"`
+}

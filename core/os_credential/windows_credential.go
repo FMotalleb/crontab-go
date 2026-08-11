@@ -1,5 +1,4 @@
 //go:build windows
-// +build windows
 
 // Package credential is ignored on windows builds
 package credential
