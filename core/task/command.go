@@ -115,6 +115,11 @@ func (c Command) Do(ctx context.Context) (e error) {
 				l.Error("error when tried to connect, exiting current remote", zap.Error(connErr))
 				return errors.Join(errors.New("failed to connect"), connErr)
 			}
+			defer helpers.WarnOnErrIgnored(
+				l,
+				cmdConn.Disconnect,
+				"error when tried to disconnect",
+			)
 			prefix := outputPrefix(jobName(ctx), c.task.Command)
 			stdout := NewPrefixWriter(os.Stdout, prefix)
 			stderr := NewPrefixWriter(os.Stderr, prefix)
@@ -124,10 +129,6 @@ func (c Command) Do(ctx context.Context) (e error) {
 				return errors.Join(errors.New("failed to execute command"), execErr)
 			}
 			l.Info("command finished")
-			if discErr := cmdConn.Disconnect(); discErr != nil {
-				l.Warn("error when tried to disconnect", zap.Error(discErr))
-				return nil
-			}
 			return nil
 		}(); err != nil {
 			return err
