@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -73,7 +74,6 @@ func (d *DockerAttachConnection) Prepare(ctx context.Context, task *config.Task)
 	d.execCFG = &container.ExecOptions{
 		AttachStdout: true,
 		AttachStderr: true,
-		Tty:          true,
 		Privileged:   true,
 		Env:          environments,
 		WorkingDir:   task.WorkingDirectory,
@@ -102,7 +102,7 @@ func (d *DockerAttachConnection) Connect() error {
 
 // Execute runs the command in the Docker container and streams its output to the provided writer.
 // It creates an exec instance and attaches to it.
-func (d *DockerAttachConnection) Execute(stdout, _ io.Writer) error {
+func (d *DockerAttachConnection) Execute(stdout, stderr io.Writer) error {
 	cid := d.conn.ContainerName
 	if cid == "" {
 		label := d.conn.ContainerLabel
@@ -140,9 +140,7 @@ func (d *DockerAttachConnection) Execute(stdout, _ io.Writer) error {
 	resp, err := d.cli.ContainerExecAttach(
 		d.ctx,
 		exec.ID,
-		container.ExecStartOptions{
-			Tty: true,
-		},
+		container.ExecStartOptions{},
 	)
 	if err != nil {
 		return err
@@ -151,8 +149,8 @@ func (d *DockerAttachConnection) Execute(stdout, _ io.Writer) error {
 		resp.Close()
 	}()
 
-	// Stream the command output
-	wrote, err := io.Copy(stdout, resp.Reader)
+	// Demultiplex the exec frames into separate stdout/stderr streams
+	wrote, err := stdcopy.StdCopy(stdout, stderr, resp.Reader)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))

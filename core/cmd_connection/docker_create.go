@@ -8,6 +8,7 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/stdcopy"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -124,7 +125,7 @@ func (d *DockerCreateConnection) Connect() error {
 
 // Execute creates, starts, and streams the output of the Docker container.
 // Returns an error if any step fails.
-func (d *DockerCreateConnection) Execute(stdout, _ io.Writer) error {
+func (d *DockerCreateConnection) Execute(stdout, stderr io.Writer) error {
 	ctx := d.ctx
 	// Create the exec instance
 
@@ -209,8 +210,8 @@ func (d *DockerCreateConnection) Execute(stdout, _ io.Writer) error {
 		"cannot close the container's logs",
 	)
 
-	// Stream the command output
-	wrote, err := io.Copy(stdout, resp)
+	// Demultiplex the container log frames into separate stdout/stderr streams
+	wrote, err := stdcopy.StdCopy(stdout, stderr, resp)
 	d.log.Debug("output of stdout is fetched", zap.Int64("bytes", wrote))
 	if err != nil {
 		d.log.Debug("copy of std is failed", zap.Int64("until-err", wrote), zap.Error(err))
