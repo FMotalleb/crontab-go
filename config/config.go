@@ -124,8 +124,8 @@ type Observability struct {
 }
 
 // ObservabilitySignal configures a single OTLP signal (tracing, metrics, or logging).
+// The transport (HTTP or gRPC) and TLS are derived from the URL scheme and the insecure flag.
 type ObservabilitySignal struct {
-	Protocol string            `mapstructure:"protocol" json:"protocol,omitempty"`
 	URL      string            `mapstructure:"url" json:"url,omitempty"`
 	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
 	Interval time.Duration     `mapstructure:"interval" json:"interval,omitempty"`

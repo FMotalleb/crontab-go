@@ -6,20 +6,17 @@
 # observability:
 #   service-name: "crontab-go"
 #   tracing:
-#     protocol: http           # http | grpc
-#     url: "http://collector:4318"
-#     insecure: true           # true=plaintext, false=TLS
+#     url: "http://collector:4318"   # scheme picks transport: http|https, grpc|grpcs
+#     insecure: true                 # true=ignore TLS cert verification
 #     headers:
 #       Authorization: "Bearer <token>"
 #   metrics:
-#     protocol: http
 #     url: "http://collector:4318"
 #     insecure: true
 #     interval: 60s            # push cadence for the periodic reader
 #     headers:
 #       Authorization: "Bearer <token>"
 #   log:
-#     protocol: http
 #     url: "http://collector:4318"
 #     insecure: true
 #     headers:

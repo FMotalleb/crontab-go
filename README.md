@@ -66,9 +66,9 @@ Environment variables:
 | `OTEL_TRACING_HEADERS` | Custom headers as JSON (e.g. `{"Authorization":"Bearer ..."}`) |
 | `OTEL_METRICS_HEADERS` | Custom headers as JSON |
 | `OTEL_LOG_HEADERS` | Custom headers as JSON |
-| `OTEL_TRACING_INSECURE` | Use plaintext instead of TLS |
-| `OTEL_METRICS_INSECURE` | Use plaintext instead of TLS |
-| `OTEL_LOG_INSECURE` | Use plaintext instead of TLS |
+| `OTEL_TRACING_INSECURE` | Skip TLS certificate verification (TLS still negotiated) |
+| `OTEL_METRICS_INSECURE` | Skip TLS certificate verification (TLS still negotiated) |
+| `OTEL_LOG_INSECURE` | Skip TLS certificate verification (TLS still negotiated) |
 | `OTEL_SERVICE_NAME` | Service name resource attribute (default: `crontab-go`) |
 
 Example YAML config:

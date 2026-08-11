@@ -5,16 +5,13 @@
 # observability:
 #   service-name: "crontab-go"
 #   tracing:
-#     protocol: http
 #     url: "http://collector:4318"
 #     insecure: true
 #   metrics:
-#     protocol: http
 #     url: "http://collector:4318"
 #     insecure: true
 #     interval: 60s
 #   log:
-#     protocol: http
 #     url: "http://collector:4318"
 #     insecure: true
 

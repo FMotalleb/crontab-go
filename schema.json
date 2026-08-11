@@ -504,18 +504,13 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "protocol": {
-          "type": "string",
-          "enum": ["http", "grpc"],
-          "description": "Transport protocol. Defaults to http."
-        },
         "url": {
           "type": "string",
-          "description": "OTLP endpoint URL (e.g. http://collector:4318)."
+          "description": "OTLP endpoint. The scheme selects the transport and security: http (plaintext HTTP), https (HTTP over TLS), grpc (plaintext gRPC), grpcs (gRPC over TLS)."
         },
         "insecure": {
           "type": "boolean",
-          "description": "Use plaintext instead of TLS. Defaults to false."
+          "description": "Skip TLS certificate verification. Defaults to false."
         },
         "interval": {
           "type": "string",

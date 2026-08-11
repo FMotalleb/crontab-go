@@ -3,6 +3,7 @@ package observability
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
@@ -10,8 +11,11 @@ import (
 	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/log/global"
 	"go.opentelemetry.io/otel/propagation"
@@ -23,6 +27,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/fmotalleb/crontab-go/config"
 )
@@ -132,43 +137,117 @@ func SpanAttr(key, val string) attribute.KeyValue {
 	return attribute.String(key, val)
 }
 
-func parseEndpoint(rawURL string) (host, path string) {
-	u, err := url.Parse(rawURL)
-	if err != nil {
-		return rawURL, ""
-	}
-	host = u.Host
-	path = u.Path
-	if host == "" {
-		host = rawURL
-	}
-	return host, path
+type transportKind int
+
+const (
+	transportHTTP transportKind = iota
+	transportGRPC
+)
+
+// signalEndpoint describes how to reach an OTLP signal endpoint parsed from its URL scheme.
+type signalEndpoint struct {
+	transport  transportKind
+	endpoint   string // host:port
+	path       string // HTTP URL path; empty for gRPC
+	tls        bool   // https:// or grpcs:// negotiate TLS
+	skipVerify bool   // insecure: true skips TLS certificate verification
 }
 
-func isInsecure(sig *config.ObservabilitySignal) bool {
-	if sig.Insecure {
-		return true
+func parseEndpoint(sig *config.ObservabilitySignal) (signalEndpoint, error) {
+	raw := sig.URL
+	ep := signalEndpoint{transport: transportHTTP, skipVerify: sig.Insecure}
+	if !strings.Contains(raw, "://") {
+		// Bare host:port, defaults to plaintext HTTP.
+		ep.endpoint = raw
+		return ep, nil
 	}
-	return strings.HasPrefix(sig.URL, "http://") || strings.HasPrefix(sig.URL, "grpc://")
+	u, err := url.Parse(raw)
+	if err != nil {
+		return signalEndpoint{}, fmt.Errorf("parse OTLP endpoint %q: %w", raw, err)
+	}
+	switch strings.ToLower(u.Scheme) {
+	case "http":
+		ep.transport, ep.tls = transportHTTP, false
+	case "https":
+		ep.transport, ep.tls = transportHTTP, true
+	case "grpc":
+		ep.transport, ep.tls = transportGRPC, false
+	case "grpcs":
+		ep.transport, ep.tls = transportGRPC, true
+	default:
+		return signalEndpoint{}, fmt.Errorf("unsupported OTLP URL scheme %q (use http, https, grpc or grpcs)", u.Scheme)
+	}
+	if u.Host != "" {
+		ep.endpoint = u.Host
+	} else {
+		ep.endpoint = strings.TrimPrefix(raw, u.Scheme+":")
+	}
+	ep.path = u.Path
+	return ep, nil
+}
+
+// skipVerifyTLS allows explicit user opt-in to ignore certificate verification.
+//
+//nolint:gosec // skip verification is an explicit configuration choice
+func skipVerifyTLS() *tls.Config {
+	return &tls.Config{InsecureSkipVerify: true} //nolint:gosec // explicit user opt-in
+}
+
+func traceHTTPOpts(ep signalEndpoint, headers map[string]string) []otlptracehttp.Option {
+	opts := []otlptracehttp.Option{
+		otlptracehttp.WithEndpoint(ep.endpoint),
+		otlptracehttp.WithURLPath(pathOrDefault(ep.path, "/v1/traces")),
+	}
+	if len(headers) > 0 {
+		opts = append(opts, otlptracehttp.WithHeaders(headers))
+	}
+	switch {
+	case !ep.tls:
+		opts = append(opts, otlptracehttp.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlptracehttp.WithTLSClientConfig(skipVerifyTLS()))
+	}
+	return opts
+}
+
+func traceGRPCOpts(ep signalEndpoint, headers map[string]string) []otlptracegrpc.Option {
+	opts := []otlptracegrpc.Option{
+		otlptracegrpc.WithEndpoint(ep.endpoint),
+	}
+	if len(headers) > 0 {
+		opts = append(opts, otlptracegrpc.WithHeaders(headers))
+	}
+	switch {
+	case !ep.tls:
+		opts = append(opts, otlptracegrpc.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlptracegrpc.WithTLSCredentials(credentials.NewTLS(skipVerifyTLS())))
+	default:
+		opts = append(opts, otlptracegrpc.WithTLSCredentials(credentials.NewTLS(nil)))
+	}
+	return opts
+}
+
+func pathOrDefault(path, def string) string {
+	if path == "" {
+		return def
+	}
+	return path
+}
+
+func newTraceExporter(ctx context.Context, ep signalEndpoint, headers map[string]string) (sdktrace.SpanExporter, error) {
+	if ep.transport == transportGRPC {
+		return otlptracegrpc.New(ctx, traceGRPCOpts(ep, headers)...)
+	}
+	return otlptracehttp.New(ctx, traceHTTPOpts(ep, headers)...)
 }
 
 func setupTracing(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, logger *zap.Logger) (ShutdownFunc, error) {
-	host, path := parseEndpoint(sig.URL)
-	if path == "" {
-		path = "/v1/traces"
+	ep, err := parseEndpoint(sig)
+	if err != nil {
+		return nil, err
 	}
-	opts := []otlptracehttp.Option{
-		otlptracehttp.WithEndpoint(host),
-		otlptracehttp.WithURLPath(path),
-	}
-	if sig.Headers != nil {
-		opts = append(opts, otlptracehttp.WithHeaders(sig.Headers))
-	}
-	if isInsecure(sig) {
-		opts = append(opts, otlptracehttp.WithInsecure())
-	}
-
-	exp, err := otlptracehttp.New(ctx, opts...)
+	exp, err := newTraceExporter(ctx, ep, sig.Headers)
 	if err != nil {
 		return nil, fmt.Errorf("trace exporter: %w", err)
 	}
@@ -182,23 +261,54 @@ func setupTracing(ctx context.Context, sig *config.ObservabilitySignal, res *res
 	return tp.Shutdown, nil
 }
 
-func setupMetrics(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, logger *zap.Logger) (ShutdownFunc, error) {
-	host, path := parseEndpoint(sig.URL)
-	if path == "" {
-		path = "/v1/metrics"
-	}
+func metricHTTPOpts(ep signalEndpoint, headers map[string]string) []otlpmetrichttp.Option {
 	opts := []otlpmetrichttp.Option{
-		otlpmetrichttp.WithEndpoint(host),
-		otlpmetrichttp.WithURLPath(path),
+		otlpmetrichttp.WithEndpoint(ep.endpoint),
+		otlpmetrichttp.WithURLPath(pathOrDefault(ep.path, "/v1/metrics")),
 	}
-	if sig.Headers != nil {
-		opts = append(opts, otlpmetrichttp.WithHeaders(sig.Headers))
+	if len(headers) > 0 {
+		opts = append(opts, otlpmetrichttp.WithHeaders(headers))
 	}
-	if isInsecure(sig) {
+	switch {
+	case !ep.tls:
 		opts = append(opts, otlpmetrichttp.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlpmetrichttp.WithTLSClientConfig(skipVerifyTLS()))
 	}
+	return opts
+}
 
-	exp, err := otlpmetrichttp.New(ctx, opts...)
+func metricGRPCOpts(ep signalEndpoint, headers map[string]string) []otlpmetricgrpc.Option {
+	opts := []otlpmetricgrpc.Option{
+		otlpmetricgrpc.WithEndpoint(ep.endpoint),
+	}
+	if len(headers) > 0 {
+		opts = append(opts, otlpmetricgrpc.WithHeaders(headers))
+	}
+	switch {
+	case !ep.tls:
+		opts = append(opts, otlpmetricgrpc.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlpmetricgrpc.WithTLSCredentials(credentials.NewTLS(skipVerifyTLS())))
+	default:
+		opts = append(opts, otlpmetricgrpc.WithTLSCredentials(credentials.NewTLS(nil)))
+	}
+	return opts
+}
+
+func newMetricExporter(ctx context.Context, ep signalEndpoint, headers map[string]string) (metric.Exporter, error) {
+	if ep.transport == transportGRPC {
+		return otlpmetricgrpc.New(ctx, metricGRPCOpts(ep, headers)...)
+	}
+	return otlpmetrichttp.New(ctx, metricHTTPOpts(ep, headers)...)
+}
+
+func setupMetrics(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, logger *zap.Logger) (ShutdownFunc, error) {
+	ep, err := parseEndpoint(sig)
+	if err != nil {
+		return nil, err
+	}
+	exp, err := newMetricExporter(ctx, ep, sig.Headers)
 	if err != nil {
 		return nil, fmt.Errorf("metric exporter: %w", err)
 	}
@@ -217,23 +327,54 @@ func setupMetrics(ctx context.Context, sig *config.ObservabilitySignal, res *res
 	return mp.Shutdown, nil
 }
 
-func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, svcName string, logger *zap.Logger) (ShutdownFunc, zapcore.Core, error) {
-	host, path := parseEndpoint(sig.URL)
-	if path == "" {
-		path = "/v1/logs"
-	}
+func logHTTPOpts(ep signalEndpoint, headers map[string]string) []otlploghttp.Option {
 	opts := []otlploghttp.Option{
-		otlploghttp.WithEndpoint(host),
-		otlploghttp.WithURLPath(path),
+		otlploghttp.WithEndpoint(ep.endpoint),
+		otlploghttp.WithURLPath(pathOrDefault(ep.path, "/v1/logs")),
 	}
-	if sig.Headers != nil {
-		opts = append(opts, otlploghttp.WithHeaders(sig.Headers))
+	if len(headers) > 0 {
+		opts = append(opts, otlploghttp.WithHeaders(headers))
 	}
-	if isInsecure(sig) {
+	switch {
+	case !ep.tls:
 		opts = append(opts, otlploghttp.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlploghttp.WithTLSClientConfig(skipVerifyTLS()))
 	}
+	return opts
+}
 
-	exp, err := otlploghttp.New(ctx, opts...)
+func logGRPCOpts(ep signalEndpoint, headers map[string]string) []otlploggrpc.Option {
+	opts := []otlploggrpc.Option{
+		otlploggrpc.WithEndpoint(ep.endpoint),
+	}
+	if len(headers) > 0 {
+		opts = append(opts, otlploggrpc.WithHeaders(headers))
+	}
+	switch {
+	case !ep.tls:
+		opts = append(opts, otlploggrpc.WithInsecure())
+	case ep.skipVerify:
+		opts = append(opts, otlploggrpc.WithTLSCredentials(credentials.NewTLS(skipVerifyTLS())))
+	default:
+		opts = append(opts, otlploggrpc.WithTLSCredentials(credentials.NewTLS(nil)))
+	}
+	return opts
+}
+
+func newLogExporter(ctx context.Context, ep signalEndpoint, headers map[string]string) (log.Exporter, error) {
+	if ep.transport == transportGRPC {
+		return otlploggrpc.New(ctx, logGRPCOpts(ep, headers)...)
+	}
+	return otlploghttp.New(ctx, logHTTPOpts(ep, headers)...)
+}
+
+func setupLogExport(ctx context.Context, sig *config.ObservabilitySignal, res *resource.Resource, svcName string, logger *zap.Logger) (ShutdownFunc, zapcore.Core, error) {
+	ep, err := parseEndpoint(sig)
+	if err != nil {
+		return nil, nil, err
+	}
+	exp, err := newLogExporter(ctx, ep, sig.Headers)
 	if err != nil {
 		return nil, nil, fmt.Errorf("log exporter: %w", err)
 	}
