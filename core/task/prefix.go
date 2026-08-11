@@ -33,28 +33,24 @@ func (w *prefixWriter) Write(p []byte) (int, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	total := 0
 	start := 0
 	for i, b := range p {
 		if b == '\n' {
-			n, err := w.writeChunk(p[start : i+1])
-			if err != nil {
-				return total, err
+			if err := w.writeChunk(p[start : i+1]); err != nil {
+				return i + 1, err
 			}
-			total += n
 			start = i + 1
 		}
 	}
 	if start < len(p) {
-		if _, err := w.writeChunk(p[start:]); err != nil {
-			return total, err
+		if err := w.writeChunk(p[start:]); err != nil {
+			return start, err
 		}
-		total += len(p) - start
 	}
-	return total, nil
+	return len(p), nil
 }
 
-func (w *prefixWriter) writeChunk(chunk []byte) (int, error) {
+func (w *prefixWriter) writeChunk(chunk []byte) error {
 	buf := bytes.NewBuffer(nil)
 	if len(chunk) > 0 && w.lineStart {
 		buf.Write(w.prefix)
@@ -63,7 +59,8 @@ func (w *prefixWriter) writeChunk(chunk []byte) (int, error) {
 	if len(chunk) > 0 {
 		w.lineStart = chunk[len(chunk)-1] == '\n'
 	}
-	return w.dst.Write(buf.Bytes())
+	_, err := w.dst.Write(buf.Bytes())
+	return err
 }
 
 // shortHash returns a compact hex digest of the given string, enough to tell runs apart.
