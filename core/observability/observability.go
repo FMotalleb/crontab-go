@@ -52,12 +52,17 @@ func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (
 	if svcName == "" {
 		svcName = "crontab-go"
 	}
+	resAttrs := make([]attribute.KeyValue, 0, len(cfg.Attributes)+1)
+	resAttrs = append(resAttrs, semconv.ServiceNameKey.String(svcName))
+	for key, value := range cfg.Attributes {
+		resAttrs = append(resAttrs, attribute.String(key, value))
+	}
 	defRes := resource.Default()
 	res, err := resource.Merge(
 		defRes,
 		resource.NewWithAttributes(
 			defRes.SchemaURL(),
-			semconv.ServiceNameKey.String(svcName),
+			resAttrs...,
 		),
 	)
 	if err != nil {

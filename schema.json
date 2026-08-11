@@ -489,6 +489,10 @@
           "type": "string",
           "description": "OpenTelemetry service name. Defaults to 'crontab-go'."
         },
+        "attributes": {
+          "$ref": "#/definitions/Map",
+          "description": "Extra resource attributes attached to every trace, metric, and log record emitted by this service, e.g. {\"env\": \"prod\", \"region\": \"eu-west-1\"}."
+        },
         "tracing": {
           "$ref": "#/definitions/ObservabilitySignal",
           "description": "OTLP tracing exporter configuration."

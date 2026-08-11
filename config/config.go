@@ -119,6 +119,7 @@ const (
 // Observability configures OpenTelemetry tracing, metrics, and logging export.
 type Observability struct {
 	ServiceName string               `mapstructure:"service-name" json:"service-name,omitempty"`
+	Attributes  map[string]string    `mapstructure:"attributes" json:"attributes,omitempty"`
 	Tracing     *ObservabilitySignal `mapstructure:"tracing" json:"tracing,omitempty"`
 	Metrics     *ObservabilitySignal `mapstructure:"metrics" json:"metrics,omitempty"`
 	Log         *ObservabilitySignal `mapstructure:"log" json:"log,omitempty"`
