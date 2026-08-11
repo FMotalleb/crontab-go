@@ -8,7 +8,9 @@ import (
 	"os"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -54,7 +56,9 @@ type Command struct {
 
 // Do implements common.Action.
 func (c Command) Do(ctx context.Context) (e error) {
-	ctx, span := taskTracer.Start(ctx, "cmd:"+c.task.Command)
+	ctx, span := taskTracer.Start(ctx, "task.command",
+		trace.WithAttributes(attribute.String("command.hash", shortHash(c.task.Command))),
+	)
 	defer span.End()
 	ctx = populateVars(ctx, c.task)
 	log := c.log.With(

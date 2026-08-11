@@ -195,7 +195,10 @@ func parseEndpoint(sig *config.ObservabilitySignal) (signalEndpoint, error) {
 //
 //nolint:gosec // skip verification is an explicit configuration choice
 func skipVerifyTLS() *tls.Config {
-	return &tls.Config{InsecureSkipVerify: true} //nolint:gosec // explicit user opt-in
+	return &tls.Config{
+		InsecureSkipVerify: true, //nolint:gosec // explicit user opt-in
+		MinVersion:         tls.VersionTLS12,
+	}
 }
 
 func traceHTTPOpts(ep signalEndpoint, headers map[string]string) []otlptracehttp.Option {

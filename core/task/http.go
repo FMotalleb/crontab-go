@@ -2,6 +2,7 @@ package task
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -38,12 +39,18 @@ func doHTTP(client *http.Client, req *http.Request, headers *map[string]string, 
 		if out != nil {
 			if _, cpErr := io.Copy(out, res.Body); cpErr != nil {
 				log.Warn("failed to stream response body", zap.Error(cpErr))
+				return fmt.Errorf("failed to stream response body: %w", cpErr)
 			}
 		}
 	}
-	if err != nil || (res != nil && res.StatusCode >= 400) {
+	if err != nil {
 		log.Warn("request failed", zap.Error(err), zap.Int("status", statusCodeOf(res)))
 		return err
+	}
+	if res != nil && res.StatusCode >= http.StatusBadRequest {
+		statusErr := fmt.Errorf("request failed with status %s", res.Status)
+		log.Warn("request failed", zap.Error(statusErr), zap.Int("status", res.StatusCode))
+		return statusErr
 	}
 	return nil
 }

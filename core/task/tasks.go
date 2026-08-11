@@ -2,7 +2,7 @@ package task
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"go.uber.org/zap"
 
@@ -16,7 +16,7 @@ var tg = generator.New[*config.Task, abstraction.Executable]()
 func Build(ctx context.Context, log *zap.Logger, cfg config.Task) (abstraction.Executable, error) {
 	exe, ok := tg.Get(log, &cfg)
 	if !ok {
-		return nil, fmt.Errorf("no executable action matched for task: %+v", cfg)
+		return nil, errors.New("no executable action matched for task")
 	}
 	onDone := []abstraction.Executable{}
 	for _, d := range cfg.OnDone {
