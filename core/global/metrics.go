@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/zap"
 
 	"github.com/fmotalleb/go-tools/concurrency"
 
@@ -87,26 +88,23 @@ func RegisterCounter(name string, help string, labels prometheus.Labels) {
 		})
 }
 
-type otelCounterEntry struct {
-	counter metric.Int64Counter
-}
-
-var otelCounters = concurrency.NewLockedValue(make(map[string]*otelCounterEntry, 0))
+var otelCounters = concurrency.NewLockedValue(make(map[string]metric.Int64Counter))
 
 func otelInc(name string, labels prometheus.Labels) {
 	otelCounters.Operate(
-		func(m map[string]*otelCounterEntry) map[string]*otelCounterEntry {
-			if c, ok := m[name]; ok {
-				c.counter.Add(context.Background(), 1, metric.WithAttributes(labelsToAttrs(labels)...))
+		func(m map[string]metric.Int64Counter) map[string]metric.Int64Counter {
+			if counter, ok := m[name]; ok {
+				counter.Add(context.Background(), 1, metric.WithAttributes(labelsToAttrs(labels)...))
 				return m
 			}
 			meter := otel.GetMeterProvider().Meter("crontab-go")
 			counter, err := meter.Int64Counter(name)
 			if err != nil {
+				Logger("metrics").Warn("cannot create otel counter", zap.String("name", name), zap.Error(err))
 				return m
 			}
 			counter.Add(context.Background(), 1, metric.WithAttributes(labelsToAttrs(labels)...))
-			m[name] = &otelCounterEntry{counter: counter}
+			m[name] = counter
 			return m
 		})
 }
