@@ -55,7 +55,7 @@ type Command struct {
 }
 
 // Do implements common.Action.
-func (c Command) Do(ctx context.Context) (e error) {
+func (c *Command) Do(ctx context.Context) (e error) {
 	ctx, span := taskTracer.Start(ctx, "task.command",
 		trace.WithAttributes(attribute.String("command.hash", shortHash(c.task.Command))),
 	)
