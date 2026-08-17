@@ -52,17 +52,21 @@ type Get struct {
 
 // Do implements common.Action.
 func (g *Get) Do(ctx context.Context) (e error) {
+	execID := newExecutionID()
 	ctx = populateVars(ctx, g.task)
 	_, span := taskTracer.Start(ctx, "http.get",
 		trace.WithAttributes(
 			attribute.String("url.full", g.address),
 			attribute.String("http.request.method", "GET"),
+			attribute.String("execution.id", execID),
 		),
 	)
 	defer span.End()
 	log := g.log.With(
+		zap.String("id", execID),
 		zap.Time("start", time.Now()),
 	)
+	log.Info("get started")
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
@@ -84,6 +88,5 @@ func (g *Get) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	prefix := outputPrefix(jobName(ctx), g.address)
-	return doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stdout, prefix), log)
+	return doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
 }

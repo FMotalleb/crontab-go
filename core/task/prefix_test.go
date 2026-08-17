@@ -2,13 +2,10 @@ package task
 
 import (
 	"bytes"
-	"context"
 	"io"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
-
-	"github.com/fmotalleb/crontab-go/ctxutils"
 )
 
 func TestPrefixWriter_PrefixesEveryLine(t *testing.T) {
@@ -29,13 +26,13 @@ func TestPrefixWriter_SplitsAcrossWrites(t *testing.T) {
 	assert.Equal(t, "svc | hello\nsvc | world\n", buf.String())
 }
 
-func TestOutputPrefix_DockerStyle(t *testing.T) {
-	got := outputPrefix("service-1", "echo hi")
-	assert.Equal(t, "service-1:"+shortHash("echo hi")+" | ", got)
+func TestNewExecutionID_IsUniqueHex(t *testing.T) {
+	a := newExecutionID()
+	b := newExecutionID()
+	assert.NotEqual(t, a, b)
+	assert.Equal(t, 16, len(a))
 }
 
-func TestJobName_FromContext(t *testing.T) {
-	ctx := context.WithValue(t.Context(), ctxutils.JobKey, "my-job")
-	assert.Equal(t, "my-job", jobName(ctx))
-	assert.Equal(t, "", jobName(context.Background()))
+func TestExecutionPrefix(t *testing.T) {
+	assert.Equal(t, "deadbeef | ", executionPrefix("deadbeef"))
 }
