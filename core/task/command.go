@@ -56,14 +56,20 @@ type Command struct {
 
 // Do implements common.Action.
 func (c *Command) Do(ctx context.Context) (e error) {
+	execID := newExecutionID()
 	ctx, span := taskTracer.Start(ctx, "task.command",
-		trace.WithAttributes(attribute.String("command.hash", shortHash(c.task.Command))),
+		trace.WithAttributes(
+			attribute.String("command.hash", shortHash(c.task.Command)),
+			attribute.String("execution.id", execID),
+		),
 	)
 	defer span.End()
 	ctx = populateVars(ctx, c.task)
 	log := c.log.With(
+		zap.String("id", execID),
 		zap.Time("start", time.Now()),
 	)
+	log.Info("command started")
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
@@ -120,10 +126,10 @@ func (c *Command) Do(ctx context.Context) (e error) {
 				cmdConn.Disconnect,
 				"error when tried to disconnect",
 			)
-			prefix := outputPrefix(jobName(ctx), c.task.Command)
-			stdout := NewPrefixWriter(os.Stdout, prefix)
-			stderr := NewPrefixWriter(os.Stderr, prefix)
-			execErr := cmdConn.Execute(stdout, stderr)
+			// Pipe both stdout and stderr of the command into a single prefixed
+			// stream on stderr so task output never pollutes the program's stdout.
+			out := NewPrefixWriter(os.Stderr, executionPrefix(execID))
+			execErr := cmdConn.Execute(out, out)
 			if execErr != nil {
 				l.Error("failed to run command", zap.Error(execErr))
 				return errors.Join(errors.New("failed to execute command"), execErr)

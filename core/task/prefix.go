@@ -2,13 +2,13 @@ package task
 
 import (
 	"bytes"
-	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"sync"
-
-	"github.com/fmotalleb/crontab-go/ctxutils"
+	"time"
 )
 
 // prefixWriter prefixes every new line with a fixed prefix before forwarding to dst.
@@ -69,15 +69,16 @@ func shortHash(s string) string {
 	return hex.EncodeToString(sum[:4])
 }
 
-// outputPrefix builds the stdout/stderr line prefix for a task output.
-// It uses the job name from the context and a hash of the task's main parameter
-// to mimic docker style logging: "<job-name>:<hash> | <line>".
-func outputPrefix(jobName, param string) string {
-	return jobName + ":" + shortHash(param) + " | "
+// newExecutionID returns a random identifier unique to each task execution.
+func newExecutionID() string {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return fmt.Sprintf("%x", time.Now().UnixNano())
+	}
+	return hex.EncodeToString(b[:])
 }
 
-// jobName returns the job name carried in the context, defaulting to an empty string.
-func jobName(ctx context.Context) string {
-	name, _ := ctx.Value(ctxutils.JobKey).(string)
-	return name
+// executionPrefix builds the per-line prefix for a task's output stream.
+func executionPrefix(id string) string {
+	return id + " | "
 }

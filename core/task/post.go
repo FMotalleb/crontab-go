@@ -57,17 +57,21 @@ type Post struct {
 
 // Do implements common.Action.
 func (p *Post) Do(ctx context.Context) (e error) {
+	execID := newExecutionID()
 	ctx = populateVars(ctx, p.task)
 	_, span := taskTracer.Start(ctx, "http.post",
 		trace.WithAttributes(
 			attribute.String("url.full", p.address),
 			attribute.String("http.request.method", "POST"),
+			attribute.String("execution.id", execID),
 		),
 	)
 	defer span.End()
 	log := p.log.With(
+		zap.String("id", execID),
 		zap.Time("start", time.Now()),
 	)
+	log.Info("post started")
 	defer func() {
 		if r := recover(); r != nil {
 			if err, ok := r.(error); ok {
@@ -99,6 +103,5 @@ func (p *Post) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	prefix := outputPrefix(jobName(ctx), p.address)
-	return doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stdout, prefix), log)
+	return doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
 }
