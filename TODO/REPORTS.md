@@ -65,6 +65,27 @@ Because `Wait()` never returns, the whole chain in `core/task/command.go`
 (`Do` → `Execute` → `conn.Execute`) never unwinds, so `defer span.End()`
 (line 66) never runs.
 
+### Not the retry mechanism (ruled out)
+
+The internal retry loop (`core/common/retry.go`) is *not* the cause:
+
+- The original hang reproduces with the default `retries: 0` (which
+  `WithMaxRetries(0)` turns into a single attempt — the first `Next()` call
+  immediately returns stop), so the hang happens inside the **first** `Do`,
+  before the retry loop ever runs. The raw `exec.CommandContext` repro above
+  has no crontab retry code at all and still hangs.
+- Empirically verified: `exec sleep 30` with `timeout: 500ms`, `retries: 2`
+  returns after ~1.8s (3 attempts) and **all 3 `task.command` spans are
+  ended** — one per attempt, each closed by its own `defer span.End()`.
+- The retry loop only ever holds the *outer* `job.*/task.execute` span open
+  across attempts (each attempt gets a fresh timeout and its own span), and
+  only for a bounded number of attempts.
+
+One real (minor) interaction worth noting: because `ApplyTimeout` is applied
+per-attempt inside `Do`, a task with `timeout` + `retries > 0` can run for
+`(retries+1) × timeout` plus backoff delays — the configured `timeout` does not
+bound the whole task. The outer span stays open that long, but still ends.
+
 ### Impact (worse than an unfinished span)
 
 - **Leaked spans:** `task.command`, `job.<name>/task.execute`
