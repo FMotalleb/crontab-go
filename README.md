@@ -107,7 +107,7 @@ All three signals are non-fatal: if a collector is unreachable at startup, the c
 
 **Task Output:**
 
-Command and HTTP request (get/post) outputs are streamed directly to stdout/stderr (never buffered in memory), with a docker-style per-line prefix `<job-name>:<hash> |` followed by a space, where the hash is derived from the task's main parameter (command, get URL, or post URL). For get/post requests, set `insecure: true` on the task to skip TLS certificate verification (useful for self-signed certificates).
+Command and HTTP request (get/post) outputs are streamed to stderr (never stdout, never buffered in memory) with a per-line prefix of a unique per-execution id: `<id> | `. For commands, both stdout and stderr are piped into that single stream, and the same id is reported in the task's start and finish log messages so you can correlate log lines with a run's output. For get/post requests, set `insecure: true` on the task to skip TLS certificate verification (useful for self-signed certificates).
 
 ## Getting Started
 

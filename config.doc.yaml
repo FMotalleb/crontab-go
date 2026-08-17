@@ -26,6 +26,11 @@
 #     headers:
 #       Authorization: "Bearer <token>"
 
+# Task output (command stdout/stderr and get/post response bodies) is streamed to
+# stderr, never stdout, with a per-line prefix of a unique per-execution id: "<id> | ".
+# A command's stdout and stderr are both piped into that single stream, and the same
+# id is reported in the task's start and finish log messages for correlation.
+
 jobs:
   # Jobs can be assigned a unique name, which will be included in log messages for easier debugging.
   - name: Test Job
