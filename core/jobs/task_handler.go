@@ -5,7 +5,9 @@ import (
 	"sync"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -48,7 +50,11 @@ func executeTask(
 		}
 	}()
 
-	ctx, span := tracer.Start(c, "job."+jobName+"/task.execute")
+	ctx, span := tracer.Start(c, "job."+jobName+"/task.execute",
+		trace.WithAttributes(
+			attribute.String("job.name", jobName),
+		),
+	)
 	defer span.End()
 
 	lock.Lock()
