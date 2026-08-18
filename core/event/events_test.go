@@ -1,7 +1,6 @@
 package event_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/alecthomas/assert/v2"
@@ -84,14 +83,6 @@ func TestNewMetaData(t *testing.T) {
 	m := event.NewMetaData("emitter1", extra)
 	assert.Equal(t, "emitter1", m.Emitter)
 	assert.Equal(t, extra, m.Extra)
-}
-
-func TestNewErrMetaData(t *testing.T) {
-	err := errors.New("something went wrong")
-	m := event.NewErrMetaData("emitter2", err)
-	assert.Equal(t, "emitter2", m.Emitter)
-	expectedExtra := map[string]any{"error": "something went wrong"}
-	assert.Equal(t, expectedExtra, m.Extra)
 }
 
 func TestGetData(t *testing.T) {

@@ -39,15 +39,6 @@ func NewMetaData(emitter string, extra map[string]any) *MetaData {
 	}
 }
 
-func NewErrMetaData(emitter string, err error) *MetaData {
-	return &MetaData{
-		Emitter: emitter,
-		Extra: map[string]any{
-			"error": err.Error(),
-		},
-	}
-}
-
 func (m *MetaData) GetData() map[string]any {
 	return m.Extra
 }
