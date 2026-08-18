@@ -77,4 +77,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/fmotalleb/junction
+        - github.com/fmotalleb/crontab-go
