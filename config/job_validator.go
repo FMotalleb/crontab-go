@@ -185,11 +185,11 @@ func dockerValidation(s *JobEvent, log *zap.Logger) error {
 	for _, v := range s.Docker.Labels {
 		checkList.Add(v)
 	}
-	err := utils.Fold(checkList, nil, func(initial error, _ string) error {
+	err := utils.Fold(checkList, nil, func(initial error, v string) error {
 		if initial != nil {
 			return initial
 		}
-		_, err := regexp.Compile(s.Docker.Name)
+		_, err := regexp.Compile(v)
 		return err
 	})
 	if err != nil {
