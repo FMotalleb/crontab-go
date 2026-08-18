@@ -77,5 +77,6 @@ func TestCommand_Execute_AppliesTimeout(t *testing.T) {
 	elapsed := time.Since(start)
 
 	assert.Error(t, err)
-	assert.True(t, elapsed < 5*time.Second, "command should have been killed by its timeout, took %s", elapsed)
+	assert.True(t, elapsed >= 200*time.Millisecond, "command should not return before its timeout, took %s", elapsed)
+	assert.True(t, elapsed < 2*time.Second, "command should have been killed by its timeout, took %s", elapsed)
 }

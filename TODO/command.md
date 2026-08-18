@@ -61,9 +61,9 @@ func (c *Cancelable) Cancel() {
 
 ### 7. Retry is enabled by default — changed to disabled-by-default (2026-08-18)
 - Even with no retry parameters set, `ExecuteRetry` always built the backoff machinery (`retry.Do` + `buildBackoff`), and `buildBackoff` constructed `retry.NewExponential(0)` which panics (`base must be greater than 0`) whenever `retryDelay` was explicitly 0 (e.g. in tests). `WithMaxRetries(0)` prevented actual retries, but the machinery still looked/behaved enabled.
-- **Change applied**: `ExecuteRetry` now returns `fn(ctx)` immediately when `maxRetries == 0` (no `retries` param set), skipping the retry/trace machinery entirely. Retry is disabled by default and only engages once at least one retry parameter (i.e. `retries`) is configured.
-- Also hardened `buildBackoff`: default backoff to Exponential (matches `SetDelayModifierFromString`) instead of leaving it nil, and default `retryDelay` to 1s if 0 so enabling retries without a delay cannot panic.
-- Tests added: `core/common/retry_test.go` (`TestExecuteRetryDisabledByDefault`, `TestExecuteRetryEnabledWhenRetriesSet`). Note: `retry.Do` only retries errors wrapped via `retry.RetryableError`, so the enabled-case test wraps its error.
+- **Change applied**: `ExecuteRetry` now returns `fn(ctx)` immediately when `maxRetries == 0` (no `retries` param set), skipping the retry/trace machinery entirely. Retry is disabled by default and only engages once at least one retry parameter (i.e. `retries`) is configured. The zero-retry path checks `context.Cause(ctx)` first (preserving `retry.Do`'s cancellation behavior) so a canceled context never invokes `fn`.
+- Also hardened `buildBackoff`: default backoff to Exponential (matches `SetDelayModifierFromString`) instead of leaving it nil, and default a zero delay to 1s — via a **local** variable so concurrent executions (tasks are shared across events) never mutate the shared `Retry` struct.
+- Tests added: `core/common/retry_test.go` (`TestExecuteRetryDisabledByDefault`, `TestExecuteRetryEnabledWhenRetriesSet`, `TestExecuteRetryDisabledSkipsWhenContextCanceled`, `TestBuildBackoffConcurrentNoRace`). Note: `retry.Do` only retries errors wrapped via `retry.RetryableError`, so the enabled-case test wraps its error.
 
 ## Open questions
 - Is `Cancelable` / `Cancel()` meant to support a future stop mechanism (e.g. signal-triggered task cancellation)? If not, drop it from the `Executable` interface and the three task structs.
