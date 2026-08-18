@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"maps"
 
 	"github.com/fmotalleb/go-tools/log"
 	"github.com/fmotalleb/go-tools/template"
@@ -17,7 +18,7 @@ func populateVars(ctx context.Context, task *config.Task) context.Context {
 	if old, ok = ctx.Value(ctxutils.Vars).(map[string]string); !ok {
 		old = make(map[string]string, 0)
 	}
-	varTable := old
+	varTable := maps.Clone(old)
 	for k, v := range task.Vars {
 		var err error
 		varTable[k], err = template.EvaluateTemplate(v, varTable)
