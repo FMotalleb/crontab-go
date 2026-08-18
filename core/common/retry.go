@@ -83,6 +83,9 @@ func (r *Retry) ConfigRetryFrom(t *config.Task) {
 }
 
 func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error) error {
+	if r.maxRetries == 0 {
+		return fn(ctx)
+	}
 	ctx, span := retryTracer.Start(ctx, "task.retry",
 		trace.WithAttributes(
 			attribute.Int64("retry.max_retries", int64(r.maxRetries)),
@@ -108,6 +111,9 @@ func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error
 }
 
 func (r *Retry) buildBackoff() retry.Backoff {
+	if r.retryDelay == 0 {
+		r.retryDelay = time.Second
+	}
 	var backoff retry.Backoff
 	switch r.delayModifier {
 	case RetryConstant:
@@ -117,6 +123,7 @@ func (r *Retry) buildBackoff() retry.Backoff {
 	case RetryFibonacci:
 		backoff = retry.NewFibonacci(r.retryDelay)
 	default:
+		backoff = retry.NewExponential(r.retryDelay)
 	}
 	if r.maxDelay != 0 {
 		backoff = retry.WithCappedDuration(r.maxDelay, backoff)
