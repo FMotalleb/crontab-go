@@ -41,3 +41,6 @@ YAML-configured crontab replacement for Docker environments. Single Go module `g
 
 ## Release
 - Pushing a `v*` tag triggers `goreleaser release` (needs `GITHUB_TOKEN`); builds multi-arch Docker images to `ghcr.io/fmotalleb/crontab-go` (slim + distroless). Requires a Docker daemon with `containerd-snapshotter` enabled.
+
+## Session Logging
+- Always keep a record of thoughts, todo list, and analysis of the job you are doing in `./TODO/<session>`.

@@ -82,3 +82,12 @@ func newExecutionID() string {
 func executionPrefix(id string) string {
 	return id + " | "
 }
+
+// truncate returns s shortened to at most maxLen runes, appending "…" if truncated.
+func truncate(s string, maxLen int) string {
+	runes := []rune(s)
+	if len(runes) <= maxLen {
+		return s
+	}
+	return string(runes[:maxLen]) + "…"
+}

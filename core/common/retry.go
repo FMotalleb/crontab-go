@@ -4,12 +4,20 @@ package common
 import (
 	"context"
 	"strings"
+	"sync/atomic"
 	"time"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/sethvargo/go-retry"
 
 	"github.com/fmotalleb/crontab-go/config"
 )
+
+var retryTracer = otel.Tracer("crontab-go/retry")
 
 type (
 	RetryCount    = uint64
@@ -23,10 +31,8 @@ const (
 )
 
 type Retry struct {
-	// Backoff
-	maxRetries RetryCount
-	maxTimeout time.Duration
-	// Retry timing
+	maxRetries    RetryCount
+	maxTimeout    time.Duration
 	retryDelay    time.Duration
 	maxDelay      time.Duration
 	jitter        time.Duration
@@ -63,7 +69,6 @@ func (r *Retry) SetDelayModifierFromString(s string) {
 	case "fibo", "fibonacci":
 		r.delayModifier = RetryFibonacci
 	default:
-		// Maybe add some logging here
 		r.delayModifier = RetryExponential
 	}
 }
@@ -78,6 +83,31 @@ func (r *Retry) ConfigRetryFrom(t *config.Task) {
 }
 
 func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error) error {
+	ctx, span := retryTracer.Start(ctx, "task.retry",
+		trace.WithAttributes(
+			attribute.Int64("retry.max_retries", int64(r.maxRetries)),
+			attribute.Int64("retry.delay", int64(r.retryDelay)),
+			attribute.String("retry.mode", string(r.delayModifier)),
+		),
+	)
+	defer span.End()
+	var attempt atomic.Uint64
+	countedFn := func(ctx context.Context) error {
+		n := attempt.Add(1)
+		span.SetAttributes(attribute.Int64("retry.attempt", int64(n)))
+		return fn(ctx)
+	}
+	err := retry.Do(ctx, r.buildBackoff(), countedFn)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
+	} else {
+		span.SetStatus(codes.Ok, "")
+	}
+	return err
+}
+
+func (r *Retry) buildBackoff() retry.Backoff {
 	var backoff retry.Backoff
 	switch r.delayModifier {
 	case RetryConstant:
@@ -98,6 +128,5 @@ func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error
 	if r.jitter != 0 {
 		backoff = retry.WithJitter(r.jitter, backoff)
 	}
-	err := retry.Do(ctx, backoff, fn)
-	return err
+	return backoff
 }

@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
@@ -64,9 +66,18 @@ func (p *Post) Do(ctx context.Context) (e error) {
 			attribute.String("url.full", p.address),
 			attribute.String("http.request.method", "POST"),
 			attribute.String("execution.id", execID),
+			attribute.Bool("tls.insecure_skip_verify", p.task.Insecure),
 		),
 	)
 	defer span.End()
+	defer func() {
+		if e != nil {
+			span.RecordError(e)
+			span.SetStatus(codes.Error, e.Error())
+		} else {
+			span.SetStatus(codes.Ok, "")
+		}
+	}()
 	log := p.log.With(
 		zap.String("id", execID),
 		zap.Time("start", time.Now()),
@@ -88,6 +99,9 @@ func (p *Post) Do(ctx context.Context) (e error) {
 	defer cancel()
 	p.SetCancel(cancel)
 
+	p.setURLAttrs(span)
+	p.setRetryAttrs(span)
+
 	var dataReader *bytes.Reader
 	if p.data != nil {
 		data, err := json.Marshal(p.data)
@@ -95,6 +109,7 @@ func (p *Post) Do(ctx context.Context) (e error) {
 			log.Warn("cannot marshal the given body (pre-send)", zap.Error(err))
 			return err
 		}
+		span.SetAttributes(attribute.Int("http.request.body.size", len(data)))
 		dataReader = bytes.NewReader(data)
 	}
 
@@ -103,5 +118,28 @@ func (p *Post) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	return doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	statusCode, execErr := doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	span.SetAttributes(attribute.Int("http.response.status_code", statusCode))
+	return execErr
+}
+
+func (p *Post) setURLAttrs(span trace.Span) {
+	parsed, err := url.Parse(p.address)
+	if err != nil {
+		return
+	}
+	span.SetAttributes(
+		attribute.String("url.scheme", parsed.Scheme),
+		attribute.String("server.address", parsed.Hostname()),
+	)
+	if port := parsed.Port(); port != "" {
+		span.SetAttributes(attribute.String("server.port", port))
+	}
+}
+
+func (p *Post) setRetryAttrs(span trace.Span) {
+	span.SetAttributes(
+		attribute.Int64("task.timeout", int64(p.task.Timeout)),
+		attribute.Int64("retry.max_retries", int64(p.task.Retries)),
+	)
 }
