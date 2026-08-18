@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -60,6 +61,7 @@ func (g *Get) Do(ctx context.Context) (e error) {
 			attribute.String("url.full", g.address),
 			attribute.String("http.request.method", "GET"),
 			attribute.String("execution.id", execID),
+			attribute.Bool("tls.insecure_skip_verify", g.task.Insecure),
 		),
 	)
 	defer span.End()
@@ -67,6 +69,8 @@ func (g *Get) Do(ctx context.Context) (e error) {
 		if e != nil {
 			span.RecordError(e)
 			span.SetStatus(codes.Error, e.Error())
+		} else {
+			span.SetStatus(codes.Ok, "")
 		}
 	}()
 	log := g.log.With(
@@ -90,10 +94,36 @@ func (g *Get) Do(ctx context.Context) (e error) {
 	defer cancel()
 	g.SetCancel(cancel)
 
+	g.setURLAttrs(span)
+	g.setRetryAttrs(span)
+
 	req, err := http.NewRequestWithContext(localCtx, http.MethodGet, g.address, nil)
 	if err != nil {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	return doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	statusCode, execErr := doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	span.SetAttributes(attribute.Int("http.response.status_code", statusCode))
+	return execErr
+}
+
+func (g *Get) setURLAttrs(span trace.Span) {
+	parsed, err := url.Parse(g.address)
+	if err != nil {
+		return
+	}
+	span.SetAttributes(
+		attribute.String("url.scheme", parsed.Scheme),
+		attribute.String("server.address", parsed.Hostname()),
+	)
+	if port := parsed.Port(); port != "" {
+		span.SetAttributes(attribute.String("server.port", port))
+	}
+}
+
+func (g *Get) setRetryAttrs(span trace.Span) {
+	span.SetAttributes(
+		attribute.Int64("task.timeout", int64(g.task.Timeout)),
+		attribute.Int64("retry.max_retries", int64(g.task.Retries)),
+	)
 }
