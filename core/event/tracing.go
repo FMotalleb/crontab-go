@@ -6,6 +6,7 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/fmotalleb/crontab-go/abstraction"
@@ -29,6 +30,7 @@ func emitWithSpan(ed abstraction.EventDispatcher, ctx context.Context, e abstrac
 	)
 	defer span.End()
 	ed.Emit(ctx, e)
+	span.SetStatus(codes.Ok, "")
 }
 
 // emitterName returns the emitter type recorded in the event metadata.
