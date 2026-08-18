@@ -35,7 +35,7 @@ func TestDoHTTP_StatusError(t *testing.T) {
 	req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, srv.URL, nil)
 	assert.NoError(t, err)
 	headers := map[string]string{}
-	err = doHTTP(srv.Client(), req, &headers, io.Discard, zap.NewNop())
+	_, err = doHTTP(srv.Client(), req, &headers, io.Discard, zap.NewNop())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "500")
 }
@@ -60,7 +60,7 @@ func TestDoHTTP_FailingResponseBody(t *testing.T) {
 	assert.NoError(t, err)
 	headers := map[string]string{}
 	client := &http.Client{Transport: failingBodyTransport{}}
-	err = doHTTP(client, req, &headers, io.Discard, zap.NewNop())
+	_, err = doHTTP(client, req, &headers, io.Discard, zap.NewNop())
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "stream interrupted")
 }
