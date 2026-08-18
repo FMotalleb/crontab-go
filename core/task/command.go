@@ -82,13 +82,15 @@ func (c *Command) Do(ctx context.Context) (e error) {
 	)
 	log.Info("command started")
 	defer c.recoverPanic(span, &e)
+	localCtx, cancel := c.ApplyTimeout(ctx)
+	defer cancel()
 	connections := c.task.Connections
 	if len(connections) == 0 {
 		connections = []config.TaskConnection{{Local: true}}
 		log.Debug("no explicit Connection provided using local task connection by default")
 	}
 	for _, conn := range connections {
-		if err := c.executeConnection(ctx, span, conn, execID, log); err != nil {
+		if err := c.executeConnection(localCtx, span, conn, execID, log); err != nil {
 			return err
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -58,6 +59,7 @@ func (l *Local) Prepare(ctx context.Context, task *config.Task) error {
 		shell,
 		commandArg...,
 	)
+	l.cmd.WaitDelay = time.Second
 	l.log = l.log.With(
 		zap.String("cmd", task.Command),
 		zap.String("working_directory", workingDir),

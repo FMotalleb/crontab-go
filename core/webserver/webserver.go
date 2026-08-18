@@ -90,13 +90,6 @@ func (s *WebServer) Serve() {
 		middleware.Recover(),
 	)
 
-	engine.GET(
-		"/foo",
-		func(c echo.Context) error {
-			return c.String(200, "bar")
-		},
-	)
-
 	ed := &endpoint.EventDispatchEndpoint{}
 	engine.Any(
 		"/events/:event/emit",

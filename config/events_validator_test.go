@@ -85,3 +85,50 @@ func TestJobEvent_Validate_MultipleActiveSchedules(t *testing.T) {
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), expectedErr)
 }
+
+func TestJobEvent_Validate_DockerInvalidImageRegex(t *testing.T) {
+	event := config.JobEvent{
+		Docker: &config.DockerEvent{
+			Name:  "my-container",
+			Image: "[invalid",
+		},
+	}
+
+	err := event.Validate(zap.NewNop())
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "error parsing regexp")
+}
+
+func TestJobEvent_Validate_DockerInvalidLabelRegex(t *testing.T) {
+	event := config.JobEvent{
+		Docker: &config.DockerEvent{
+			Name:  "my-container",
+			Image: ".*",
+			Labels: map[string]string{
+				"env": "[invalid",
+			},
+		},
+	}
+
+	err := event.Validate(zap.NewNop())
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "error parsing regexp")
+}
+
+func TestJobEvent_Validate_DockerValidRegexes(t *testing.T) {
+	event := config.JobEvent{
+		Docker: &config.DockerEvent{
+			Name:  "my-container",
+			Image: "nginx:.*",
+			Labels: map[string]string{
+				"env": "prod|staging",
+			},
+		},
+	}
+
+	err := event.Validate(zap.NewNop())
+
+	assert.NoError(t, err)
+}
