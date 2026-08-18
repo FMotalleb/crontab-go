@@ -60,10 +60,17 @@ func (c *Command) Do(ctx context.Context) (e error) {
 	ctx, span := taskTracer.Start(ctx, "task.command",
 		trace.WithAttributes(
 			attribute.String("command.hash", shortHash(c.task.Command)),
+			attribute.String("command.text", truncate(c.task.Command, 128)),
 			attribute.String("execution.id", execID),
 		),
 	)
 	defer span.End()
+	defer func() {
+		if e != nil {
+			span.RecordError(e)
+			span.SetStatus(codes.Error, e.Error())
+		}
+	}()
 	ctx = populateVars(ctx, c.task)
 	log := c.log.With(
 		zap.String("id", execID),

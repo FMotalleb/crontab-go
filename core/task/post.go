@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
@@ -67,6 +68,12 @@ func (p *Post) Do(ctx context.Context) (e error) {
 		),
 	)
 	defer span.End()
+	defer func() {
+		if e != nil {
+			span.RecordError(e)
+			span.SetStatus(codes.Error, e.Error())
+		}
+	}()
 	log := p.log.With(
 		zap.String("id", execID),
 		zap.Time("start", time.Now()),

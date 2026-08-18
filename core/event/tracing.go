@@ -2,6 +2,7 @@ package event
 
 import (
 	"context"
+	"fmt"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -18,9 +19,13 @@ var tracer = otel.Tracer("crontab-go/event")
 // becomes a sub span of the emitting event.
 func emitWithSpan(ed abstraction.EventDispatcher, ctx context.Context, e abstraction.Event) {
 	emitter := emitterName(e)
+	attrs := []attribute.KeyValue{
+		attribute.String("event.emitter", emitter),
+	}
+	attrs = append(attrs, eventParams(e)...)
 	ctx, span := tracer.Start(ctx, "event."+emitter,
 		trace.WithSpanKind(trace.SpanKindProducer),
-		trace.WithAttributes(attribute.String("event.emitter", emitter)),
+		trace.WithAttributes(attrs...),
 	)
 	defer span.End()
 	ed.Emit(ctx, e)
@@ -33,4 +38,30 @@ func emitterName(e abstraction.Event) string {
 		return "unknown"
 	}
 	return name
+}
+
+// eventParams extracts known parameters from the event data map as span attributes.
+func eventParams(e abstraction.Event) []attribute.KeyValue {
+	data := e.GetData()
+	attrs := make([]attribute.KeyValue, 0, len(data))
+	for k, v := range data {
+		if k == "emitter" {
+			continue
+		}
+		switch val := v.(type) {
+		case string:
+			attrs = append(attrs, attribute.String("event."+k, val))
+		case int:
+			attrs = append(attrs, attribute.Int64("event."+k, int64(val)))
+		case int64:
+			attrs = append(attrs, attribute.Int64("event."+k, val))
+		case float64:
+			attrs = append(attrs, attribute.Float64("event."+k, val))
+		case bool:
+			attrs = append(attrs, attribute.Bool("event."+k, val))
+		default:
+			attrs = append(attrs, attribute.String("event."+k, fmt.Sprintf("%v", val)))
+		}
+	}
+	return attrs
 }
