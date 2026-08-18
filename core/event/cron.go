@@ -74,7 +74,7 @@ func (c *Cron) BuildTickChannel(ed abstraction.EventDispatcher) {
 		)
 		c.entry = &entry
 	}
-	ctx, cancel := context.WithCancel(global.CTX().Context)
+	ctx, cancel := context.WithCancel(global.CTX())
 	defer cancel()
 	for {
 		select {
