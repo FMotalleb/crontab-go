@@ -521,9 +521,9 @@
           "description": "Skip TLS certificate verification. Defaults to false."
         },
         "interval": {
-          "type": "string",
-          "description": "Push cadence for periodic metric reader. Defaults to 60s.",
-          "examples": ["10s", "60s", "5m"]
+          "type": "integer",
+          "description": "Push cadence for periodic metric reader in nanoseconds. Defaults to 60000000000 (60s).",
+          "examples": [60000000000]
         },
         "headers": {
           "$ref": "#/definitions/Map",

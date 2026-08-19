@@ -130,6 +130,6 @@ type Observability struct {
 type ObservabilitySignal struct {
 	URL      string            `mapstructure:"url" json:"url,omitempty"`
 	Insecure bool              `mapstructure:"insecure" json:"insecure,omitempty"`
-	Interval time.Duration     `mapstructure:"interval" json:"interval,omitempty"`
+	Interval int64             `mapstructure:"interval" json:"interval,omitempty"` // push cadence in nanoseconds; 0 = default 60 s
 	Headers  map[string]string `mapstructure:"headers" json:"headers,omitempty"`
 }

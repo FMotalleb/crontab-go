@@ -36,7 +36,7 @@ func NewSpanDispatcher(sig signals.Signal[abstraction.Event], debounce attribute
 
 // Emit creates an event span and dispatches to the underlying signal.
 // The tracer is resolved from the current global TracerProvider on
-// every call so that tests and runtime provider swaps are honoured.
+// every call so that tests and runtime provider swaps are honored.
 func (s *SpanDispatcher) Emit(ctx context.Context, payload abstraction.Event) {
 	emitter := emitterName(payload)
 	attrs := []attribute.KeyValue{

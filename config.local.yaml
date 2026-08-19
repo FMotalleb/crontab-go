@@ -4,18 +4,24 @@
 observability:
   service-name: "crontab-go"
   tracing:
-    url: "http://127.0.0.1:4318"
+    url: "http://127.0.0.1:5080/api/default/v1/traces"
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      stream-name: default
+
   metrics:
-    url: "http://127.0.0.1:4318"
-    interval: 60s
+    url: "http://127.0.0.1:5080/api/default/v1/metrics"
+    interval: 60000000000
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      stream-name: default
+
   log:
-    url: "http://127.0.0.1:4318"
+    url: "http://127.0.0.1:5080/api/default/v1/logs"
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      stream-name: default
+
 
 jobs:
   - name: echo

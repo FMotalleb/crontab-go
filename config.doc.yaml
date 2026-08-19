@@ -17,7 +17,7 @@
 #   metrics:
 #     url: "http://collector:4318"
 #     insecure: true
-#     interval: 60s            # push cadence for the periodic reader
+#     interval: 60000000000      # push cadence in nanoseconds (default 60s)
 #     headers:
 #       Authorization: "Bearer <token>"
 #   log:
