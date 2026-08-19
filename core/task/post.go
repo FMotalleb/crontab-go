@@ -139,7 +139,7 @@ func (p *Post) setURLAttrs(span trace.Span) {
 
 func (p *Post) setRetryAttrs(span trace.Span) {
 	span.SetAttributes(
-		attribute.Int64("task.timeout", int64(p.task.Timeout)),
+		attribute.Int64("task.timeout_nanos", int64(p.task.Timeout)),
 		attribute.Int64("retry.max_retries", int64(p.task.Retries)),
 	)
 }

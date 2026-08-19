@@ -92,7 +92,7 @@ func (r *Retry) ExecuteRetry(ctx context.Context, fn func(context.Context) error
 	ctx, span := retryTracer.Start(ctx, "task.retry",
 		trace.WithAttributes(
 			attribute.Int64("retry.max_retries", int64(r.maxRetries)),
-			attribute.Int64("retry.delay", int64(r.retryDelay)),
+			attribute.Int64("retry.delay_nanos", int64(r.retryDelay)),
 			attribute.String("retry.mode", string(r.delayModifier)),
 		),
 	)

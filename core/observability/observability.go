@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"time"
 
 	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/otel"
@@ -325,9 +324,9 @@ func setupMetrics(ctx context.Context, sig *config.ObservabilitySignal, res *res
 		return nil, fmt.Errorf("metric exporter: %w", err)
 	}
 
-	interval := time.Duration(sig.Interval)
-	if interval <= 0 {
-		interval = 60 * time.Second
+	interval := sig.Interval
+	if interval == 0 {
+		interval = 60_000_000_000
 	}
 
 	mp := metric.NewMeterProvider(

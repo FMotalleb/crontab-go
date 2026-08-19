@@ -99,7 +99,7 @@ func (c *Command) Do(ctx context.Context) (e error) {
 
 func (c *Command) setCommandAttrs(span trace.Span) {
 	span.SetAttributes(
-		attribute.Int64("task.timeout", int64(c.task.Timeout)),
+		attribute.Int64("task.timeout_nanos", int64(c.task.Timeout)),
 		attribute.Int64("retry.max_retries", int64(c.task.Retries)),
 	)
 	if c.task.UserName != "" {

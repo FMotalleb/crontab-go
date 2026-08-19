@@ -14,7 +14,7 @@
 #   metrics:
 #     url: "http://collector:4318"
 #     insecure: false
-#     interval: 60000000000  # nanoseconds (60s)
+#     interval: 60s
 #   log:
 #     url: "http://collector:4318"
 #     insecure: false

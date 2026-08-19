@@ -4,22 +4,25 @@
 observability:
   service-name: "crontab-go"
   tracing:
-    url: "http://127.0.0.1:5080/api/default/v1/traces"
+    url: "grpcs://grpc-openobserve.dornica-co.local"
     headers:
-      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      organization: default
       stream-name: default
 
   metrics:
-    url: "http://127.0.0.1:5080/api/default/v1/metrics"
-    interval: 60000000000
+    url: "grpcs://grpc-openobserve.dornica-co.local"
+    interval: 5s
     headers:
-      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      organization: default
       stream-name: default
 
   log:
-    url: "http://127.0.0.1:5080/api/default/v1/logs"
+    url: "grpcs://grpc-openobserve.dornica-co.local"
     headers:
-      Authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM="
+      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      organization: default
       stream-name: default
 
 
