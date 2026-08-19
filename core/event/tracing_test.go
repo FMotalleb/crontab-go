@@ -7,6 +7,7 @@ import (
 	"github.com/alecthomas/assert/v2"
 	"github.com/maniartech/signals"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
@@ -39,16 +40,17 @@ func TestEmitterName(t *testing.T) {
 	assert.Equal(t, "unknown", emitterName(NewMetaData("", map[string]any{})))
 }
 
-func TestEmitWithSpan_TaskIsSubSpanOfEvent(t *testing.T) {
+func TestSpanDispatcher_TaskIsSubSpanOfEvent(t *testing.T) {
 	exporter := setupTracerProvider(t)
 
-	dispatcher := signals.NewSync[abstraction.Event]()
-	dispatcher.AddListener(func(ctx context.Context, _ abstraction.Event) {
+	base := signals.NewSync[abstraction.Event]()
+	base.AddListener(func(ctx context.Context, _ abstraction.Event) {
 		_, span := otel.Tracer("job").Start(ctx, "job.echo/task.execute")
 		span.End()
 	})
 
-	emitWithSpan(dispatcher, context.Background(), NewMetaData("interval", map[string]any{}))
+	sd := NewSpanDispatcher(base, attribute.KeyValue{})
+	sd.Emit(context.Background(), NewMetaData("interval", map[string]any{}))
 
 	spans := exporter.GetSpans()
 	eventSpan := spanByName(spans, "event.interval")
@@ -56,4 +58,44 @@ func TestEmitWithSpan_TaskIsSubSpanOfEvent(t *testing.T) {
 	assert.NotEqual(t, nil, eventSpan)
 	assert.NotEqual(t, nil, taskSpan, "task span must be created from the event context")
 	assert.Equal(t, eventSpan.SpanContext.SpanID(), taskSpan.Parent.SpanID())
+}
+
+func TestSpanDispatcher_DebounceAttribute(t *testing.T) {
+	exporter := setupTracerProvider(t)
+
+	base := signals.NewSync[abstraction.Event]()
+	base.AddListener(func(ctx context.Context, _ abstraction.Event) {})
+
+	sd := NewSpanDispatcher(base, attribute.String("event.debounce", "5s"))
+	sd.Emit(context.Background(), NewMetaData("cron", map[string]any{"schedule": "* * * * *"}))
+
+	spans := exporter.GetSpans()
+	eventSpan := spanByName(spans, "event.cron")
+	assert.NotEqual(t, nil, eventSpan)
+	found := false
+	for _, a := range eventSpan.Attributes {
+		if a.Key == "event.debounce" && a.Value.AsString() == "5s" {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "event.debounce attribute must be present")
+}
+
+func TestSpanDispatcher_NoDebounceAttributeWhenZero(t *testing.T) {
+	exporter := setupTracerProvider(t)
+
+	base := signals.NewSync[abstraction.Event]()
+	base.AddListener(func(ctx context.Context, _ abstraction.Event) {})
+
+	sd := NewSpanDispatcher(base, attribute.KeyValue{})
+	sd.Emit(context.Background(), NewMetaData("cron", map[string]any{}))
+
+	spans := exporter.GetSpans()
+	eventSpan := spanByName(spans, "event.cron")
+	assert.NotEqual(t, nil, eventSpan)
+	// When debounce is not set, the attribute should not be present.
+	for _, a := range eventSpan.Attributes {
+		assert.NotEqual(t, "event.debounce", string(a.Key))
+	}
 }
