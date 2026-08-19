@@ -29,6 +29,8 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/fmotalleb/go-tools/git"
+
 	"github.com/fmotalleb/crontab-go/config"
 )
 
@@ -54,6 +56,7 @@ func Setup(ctx context.Context, cfg *config.Observability, logger *zap.Logger) (
 	}
 	resAttrs := make([]attribute.KeyValue, 0, len(cfg.Attributes)+1)
 	resAttrs = append(resAttrs, semconv.ServiceNameKey.String(svcName))
+	resAttrs = append(resAttrs, semconv.ServiceVersion(git.Version))
 	for key, value := range cfg.Attributes {
 		resAttrs = append(resAttrs, attribute.String(key, value))
 	}
