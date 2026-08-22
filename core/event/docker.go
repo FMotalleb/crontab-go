@@ -170,7 +170,7 @@ func (dockerEvent *DockerEvent) connectAndListen(ed abstraction.EventDispatcher)
 					"actor":      event.Actor.ID,
 					"attributes": event.Actor.Attributes,
 				})
-				emitWithSpan(ed, ctx, meta)
+				ed.Emit(ctx, meta)
 				global.IncMetric(
 					DockerEventsMetricName,
 					DockerEventsMetricHelp,

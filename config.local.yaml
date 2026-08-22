@@ -4,18 +4,27 @@
 observability:
   service-name: "crontab-go"
   tracing:
-    url: "http://127.0.0.1:4318"
+    url: "grpcs://grpc-endpoint"
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic secret-key="
+      organization: default
+      stream-name: default
+
   metrics:
-    url: "http://127.0.0.1:4318"
-    interval: 60s
+    url: "grpcs://grpc-endpoint"
+    interval: 5s
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic secret-key="
+      organization: default
+      stream-name: default
+
   log:
-    url: "http://127.0.0.1:4318"
+    url: "grpcs://grpc-endpoint"
     headers:
-      Authorization: "Bearer secret-token"
+      Authorization: "Basic secret-key="
+      organization: default
+      stream-name: default
+
 
 jobs:
   - name: echo

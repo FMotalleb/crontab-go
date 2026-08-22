@@ -71,7 +71,7 @@ func (c *Interval) BuildTickChannel(ed abstraction.EventDispatcher) {
 					"time":     i.Format(time.RFC3339),
 				},
 			)
-			emitWithSpan(ed, ctx, event)
+			ed.Emit(ctx, event)
 			global.IncMetric(
 				IntervalEventsMetricName,
 				IntervalEventsMetricHelp,

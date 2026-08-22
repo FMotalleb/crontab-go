@@ -79,7 +79,7 @@ func (c *Cron) BuildTickChannel(ed abstraction.EventDispatcher) {
 	for {
 		select {
 		case e := <-notifyChan:
-			emitWithSpan(ed, ctx, e)
+			ed.Emit(ctx, e)
 			global.IncMetric(
 				CronEventsMetricName,
 				CronEventsMetricHelp,
