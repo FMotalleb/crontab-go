@@ -4,24 +4,24 @@
 observability:
   service-name: "crontab-go"
   tracing:
-    url: "grpcs://grpc-openobserve.dornica-co.local"
+    url: "grpcs://grpc-endpoint"
     headers:
-      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      Authorization: "Basic secret-key="
       organization: default
       stream-name: default
 
   metrics:
-    url: "grpcs://grpc-openobserve.dornica-co.local"
+    url: "grpcs://grpc-endpoint"
     interval: 5s
     headers:
-      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      Authorization: "Basic secret-key="
       organization: default
       stream-name: default
 
   log:
-    url: "grpcs://grpc-openobserve.dornica-co.local"
+    url: "grpcs://grpc-endpoint"
     headers:
-      Authorization: "Basic Y3JvbnRhYi10ZW1wOm8yb2lfY1VxdEd0MXlYVXVyS2NLTUpDQmFIeWtSaUhscE9iSXE="
+      Authorization: "Basic secret-key="
       organization: default
       stream-name: default
 
