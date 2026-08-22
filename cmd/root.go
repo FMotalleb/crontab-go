@@ -10,6 +10,7 @@ import (
 	"github.com/fmotalleb/go-tools/env"
 	"github.com/fmotalleb/go-tools/git"
 	"github.com/fmotalleb/go-tools/log"
+	"github.com/fmotalleb/gotel"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
@@ -20,7 +21,6 @@ import (
 	"github.com/fmotalleb/crontab-go/config"
 	"github.com/fmotalleb/crontab-go/core/global"
 	"github.com/fmotalleb/crontab-go/core/jobs"
-	"github.com/fmotalleb/crontab-go/core/observability"
 	"github.com/fmotalleb/crontab-go/core/webserver"
 )
 
@@ -51,7 +51,11 @@ within your containerized applications.`,
 		l := global.Logger("cron")
 		l.Info("Booting up")
 
-		otelResult, otelErr := observability.Setup(global.CTX(), CFG.Observability, l)
+		otelResult, otelErr := gotel.Setup(global.CTX(),
+			gotel.WithVersion(git.String()),
+			gotel.WithConfig(CFG.Observability),
+			gotel.WithLogger(l),
+		)
 		if otelErr != nil {
 			l.Warn("observability setup error", zap.Error(otelErr))
 		}

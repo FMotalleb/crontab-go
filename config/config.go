@@ -3,6 +3,8 @@ package config
 
 import (
 	"time"
+
+	"github.com/fmotalleb/gotel"
 )
 
 // Config represents the configuration for the crontab application.
@@ -16,7 +18,7 @@ type Config struct {
 
 	Jobs []*JobConfig `mapstructure:"jobs" json:"jobs"`
 
-	Observability *Observability `mapstructure:"observability" json:"observability,omitempty"`
+	Observability *gotel.Config `mapstructure:"observability" json:"observability,omitempty"`
 }
 
 // JobConfig represents the configuration for a specific job.
