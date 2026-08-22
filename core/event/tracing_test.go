@@ -50,7 +50,7 @@ func TestSpanDispatcher_TaskIsSubSpanOfEvent(t *testing.T) {
 	})
 
 	sd := NewSpanDispatcher(base, attribute.KeyValue{})
-	sd.Emit(context.Background(), NewMetaData("interval", map[string]any{}))
+	sd.Emit(t.Context(), NewMetaData("interval", map[string]any{}))
 
 	spans := exporter.GetSpans()
 	eventSpan := spanByName(spans, "event.interval")
@@ -67,7 +67,7 @@ func TestSpanDispatcher_DebounceAttribute(t *testing.T) {
 	base.AddListener(func(ctx context.Context, _ abstraction.Event) {})
 
 	sd := NewSpanDispatcher(base, attribute.String("event.debounce", "5s"))
-	sd.Emit(context.Background(), NewMetaData("cron", map[string]any{"schedule": "* * * * *"}))
+	sd.Emit(t.Context(), NewMetaData("cron", map[string]any{"schedule": "* * * * *"}))
 
 	spans := exporter.GetSpans()
 	eventSpan := spanByName(spans, "event.cron")
@@ -89,7 +89,7 @@ func TestSpanDispatcher_NoDebounceAttributeWhenZero(t *testing.T) {
 	base.AddListener(func(ctx context.Context, _ abstraction.Event) {})
 
 	sd := NewSpanDispatcher(base, attribute.KeyValue{})
-	sd.Emit(context.Background(), NewMetaData("cron", map[string]any{}))
+	sd.Emit(t.Context(), NewMetaData("cron", map[string]any{}))
 
 	spans := exporter.GetSpans()
 	eventSpan := spanByName(spans, "event.cron")
