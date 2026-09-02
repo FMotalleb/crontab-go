@@ -1,6 +1,6 @@
 module github.com/fmotalleb/crontab-go
 
-go 1.26.0
+go 1.27.0
 
 tool (
 	github.com/client9/misspell/cmd/misspell

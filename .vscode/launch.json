@@ -11,6 +11,7 @@
             "mode": "auto",
             "program": ".",
             // "env": {},
+            "stderrTo": "err.log",
             "envFile": "${workspaceFolder}/.env",
             "args": [
                 "-c",

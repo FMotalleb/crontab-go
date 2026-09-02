@@ -56,7 +56,8 @@ type Get struct {
 func (g *Get) Do(ctx context.Context) (e error) {
 	execID := newExecutionID()
 	ctx = populateVars(ctx, g.task)
-	_, span := taskTracer.Start(ctx, "http.get",
+	_, span := taskTracer.Start(
+		ctx, "http.get",
 		trace.WithAttributes(
 			attribute.String("url.full", g.address),
 			attribute.String("http.request.method", "GET"),
@@ -102,7 +103,7 @@ func (g *Get) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	statusCode, execErr := doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	statusCode, execErr := doHTTP(newHTTPClient(g.task.Insecure), req, g.headers, NewPrefixWriter(os.Stderr, execID), log)
 	span.SetAttributes(attribute.Int("http.response.status_code", statusCode))
 	return execErr
 }

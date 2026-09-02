@@ -1,43 +1,43 @@
 # yaml-language-server: $schema=schema.json
 # This is my local test file shared across multiple systems as i test so don't use this file as a reference
 
-observability:
-  service-name: "crontab-go"
-  tracing:
-    url: "grpcs://grpc-endpoint"
-    headers:
-      Authorization: "Basic secret-key="
-      organization: default
-      stream-name: default
+# observability:
+#   service-name: "crontab-go"
+#   tracing:
+#     url: "grpcs://grpc-endpoint"
+#     headers:
+#       Authorization: "Basic secret-key="
+#       organization: default
+#       stream-name: default
 
-  metrics:
-    url: "grpcs://grpc-endpoint"
-    interval: 5s
-    headers:
-      Authorization: "Basic secret-key="
-      organization: default
-      stream-name: default
+#   metrics:
+#     url: "grpcs://grpc-endpoint"
+#     interval: 5s
+#     headers:
+#       Authorization: "Basic secret-key="
+#       organization: default
+#       stream-name: default
 
-  log:
-    url: "grpcs://grpc-endpoint"
-    headers:
-      Authorization: "Basic secret-key="
-      organization: default
-      stream-name: default
+#   log:
+#     url: "grpcs://grpc-endpoint"
+#     headers:
+#       Authorization: "Basic secret-key="
+#       organization: default
+#       stream-name: default
 
 
 jobs:
   - name: echo
-    concurrency: 3
-    debounce: 5s
+    # concurrency: 3
+    # debounce: 5s
     tasks:
-      - command: echo {{ .Vars.name }}; cat /etc/os-release
+      - command: echo -n "$(cat /etc/os-release)"
         env:
           SHELL: /bin/sh
-        retry-delay: 1s
-        retries: 0
-        retry-jitter: 1s
-        retry-mode: fibonacci
+        # retry-delay: 1s
+        # retries: 0
+        # retry-jitter: 1s
+        # retry-mode: fibonacci
         vars:
           name: '{{ now | date "2006-01-02_15-04-05" }}'
         # connections:

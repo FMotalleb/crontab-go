@@ -58,7 +58,8 @@ type Command struct {
 // Do implements common.Action.
 func (c *Command) Do(ctx context.Context) (e error) {
 	execID := newExecutionID()
-	ctx, span := taskTracer.Start(ctx, "task.command",
+	ctx, span := taskTracer.Start(
+		ctx, "task.command",
 		trace.WithAttributes(
 			attribute.String("command.hash", shortHash(c.task.Command)),
 			attribute.String("command.text", truncate(c.task.Command, 128)),
@@ -176,7 +177,7 @@ func (c *Command) executeConnection(
 	defer helpers.WarnOnErrIgnored(l, cmdConn.Disconnect, "error when tried to disconnect")
 	var execErr error
 	if err := c.runPhase(ctx, "command.execute", func() error {
-		out := NewPrefixWriter(os.Stderr, executionPrefix(execID))
+		out := NewPrefixWriter(os.Stderr, execID)
 		execErr = cmdConn.Execute(out, out)
 		return execErr
 	}); err != nil {

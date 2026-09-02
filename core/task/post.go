@@ -61,7 +61,8 @@ type Post struct {
 func (p *Post) Do(ctx context.Context) (e error) {
 	execID := newExecutionID()
 	ctx = populateVars(ctx, p.task)
-	_, span := taskTracer.Start(ctx, "http.post",
+	_, span := taskTracer.Start(
+		ctx, "http.post",
 		trace.WithAttributes(
 			attribute.String("url.full", p.address),
 			attribute.String("http.request.method", "POST"),
@@ -118,7 +119,7 @@ func (p *Post) Do(ctx context.Context) (e error) {
 		log.Warn("cannot create the request (pre-send)", zap.Error(err))
 		return err
 	}
-	statusCode, execErr := doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stderr, executionPrefix(execID)), log)
+	statusCode, execErr := doHTTP(newHTTPClient(p.task.Insecure), req, p.headers, NewPrefixWriter(os.Stderr, execID), log)
 	span.SetAttributes(attribute.Int("http.response.status_code", statusCode))
 	return execErr
 }

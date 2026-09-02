@@ -24,7 +24,7 @@ func TestCommand_Execute_StreamsPrefixedOutput(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	prefix := executionPrefix("run-1234")
+	prefix := "run-1234"
 	assert.NoError(t, conn.Execute(NewPrefixWriter(&stdout, prefix), NewPrefixWriter(&stderr, prefix)))
 	assert.NoError(t, conn.Disconnect())
 
@@ -43,7 +43,7 @@ func TestCommand_Execute_StreamsStderrSeparately(t *testing.T) {
 
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	prefix := executionPrefix("run-5678")
+	prefix := "run-5678"
 	err = conn.Execute(NewPrefixWriter(&stdout, prefix), NewPrefixWriter(&stderr, prefix))
 	assert.NoError(t, err)
 	assert.NoError(t, conn.Disconnect())
@@ -54,7 +54,7 @@ func TestCommand_Execute_StreamsStderrSeparately(t *testing.T) {
 
 func TestPrefixWriter_WritesThroughExec(t *testing.T) {
 	var buf bytes.Buffer
-	w := NewPrefixWriter(&buf, "svc:deadbeef | ")
+	w := NewPrefixWriter(&buf, "svc:deadbeef")
 	_, err := io.WriteString(w, "a\nb\n")
 	assert.NoError(t, err)
 	assert.Equal(t, "svc:deadbeef | a\nsvc:deadbeef | b\n", buf.String())
